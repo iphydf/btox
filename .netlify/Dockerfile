@@ -1,4 +1,4 @@
-FROM toxchat/flutter-web:latest
+FROM ghcr.io/toktok/flutter-web:latest
 
 ARG TARGET=release
 
