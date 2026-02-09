@@ -11,91 +11,750 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'tox_events.freezed.dart';
 part 'tox_events.g.dart';
 
-sealed class Event extends Packet {
-  const Event();
+@freezed
+sealed class Event extends Packet with _$Event {
+  const Event._();
+
+  const factory Event.conferenceConnected({required int conferenceNumber}) =
+      ToxEventConferenceConnected;
+
+  const factory Event.conferenceInvite({
+    @Uint8ListConverter() required Uint8List cookie,
+    required Tox_Conference_Type type,
+    required int friendNumber,
+  }) = ToxEventConferenceInvite;
+
+  const factory Event.conferenceMessage({
+    @Uint8ListConverter() required Uint8List message,
+    required Tox_Message_Type type,
+    required int conferenceNumber,
+    required int peerNumber,
+  }) = ToxEventConferenceMessage;
+
+  const factory Event.conferencePeerListChanged({
+    required int conferenceNumber,
+  }) = ToxEventConferencePeerListChanged;
+
+  const factory Event.conferencePeerName({
+    @Uint8ListConverter() required Uint8List name,
+    required int conferenceNumber,
+    required int peerNumber,
+  }) = ToxEventConferencePeerName;
+
+  const factory Event.conferenceTitle({
+    @Uint8ListConverter() required Uint8List title,
+    required int conferenceNumber,
+    required int peerNumber,
+  }) = ToxEventConferenceTitle;
+
+  const factory Event.dhtNodesResponse({
+    required PublicKey publicKey,
+    @Uint8ListConverter() required Uint8List ip,
+    required int port,
+  }) = ToxEventDhtNodesResponse;
+
+  const factory Event.fileChunkRequest({
+    required int length,
+    required int fileNumber,
+    required int friendNumber,
+    required int position,
+  }) = ToxEventFileChunkRequest;
+
+  const factory Event.fileRecv({
+    @Uint8ListConverter() required Uint8List filename,
+    required int fileNumber,
+    required int fileSize,
+    required int friendNumber,
+    required int kind,
+  }) = ToxEventFileRecv;
+
+  const factory Event.fileRecvChunk({
+    @Uint8ListConverter() required Uint8List data,
+    required int fileNumber,
+    required int friendNumber,
+    required int position,
+  }) = ToxEventFileRecvChunk;
+
+  const factory Event.fileRecvControl({
+    required Tox_File_Control control,
+    required int fileNumber,
+    required int friendNumber,
+  }) = ToxEventFileRecvControl;
+
+  const factory Event.friendConnectionStatus({
+    required Tox_Connection connectionStatus,
+    required int friendNumber,
+  }) = ToxEventFriendConnectionStatus;
+
+  const factory Event.friendLosslessPacket({
+    @Uint8ListConverter() required Uint8List data,
+    required int dataLength,
+    required int friendNumber,
+  }) = ToxEventFriendLosslessPacket;
+
+  const factory Event.friendLossyPacket({
+    @Uint8ListConverter() required Uint8List data,
+    required int dataLength,
+    required int friendNumber,
+  }) = ToxEventFriendLossyPacket;
+
+  const factory Event.friendMessage({
+    required int friendNumber,
+    required Tox_Message_Type type,
+    required int messageLength,
+    @Uint8ListConverter() required Uint8List message,
+  }) = ToxEventFriendMessage;
+
+  const factory Event.friendName({
+    @Uint8ListConverter() required Uint8List name,
+    required int friendNumber,
+  }) = ToxEventFriendName;
+
+  const factory Event.friendReadReceipt({
+    required int friendNumber,
+    required int messageId,
+  }) = ToxEventFriendReadReceipt;
+
+  const factory Event.friendRequest({
+    @Uint8ListConverter() required Uint8List message,
+    required PublicKey publicKey,
+  }) = ToxEventFriendRequest;
+
+  const factory Event.friendStatus({
+    required Tox_User_Status status,
+    required int friendNumber,
+  }) = ToxEventFriendStatus;
+
+  const factory Event.friendStatusMessage({
+    @Uint8ListConverter() required Uint8List message,
+    required int friendNumber,
+  }) = ToxEventFriendStatusMessage;
+
+  const factory Event.friendTyping({
+    required bool typing,
+    required int friendNumber,
+  }) = ToxEventFriendTyping;
+
+  const factory Event.groupCustomPacket({
+    required int groupNumber,
+    required int peerId,
+    @Uint8ListConverter() required Uint8List data,
+  }) = ToxEventGroupCustomPacket;
+
+  const factory Event.groupCustomPrivatePacket({
+    required int groupNumber,
+    required int peerId,
+    @Uint8ListConverter() required Uint8List data,
+  }) = ToxEventGroupCustomPrivatePacket;
+
+  const factory Event.groupInvite({
+    required int friendNumber,
+    @Uint8ListConverter() required Uint8List inviteData,
+    @Uint8ListConverter() required Uint8List groupName,
+  }) = ToxEventGroupInvite;
+
+  const factory Event.groupJoinFail({
+    required int groupNumber,
+    required Tox_Group_Join_Fail failType,
+  }) = ToxEventGroupJoinFail;
+
+  const factory Event.groupMessage({
+    required int groupNumber,
+    required int peerId,
+    required Tox_Message_Type messageType,
+    @Uint8ListConverter() required Uint8List message,
+    required int messageId,
+  }) = ToxEventGroupMessage;
+
+  const factory Event.groupModeration({
+    required int groupNumber,
+    required int sourcePeerId,
+    required int targetPeerId,
+    required Tox_Group_Mod_Event modType,
+  }) = ToxEventGroupModeration;
+
+  const factory Event.groupPassword({
+    required int groupNumber,
+    @Uint8ListConverter() required Uint8List password,
+  }) = ToxEventGroupPassword;
+
+  const factory Event.groupPeerExit({
+    required int groupNumber,
+    required int peerId,
+    required Tox_Group_Exit_Type exitType,
+    @Uint8ListConverter() required Uint8List name,
+    @Uint8ListConverter() required Uint8List partMessage,
+  }) = ToxEventGroupPeerExit;
+
+  const factory Event.groupPeerJoin({
+    required int groupNumber,
+    required int peerId,
+  }) = ToxEventGroupPeerJoin;
+
+  const factory Event.groupPeerLimit({
+    required int groupNumber,
+    required int peerLimit,
+  }) = ToxEventGroupPeerLimit;
+
+  const factory Event.groupPeerName({
+    required int groupNumber,
+    required int peerId,
+    @Uint8ListConverter() required Uint8List name,
+  }) = ToxEventGroupPeerName;
+
+  const factory Event.groupPeerStatus({
+    required int groupNumber,
+    required int peerId,
+    required Tox_User_Status status,
+  }) = ToxEventGroupPeerStatus;
+
+  const factory Event.groupPrivacyState({
+    required int groupNumber,
+    required Tox_Group_Privacy_State privacyState,
+  }) = ToxEventGroupPrivacyState;
+
+  const factory Event.groupPrivateMessage({
+    required int groupNumber,
+    required int peerId,
+    required Tox_Message_Type messageType,
+    @Uint8ListConverter() required Uint8List message,
+    required int messageId,
+  }) = ToxEventGroupPrivateMessage;
+
+  const factory Event.groupSelfJoin({required int groupNumber}) =
+      ToxEventGroupSelfJoin;
+
+  const factory Event.groupTopic({
+    required int groupNumber,
+    required int peerId,
+    @Uint8ListConverter() required Uint8List topic,
+  }) = ToxEventGroupTopic;
+
+  const factory Event.groupTopicLock({
+    required int groupNumber,
+    required Tox_Group_Topic_Lock topicLock,
+  }) = ToxEventGroupTopicLock;
+
+  const factory Event.groupVoiceState({
+    required int groupNumber,
+    required Tox_Group_Voice_State voiceState,
+  }) = ToxEventGroupVoiceState;
+
+  const factory Event.selfConnectionStatus({
+    required Tox_Connection connectionStatus,
+  }) = ToxEventSelfConnectionStatus;
+
+  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+
+  Tox_Event_Type get eventType => map(
+    conferenceConnected: (_) => Tox_Event_Type.TOX_EVENT_CONFERENCE_CONNECTED,
+    conferenceInvite: (_) => Tox_Event_Type.TOX_EVENT_CONFERENCE_INVITE,
+    conferenceMessage: (_) => Tox_Event_Type.TOX_EVENT_CONFERENCE_MESSAGE,
+    conferencePeerListChanged: (_) =>
+        Tox_Event_Type.TOX_EVENT_CONFERENCE_PEER_LIST_CHANGED,
+    conferencePeerName: (_) => Tox_Event_Type.TOX_EVENT_CONFERENCE_PEER_NAME,
+    conferenceTitle: (_) => Tox_Event_Type.TOX_EVENT_CONFERENCE_TITLE,
+    dhtNodesResponse: (_) => Tox_Event_Type.TOX_EVENT_DHT_NODES_RESPONSE,
+    fileChunkRequest: (_) => Tox_Event_Type.TOX_EVENT_FILE_CHUNK_REQUEST,
+    fileRecv: (_) => Tox_Event_Type.TOX_EVENT_FILE_RECV,
+    fileRecvChunk: (_) => Tox_Event_Type.TOX_EVENT_FILE_RECV_CHUNK,
+    fileRecvControl: (_) => Tox_Event_Type.TOX_EVENT_FILE_RECV_CONTROL,
+    friendConnectionStatus: (_) =>
+        Tox_Event_Type.TOX_EVENT_FRIEND_CONNECTION_STATUS,
+    friendLosslessPacket: (_) =>
+        Tox_Event_Type.TOX_EVENT_FRIEND_LOSSLESS_PACKET,
+    friendLossyPacket: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_LOSSY_PACKET,
+    friendMessage: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_MESSAGE,
+    friendName: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_NAME,
+    friendReadReceipt: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_READ_RECEIPT,
+    friendRequest: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_REQUEST,
+    friendStatus: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_STATUS,
+    friendStatusMessage: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_STATUS_MESSAGE,
+    friendTyping: (_) => Tox_Event_Type.TOX_EVENT_FRIEND_TYPING,
+    groupCustomPacket: (_) => Tox_Event_Type.TOX_EVENT_GROUP_CUSTOM_PACKET,
+    groupCustomPrivatePacket: (_) =>
+        Tox_Event_Type.TOX_EVENT_GROUP_CUSTOM_PRIVATE_PACKET,
+    groupInvite: (_) => Tox_Event_Type.TOX_EVENT_GROUP_INVITE,
+    groupJoinFail: (_) => Tox_Event_Type.TOX_EVENT_GROUP_JOIN_FAIL,
+    groupMessage: (_) => Tox_Event_Type.TOX_EVENT_GROUP_MESSAGE,
+    groupModeration: (_) => Tox_Event_Type.TOX_EVENT_GROUP_MODERATION,
+    groupPassword: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PASSWORD,
+    groupPeerExit: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PEER_EXIT,
+    groupPeerJoin: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PEER_JOIN,
+    groupPeerLimit: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PEER_LIMIT,
+    groupPeerName: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PEER_NAME,
+    groupPeerStatus: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PEER_STATUS,
+    groupPrivacyState: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PRIVACY_STATE,
+    groupPrivateMessage: (_) => Tox_Event_Type.TOX_EVENT_GROUP_PRIVATE_MESSAGE,
+    groupSelfJoin: (_) => Tox_Event_Type.TOX_EVENT_GROUP_SELF_JOIN,
+    groupTopic: (_) => Tox_Event_Type.TOX_EVENT_GROUP_TOPIC,
+    groupTopicLock: (_) => Tox_Event_Type.TOX_EVENT_GROUP_TOPIC_LOCK,
+    groupVoiceState: (_) => Tox_Event_Type.TOX_EVENT_GROUP_VOICE_STATE,
+    selfConnectionStatus: (_) =>
+        Tox_Event_Type.TOX_EVENT_SELF_CONNECTION_STATUS,
+  );
+
+  @override
+  void pack(Packer packer) => when(
+    conferenceConnected: (conferenceNumber) => packer.packInt(conferenceNumber),
+    conferenceInvite: (cookie, type, friendNumber) => packer
+      ..packListLength(3)
+      ..packBinary(cookie)
+      ..packInt(type.value)
+      ..packInt(friendNumber),
+    conferenceMessage: (message, type, conferenceNumber, peerNumber) => packer
+      ..packListLength(4)
+      ..packBinary(message)
+      ..packInt(type.value)
+      ..packInt(conferenceNumber)
+      ..packInt(peerNumber),
+    conferencePeerListChanged: (conferenceNumber) =>
+        packer.packInt(conferenceNumber),
+    conferencePeerName: (name, conferenceNumber, peerNumber) => packer
+      ..packListLength(3)
+      ..packBinary(name)
+      ..packInt(conferenceNumber)
+      ..packInt(peerNumber),
+    conferenceTitle: (title, conferenceNumber, peerNumber) => packer
+      ..packListLength(3)
+      ..packBinary(title)
+      ..packInt(conferenceNumber)
+      ..packInt(peerNumber),
+    dhtNodesResponse: (publicKey, ip, port) => packer
+      ..packListLength(3)
+      ..pack(publicKey)
+      ..packBinary(ip)
+      ..packInt(port),
+    fileChunkRequest: (length, fileNumber, friendNumber, position) => packer
+      ..packListLength(4)
+      ..packInt(length)
+      ..packInt(fileNumber)
+      ..packInt(friendNumber)
+      ..packInt(position),
+    fileRecv: (filename, fileNumber, fileSize, friendNumber, kind) => packer
+      ..packListLength(5)
+      ..packBinary(filename)
+      ..packInt(fileNumber)
+      ..packInt(fileSize)
+      ..packInt(friendNumber)
+      ..packInt(kind),
+    fileRecvChunk: (data, fileNumber, friendNumber, position) => packer
+      ..packListLength(4)
+      ..packBinary(data)
+      ..packInt(fileNumber)
+      ..packInt(friendNumber)
+      ..packInt(position),
+    fileRecvControl: (control, fileNumber, friendNumber) => packer
+      ..packListLength(3)
+      ..packInt(control.value)
+      ..packInt(fileNumber)
+      ..packInt(friendNumber),
+    friendConnectionStatus: (connectionStatus, friendNumber) => packer
+      ..packListLength(2)
+      ..packInt(connectionStatus.value)
+      ..packInt(friendNumber),
+    friendLosslessPacket: (data, dataLength, friendNumber) => packer
+      ..packListLength(3)
+      ..packBinary(data)
+      ..packInt(dataLength)
+      ..packInt(friendNumber),
+    friendLossyPacket: (data, dataLength, friendNumber) => packer
+      ..packListLength(3)
+      ..packBinary(data)
+      ..packInt(dataLength)
+      ..packInt(friendNumber),
+    friendMessage: (friendNumber, type, messageLength, message) => packer
+      ..packListLength(4)
+      ..packInt(friendNumber)
+      ..packInt(type.value)
+      ..packInt(messageLength)
+      ..packBinary(message),
+    friendName: (name, friendNumber) => packer
+      ..packListLength(2)
+      ..packBinary(name)
+      ..packInt(friendNumber),
+    friendReadReceipt: (friendNumber, messageId) => packer
+      ..packListLength(2)
+      ..packInt(friendNumber)
+      ..packInt(messageId),
+    friendRequest: (message, publicKey) => packer
+      ..packListLength(2)
+      ..packBinary(message)
+      ..pack(publicKey),
+    friendStatus: (status, friendNumber) => packer
+      ..packListLength(2)
+      ..packInt(status.value)
+      ..packInt(friendNumber),
+    friendStatusMessage: (message, friendNumber) => packer
+      ..packListLength(2)
+      ..packBinary(message)
+      ..packInt(friendNumber),
+    friendTyping: (typing, friendNumber) => packer
+      ..packListLength(2)
+      ..packBool(typing)
+      ..packInt(friendNumber),
+    groupCustomPacket: (groupNumber, peerId, data) => packer
+      ..packListLength(3)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packBinary(data),
+    groupCustomPrivatePacket: (groupNumber, peerId, data) => packer
+      ..packListLength(3)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packBinary(data),
+    groupInvite: (friendNumber, inviteData, groupName) => packer
+      ..packListLength(3)
+      ..packInt(friendNumber)
+      ..packBinary(inviteData)
+      ..packBinary(groupName),
+    groupJoinFail: (groupNumber, failType) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(failType.value),
+    groupMessage: (groupNumber, peerId, messageType, message, messageId) =>
+        packer
+          ..packListLength(5)
+          ..packInt(groupNumber)
+          ..packInt(peerId)
+          ..packInt(messageType.value)
+          ..packBinary(message)
+          ..packInt(messageId),
+    groupModeration: (groupNumber, sourcePeerId, targetPeerId, modType) =>
+        packer
+          ..packListLength(4)
+          ..packInt(groupNumber)
+          ..packInt(sourcePeerId)
+          ..packInt(targetPeerId)
+          ..packInt(modType.value),
+    groupPassword: (groupNumber, password) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packBinary(password),
+    groupPeerExit: (groupNumber, peerId, exitType, name, partMessage) => packer
+      ..packListLength(5)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packInt(exitType.value)
+      ..packBinary(name)
+      ..packBinary(partMessage),
+    groupPeerJoin: (groupNumber, peerId) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(peerId),
+    groupPeerLimit: (groupNumber, peerLimit) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(peerLimit),
+    groupPeerName: (groupNumber, peerId, name) => packer
+      ..packListLength(3)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packBinary(name),
+    groupPeerStatus: (groupNumber, peerId, status) => packer
+      ..packListLength(3)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packInt(status.value),
+    groupPrivacyState: (groupNumber, privacyState) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(privacyState.value),
+    groupPrivateMessage:
+        (groupNumber, peerId, messageType, message, messageId) => packer
+          ..packListLength(5)
+          ..packInt(groupNumber)
+          ..packInt(peerId)
+          ..packInt(messageType.value)
+          ..packBinary(message)
+          ..packInt(messageId),
+    groupSelfJoin: (groupNumber) => packer.packInt(groupNumber),
+    groupTopic: (groupNumber, peerId, topic) => packer
+      ..packListLength(3)
+      ..packInt(groupNumber)
+      ..packInt(peerId)
+      ..packBinary(topic),
+    groupTopicLock: (groupNumber, topicLock) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(topicLock.value),
+    groupVoiceState: (groupNumber, voiceState) => packer
+      ..packListLength(2)
+      ..packInt(groupNumber)
+      ..packInt(voiceState.value),
+    selfConnectionStatus: (connectionStatus) =>
+        packer.packInt(connectionStatus.value),
+  );
 
   factory Event.unpack(Unpacker unpacker, Tox_Event_Type type) {
     switch (type) {
       case Tox_Event_Type.TOX_EVENT_SELF_CONNECTION_STATUS:
-        return ToxEventSelfConnectionStatus.unpack(unpacker);
+        return Event.selfConnectionStatus(
+          connectionStatus: Tox_Connection.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_REQUEST:
-        return ToxEventFriendRequest.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendRequest(
+          message: unpacker.unpackBinary()!,
+          publicKey: PublicKey.unpack(unpacker),
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_CONNECTION_STATUS:
-        return ToxEventFriendConnectionStatus.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendConnectionStatus(
+          connectionStatus: Tox_Connection.fromValue(unpacker.unpackInt()!),
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_LOSSY_PACKET:
-        return ToxEventFriendLossyPacket.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.friendLossyPacket(
+          data: unpacker.unpackBinary()!,
+          dataLength: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_LOSSLESS_PACKET:
-        return ToxEventFriendLosslessPacket.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.friendLosslessPacket(
+          data: unpacker.unpackBinary()!,
+          dataLength: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_NAME:
-        return ToxEventFriendName.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendName(
+          name: unpacker.unpackBinary()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_STATUS:
-        return ToxEventFriendStatus.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendStatus(
+          status: Tox_User_Status.fromValue(unpacker.unpackInt()!),
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_STATUS_MESSAGE:
-        return ToxEventFriendStatusMessage.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendStatusMessage(
+          message: unpacker.unpackBinary()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_MESSAGE:
-        return ToxEventFriendMessage.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 4);
+        return Event.friendMessage(
+          friendNumber: unpacker.unpackInt()!,
+          type: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
+          messageLength: unpacker.unpackInt()!,
+          message: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_READ_RECEIPT:
-        return ToxEventFriendReadReceipt.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendReadReceipt(
+          friendNumber: unpacker.unpackInt()!,
+          messageId: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FRIEND_TYPING:
-        return ToxEventFriendTyping.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.friendTyping(
+          typing: unpacker.unpackBool()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FILE_CHUNK_REQUEST:
-        return ToxEventFileChunkRequest.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 4);
+        return Event.fileChunkRequest(
+          length: unpacker.unpackInt()!,
+          fileNumber: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+          position: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FILE_RECV:
-        return ToxEventFileRecv.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 5);
+        return Event.fileRecv(
+          filename: unpacker.unpackBinary()!,
+          fileNumber: unpacker.unpackInt()!,
+          fileSize: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+          kind: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FILE_RECV_CHUNK:
-        return ToxEventFileRecvChunk.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 4);
+        return Event.fileRecvChunk(
+          data: unpacker.unpackBinary()!,
+          fileNumber: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+          position: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_FILE_RECV_CONTROL:
-        return ToxEventFileRecvControl.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.fileRecvControl(
+          control: Tox_File_Control.fromValue(unpacker.unpackInt()!),
+          fileNumber: unpacker.unpackInt()!,
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_INVITE:
-        return ToxEventConferenceInvite.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.conferenceInvite(
+          cookie: unpacker.unpackBinary()!,
+          type: Tox_Conference_Type.fromValue(unpacker.unpackInt()!),
+          friendNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_CONNECTED:
-        return ToxEventConferenceConnected.unpack(unpacker);
+        return Event.conferenceConnected(
+          conferenceNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_PEER_LIST_CHANGED:
-        return ToxEventConferencePeerListChanged.unpack(unpacker);
+        return Event.conferencePeerListChanged(
+          conferenceNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_PEER_NAME:
-        return ToxEventConferencePeerName.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.conferencePeerName(
+          name: unpacker.unpackBinary()!,
+          conferenceNumber: unpacker.unpackInt()!,
+          peerNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_TITLE:
-        return ToxEventConferenceTitle.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.conferenceTitle(
+          title: unpacker.unpackBinary()!,
+          conferenceNumber: unpacker.unpackInt()!,
+          peerNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_CONFERENCE_MESSAGE:
-        return ToxEventConferenceMessage.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 4);
+        return Event.conferenceMessage(
+          message: unpacker.unpackBinary()!,
+          type: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
+          conferenceNumber: unpacker.unpackInt()!,
+          peerNumber: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_CUSTOM_PACKET:
-        return ToxEventGroupCustomPacket.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupCustomPacket(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          data: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_CUSTOM_PRIVATE_PACKET:
-        return ToxEventGroupCustomPrivatePacket.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupCustomPrivatePacket(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          data: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_INVITE:
-        return ToxEventGroupInvite.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupInvite(
+          friendNumber: unpacker.unpackInt()!,
+          inviteData: unpacker.unpackBinary()!,
+          groupName: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PEER_JOIN:
-        return ToxEventGroupPeerJoin.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupPeerJoin(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PEER_EXIT:
-        return ToxEventGroupPeerExit.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 5);
+        return Event.groupPeerExit(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          exitType: Tox_Group_Exit_Type.fromValue(unpacker.unpackInt()!),
+          name: unpacker.unpackBinary()!,
+          partMessage: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PEER_NAME:
-        return ToxEventGroupPeerName.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupPeerName(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          name: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PEER_STATUS:
-        return ToxEventGroupPeerStatus.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupPeerStatus(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          status: Tox_User_Status.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_TOPIC:
-        return ToxEventGroupTopic.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.groupTopic(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          topic: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PRIVACY_STATE:
-        return ToxEventGroupPrivacyState.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupPrivacyState(
+          groupNumber: unpacker.unpackInt()!,
+          privacyState: Tox_Group_Privacy_State.fromValue(
+            unpacker.unpackInt()!,
+          ),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_VOICE_STATE:
-        return ToxEventGroupVoiceState.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupVoiceState(
+          groupNumber: unpacker.unpackInt()!,
+          voiceState: Tox_Group_Voice_State.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_TOPIC_LOCK:
-        return ToxEventGroupTopicLock.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupTopicLock(
+          groupNumber: unpacker.unpackInt()!,
+          topicLock: Tox_Group_Topic_Lock.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PEER_LIMIT:
-        return ToxEventGroupPeerLimit.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupPeerLimit(
+          groupNumber: unpacker.unpackInt()!,
+          peerLimit: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PASSWORD:
-        return ToxEventGroupPassword.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupPassword(
+          groupNumber: unpacker.unpackInt()!,
+          password: unpacker.unpackBinary()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_MESSAGE:
-        return ToxEventGroupMessage.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 5);
+        return Event.groupMessage(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          messageType: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
+          message: unpacker.unpackBinary()!,
+          messageId: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_PRIVATE_MESSAGE:
-        return ToxEventGroupPrivateMessage.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 5);
+        return Event.groupPrivateMessage(
+          groupNumber: unpacker.unpackInt()!,
+          peerId: unpacker.unpackInt()!,
+          messageType: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
+          message: unpacker.unpackBinary()!,
+          messageId: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_JOIN_FAIL:
-        return ToxEventGroupJoinFail.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.groupJoinFail(
+          groupNumber: unpacker.unpackInt()!,
+          failType: Tox_Group_Join_Fail.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_MODERATION:
-        return ToxEventGroupModeration.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 4);
+        return Event.groupModeration(
+          groupNumber: unpacker.unpackInt()!,
+          sourcePeerId: unpacker.unpackInt()!,
+          targetPeerId: unpacker.unpackInt()!,
+          modType: Tox_Group_Mod_Event.fromValue(unpacker.unpackInt()!),
+        );
       case Tox_Event_Type.TOX_EVENT_GROUP_SELF_JOIN:
-        return ToxEventGroupSelfJoin.unpack(unpacker);
+        return Event.groupSelfJoin(groupNumber: unpacker.unpackInt()!);
       case Tox_Event_Type.TOX_EVENT_DHT_NODES_RESPONSE:
-        return ToxEventDhtNodesResponse.unpack(unpacker);
+        ensure(unpacker.unpackListLength(), 3);
+        return Event.dhtNodesResponse(
+          publicKey: PublicKey.unpack(unpacker),
+          ip: unpacker.unpackBinary()!,
+          port: unpacker.unpackInt()!,
+        );
       case Tox_Event_Type.TOX_EVENT_INVALID:
         throw Exception('Invalid event type');
     }
@@ -111,1364 +770,6 @@ sealed class Event extends Packet {
         );
       }),
     );
-  }
-}
-
-@freezed
-abstract class ToxEventConferenceConnected extends Event
-    with _$ToxEventConferenceConnected {
-  const ToxEventConferenceConnected._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventConferenceConnected({required int conferenceNumber}) =
-      _ToxEventConferenceConnected;
-
-  factory ToxEventConferenceConnected.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventConferenceConnectedFromJson(json);
-
-  factory ToxEventConferenceConnected.unpack(Unpacker unpacker) {
-    return ToxEventConferenceConnected(conferenceNumber: unpacker.unpackInt()!);
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer.packInt(conferenceNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventConferenceInvite extends Event
-    with _$ToxEventConferenceInvite {
-  const ToxEventConferenceInvite._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventConferenceInvite({
-    required Uint8List cookie,
-    required Tox_Conference_Type type,
-    required int friendNumber,
-  }) = _ToxEventConferenceInvite;
-
-  factory ToxEventConferenceInvite.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventConferenceInviteFromJson(json);
-
-  factory ToxEventConferenceInvite.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventConferenceInvite(
-      cookie: unpacker.unpackBinary()!,
-      type: Tox_Conference_Type.fromValue(unpacker.unpackInt()!),
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packBinary(cookie)
-      ..packInt(type.value)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventConferenceMessage extends Event
-    with _$ToxEventConferenceMessage {
-  const ToxEventConferenceMessage._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventConferenceMessage({
-    required Uint8List message,
-    required Tox_Message_Type type,
-    required int conferenceNumber,
-    required int peerNumber,
-  }) = _ToxEventConferenceMessage;
-
-  factory ToxEventConferenceMessage.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventConferenceMessageFromJson(json);
-
-  factory ToxEventConferenceMessage.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 4);
-    return ToxEventConferenceMessage(
-      message: unpacker.unpackBinary()!,
-      type: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
-      conferenceNumber: unpacker.unpackInt()!,
-      peerNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(4)
-      ..packBinary(message)
-      ..packInt(type.value)
-      ..packInt(conferenceNumber)
-      ..packInt(peerNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventConferencePeerListChanged extends Event
-    with _$ToxEventConferencePeerListChanged {
-  const ToxEventConferencePeerListChanged._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventConferencePeerListChanged({
-    required int conferenceNumber,
-  }) = _ToxEventConferencePeerListChanged;
-
-  factory ToxEventConferencePeerListChanged.fromJson(
-    Map<String, dynamic> json,
-  ) => _$ToxEventConferencePeerListChangedFromJson(json);
-
-  factory ToxEventConferencePeerListChanged.unpack(Unpacker unpacker) {
-    return ToxEventConferencePeerListChanged(
-      conferenceNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer.packInt(conferenceNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventConferencePeerName extends Event
-    with _$ToxEventConferencePeerName {
-  const ToxEventConferencePeerName._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventConferencePeerName({
-    required Uint8List name,
-    required int conferenceNumber,
-    required int peerNumber,
-  }) = _ToxEventConferencePeerName;
-
-  factory ToxEventConferencePeerName.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventConferencePeerNameFromJson(json);
-
-  factory ToxEventConferencePeerName.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventConferencePeerName(
-      name: unpacker.unpackBinary()!,
-      conferenceNumber: unpacker.unpackInt()!,
-      peerNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packBinary(name)
-      ..packInt(conferenceNumber)
-      ..packInt(peerNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventConferenceTitle extends Event
-    with _$ToxEventConferenceTitle {
-  const ToxEventConferenceTitle._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventConferenceTitle({
-    required Uint8List title,
-    required int conferenceNumber,
-    required int peerNumber,
-  }) = _ToxEventConferenceTitle;
-
-  factory ToxEventConferenceTitle.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventConferenceTitleFromJson(json);
-
-  factory ToxEventConferenceTitle.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventConferenceTitle(
-      title: unpacker.unpackBinary()!,
-      conferenceNumber: unpacker.unpackInt()!,
-      peerNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packBinary(title)
-      ..packInt(conferenceNumber)
-      ..packInt(peerNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventDhtNodesResponse extends Event
-    with _$ToxEventDhtNodesResponse {
-  const ToxEventDhtNodesResponse._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventDhtNodesResponse({
-    required PublicKey publicKey,
-    required Uint8List ip,
-    required int port,
-  }) = _ToxEventDhtNodesResponse;
-
-  factory ToxEventDhtNodesResponse.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventDhtNodesResponseFromJson(json);
-
-  factory ToxEventDhtNodesResponse.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventDhtNodesResponse(
-      publicKey: PublicKey.unpack(unpacker),
-      ip: unpacker.unpackBinary()!,
-      port: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..pack(publicKey)
-      ..packBinary(ip)
-      ..packInt(port);
-  }
-}
-
-@freezed
-abstract class ToxEventFileChunkRequest extends Event
-    with _$ToxEventFileChunkRequest {
-  const ToxEventFileChunkRequest._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFileChunkRequest({
-    required int length,
-    required int fileNumber,
-    required int friendNumber,
-    required int position,
-  }) = _ToxEventFileChunkRequest;
-
-  factory ToxEventFileChunkRequest.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFileChunkRequestFromJson(json);
-
-  factory ToxEventFileChunkRequest.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 4);
-    return ToxEventFileChunkRequest(
-      length: unpacker.unpackInt()!,
-      fileNumber: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-      position: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(4)
-      ..packInt(length)
-      ..packInt(fileNumber)
-      ..packInt(friendNumber)
-      ..packInt(position);
-  }
-}
-
-@freezed
-abstract class ToxEventFileRecv extends Event with _$ToxEventFileRecv {
-  const ToxEventFileRecv._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFileRecv({
-    required Uint8List filename,
-    required int fileNumber,
-    required int fileSize,
-    required int friendNumber,
-    required int kind,
-  }) = _ToxEventFileRecv;
-
-  factory ToxEventFileRecv.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFileRecvFromJson(json);
-
-  factory ToxEventFileRecv.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 5);
-    return ToxEventFileRecv(
-      filename: unpacker.unpackBinary()!,
-      fileNumber: unpacker.unpackInt()!,
-      fileSize: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-      kind: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(5)
-      ..packBinary(filename)
-      ..packInt(fileNumber)
-      ..packInt(fileSize)
-      ..packInt(friendNumber)
-      ..packInt(kind);
-  }
-}
-
-@freezed
-abstract class ToxEventFileRecvChunk extends Event
-    with _$ToxEventFileRecvChunk {
-  const ToxEventFileRecvChunk._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFileRecvChunk({
-    required Uint8List data,
-    required int fileNumber,
-    required int friendNumber,
-    required int position,
-  }) = _ToxEventFileRecvChunk;
-
-  factory ToxEventFileRecvChunk.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFileRecvChunkFromJson(json);
-
-  factory ToxEventFileRecvChunk.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 4);
-    return ToxEventFileRecvChunk(
-      data: unpacker.unpackBinary()!,
-      fileNumber: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-      position: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(4)
-      ..packBinary(data)
-      ..packInt(fileNumber)
-      ..packInt(friendNumber)
-      ..packInt(position);
-  }
-}
-
-@freezed
-abstract class ToxEventFileRecvControl extends Event
-    with _$ToxEventFileRecvControl {
-  const ToxEventFileRecvControl._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFileRecvControl({
-    required Tox_File_Control control,
-    required int fileNumber,
-    required int friendNumber,
-  }) = _ToxEventFileRecvControl;
-
-  factory ToxEventFileRecvControl.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFileRecvControlFromJson(json);
-
-  factory ToxEventFileRecvControl.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventFileRecvControl(
-      control: Tox_File_Control.fromValue(unpacker.unpackInt()!),
-      fileNumber: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(control.value)
-      ..packInt(fileNumber)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendConnectionStatus extends Event
-    with _$ToxEventFriendConnectionStatus {
-  const ToxEventFriendConnectionStatus._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFriendConnectionStatus({
-    required Tox_Connection connectionStatus,
-    required int friendNumber,
-  }) = _ToxEventFriendConnectionStatus;
-
-  factory ToxEventFriendConnectionStatus.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendConnectionStatusFromJson(json);
-
-  factory ToxEventFriendConnectionStatus.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendConnectionStatus(
-      connectionStatus: Tox_Connection.fromValue(unpacker.unpackInt()!),
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(connectionStatus.value)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendLosslessPacket extends Event
-    with _$ToxEventFriendLosslessPacket {
-  const ToxEventFriendLosslessPacket._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendLosslessPacket({
-    required Uint8List data,
-    required int dataLength,
-    required int friendNumber,
-  }) = _ToxEventFriendLosslessPacket;
-
-  factory ToxEventFriendLosslessPacket.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendLosslessPacketFromJson(json);
-
-  factory ToxEventFriendLosslessPacket.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventFriendLosslessPacket(
-      data: unpacker.unpackBinary()!,
-      dataLength: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packBinary(data)
-      ..packInt(dataLength)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendLossyPacket extends Event
-    with _$ToxEventFriendLossyPacket {
-  const ToxEventFriendLossyPacket._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendLossyPacket({
-    required Uint8List data,
-    required int dataLength,
-    required int friendNumber,
-  }) = _ToxEventFriendLossyPacket;
-
-  factory ToxEventFriendLossyPacket.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendLossyPacketFromJson(json);
-
-  factory ToxEventFriendLossyPacket.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventFriendLossyPacket(
-      data: unpacker.unpackBinary()!,
-      dataLength: unpacker.unpackInt()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packBinary(data)
-      ..packInt(dataLength)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendMessage extends Event
-    with _$ToxEventFriendMessage {
-  const ToxEventFriendMessage._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendMessage({
-    required int friendNumber,
-    required Tox_Message_Type type,
-    required int messageLength,
-    required Uint8List message,
-  }) = _ToxEventFriendMessage;
-
-  factory ToxEventFriendMessage.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendMessageFromJson(json);
-
-  factory ToxEventFriendMessage.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 4);
-    return ToxEventFriendMessage(
-      friendNumber: unpacker.unpackInt()!,
-      type: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
-      messageLength: unpacker.unpackInt()!,
-      message: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(4)
-      ..packInt(friendNumber)
-      ..packInt(type.value)
-      ..packInt(messageLength)
-      ..packBinary(message);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendName extends Event with _$ToxEventFriendName {
-  const ToxEventFriendName._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendName({
-    required Uint8List name,
-    required int friendNumber,
-  }) = _ToxEventFriendName;
-
-  factory ToxEventFriendName.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendNameFromJson(json);
-
-  factory ToxEventFriendName.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendName(
-      name: unpacker.unpackBinary()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packBinary(name)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendReadReceipt extends Event
-    with _$ToxEventFriendReadReceipt {
-  const ToxEventFriendReadReceipt._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFriendReadReceipt({
-    required int friendNumber,
-    required int messageId,
-  }) = _ToxEventFriendReadReceipt;
-
-  factory ToxEventFriendReadReceipt.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendReadReceiptFromJson(json);
-
-  factory ToxEventFriendReadReceipt.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendReadReceipt(
-      friendNumber: unpacker.unpackInt()!,
-      messageId: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(friendNumber)
-      ..packInt(messageId);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendRequest extends Event
-    with _$ToxEventFriendRequest {
-  const ToxEventFriendRequest._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendRequest({
-    required Uint8List message,
-    required PublicKey publicKey,
-  }) = _ToxEventFriendRequest;
-
-  factory ToxEventFriendRequest.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendRequestFromJson(json);
-
-  factory ToxEventFriendRequest.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendRequest(
-      message: unpacker.unpackBinary()!,
-      publicKey: PublicKey.unpack(unpacker),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packBinary(message)
-      ..pack(publicKey);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendStatus extends Event with _$ToxEventFriendStatus {
-  const ToxEventFriendStatus._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFriendStatus({
-    required Tox_User_Status status,
-    required int friendNumber,
-  }) = _ToxEventFriendStatus;
-
-  factory ToxEventFriendStatus.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendStatusFromJson(json);
-
-  factory ToxEventFriendStatus.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendStatus(
-      status: Tox_User_Status.fromValue(unpacker.unpackInt()!),
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(status.value)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendStatusMessage extends Event
-    with _$ToxEventFriendStatusMessage {
-  const ToxEventFriendStatusMessage._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventFriendStatusMessage({
-    required Uint8List message,
-    required int friendNumber,
-  }) = _ToxEventFriendStatusMessage;
-
-  factory ToxEventFriendStatusMessage.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendStatusMessageFromJson(json);
-
-  factory ToxEventFriendStatusMessage.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendStatusMessage(
-      message: unpacker.unpackBinary()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packBinary(message)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventFriendTyping extends Event with _$ToxEventFriendTyping {
-  const ToxEventFriendTyping._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventFriendTyping({
-    required bool typing,
-    required int friendNumber,
-  }) = _ToxEventFriendTyping;
-
-  factory ToxEventFriendTyping.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventFriendTypingFromJson(json);
-
-  factory ToxEventFriendTyping.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventFriendTyping(
-      typing: unpacker.unpackBool()!,
-      friendNumber: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packBool(typing)
-      ..packInt(friendNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupCustomPacket extends Event
-    with _$ToxEventGroupCustomPacket {
-  const ToxEventGroupCustomPacket._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupCustomPacket({
-    required int groupNumber,
-    required int peerId,
-    required Uint8List data,
-  }) = _ToxEventGroupCustomPacket;
-
-  factory ToxEventGroupCustomPacket.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupCustomPacketFromJson(json);
-
-  factory ToxEventGroupCustomPacket.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupCustomPacket(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      data: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packBinary(data);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupCustomPrivatePacket extends Event
-    with _$ToxEventGroupCustomPrivatePacket {
-  const ToxEventGroupCustomPrivatePacket._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupCustomPrivatePacket({
-    required int groupNumber,
-    required int peerId,
-    required Uint8List data,
-  }) = _ToxEventGroupCustomPrivatePacket;
-
-  factory ToxEventGroupCustomPrivatePacket.fromJson(
-    Map<String, dynamic> json,
-  ) => _$ToxEventGroupCustomPrivatePacketFromJson(json);
-
-  factory ToxEventGroupCustomPrivatePacket.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupCustomPrivatePacket(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      data: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packBinary(data);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupInvite extends Event with _$ToxEventGroupInvite {
-  const ToxEventGroupInvite._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupInvite({
-    required int friendNumber,
-    required Uint8List inviteData,
-    required Uint8List groupName,
-  }) = _ToxEventGroupInvite;
-
-  factory ToxEventGroupInvite.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupInviteFromJson(json);
-
-  factory ToxEventGroupInvite.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupInvite(
-      friendNumber: unpacker.unpackInt()!,
-      inviteData: unpacker.unpackBinary()!,
-      groupName: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(friendNumber)
-      ..packBinary(inviteData)
-      ..packBinary(groupName);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupJoinFail extends Event
-    with _$ToxEventGroupJoinFail {
-  const ToxEventGroupJoinFail._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupJoinFail({
-    required int groupNumber,
-    required Tox_Group_Join_Fail failType,
-  }) = _ToxEventGroupJoinFail;
-
-  factory ToxEventGroupJoinFail.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupJoinFailFromJson(json);
-
-  factory ToxEventGroupJoinFail.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupJoinFail(
-      groupNumber: unpacker.unpackInt()!,
-      failType: Tox_Group_Join_Fail.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(failType.value);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupMessage extends Event with _$ToxEventGroupMessage {
-  const ToxEventGroupMessage._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupMessage({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Message_Type messageType,
-    required Uint8List message,
-    required int messageId,
-  }) = _ToxEventGroupMessage;
-
-  factory ToxEventGroupMessage.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupMessageFromJson(json);
-
-  factory ToxEventGroupMessage.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 5);
-    return ToxEventGroupMessage(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      messageType: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
-      message: unpacker.unpackBinary()!,
-      messageId: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(5)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packInt(messageType.value)
-      ..packBinary(message)
-      ..packInt(messageId);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupModeration extends Event
-    with _$ToxEventGroupModeration {
-  const ToxEventGroupModeration._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupModeration({
-    required int groupNumber,
-    required int sourcePeerId,
-    required int targetPeerId,
-    required Tox_Group_Mod_Event modType,
-  }) = _ToxEventGroupModeration;
-
-  factory ToxEventGroupModeration.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupModerationFromJson(json);
-
-  factory ToxEventGroupModeration.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 4);
-    return ToxEventGroupModeration(
-      groupNumber: unpacker.unpackInt()!,
-      sourcePeerId: unpacker.unpackInt()!,
-      targetPeerId: unpacker.unpackInt()!,
-      modType: Tox_Group_Mod_Event.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(4)
-      ..packInt(groupNumber)
-      ..packInt(sourcePeerId)
-      ..packInt(targetPeerId)
-      ..packInt(modType.value);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPassword extends Event
-    with _$ToxEventGroupPassword {
-  const ToxEventGroupPassword._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupPassword({
-    required int groupNumber,
-    required Uint8List password,
-  }) = _ToxEventGroupPassword;
-
-  factory ToxEventGroupPassword.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPasswordFromJson(json);
-
-  factory ToxEventGroupPassword.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupPassword(
-      groupNumber: unpacker.unpackInt()!,
-      password: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packBinary(password);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPeerExit extends Event
-    with _$ToxEventGroupPeerExit {
-  const ToxEventGroupPeerExit._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupPeerExit({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Group_Exit_Type exitType,
-    required Uint8List name,
-    required Uint8List partMessage,
-  }) = _ToxEventGroupPeerExit;
-
-  factory ToxEventGroupPeerExit.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPeerExitFromJson(json);
-
-  factory ToxEventGroupPeerExit.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 5);
-    return ToxEventGroupPeerExit(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      exitType: Tox_Group_Exit_Type.fromValue(unpacker.unpackInt()!),
-      name: unpacker.unpackBinary()!,
-      partMessage: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(5)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packInt(exitType.value)
-      ..packBinary(name)
-      ..packBinary(partMessage);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPeerJoin extends Event
-    with _$ToxEventGroupPeerJoin {
-  const ToxEventGroupPeerJoin._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupPeerJoin({
-    required int groupNumber,
-    required int peerId,
-  }) = _ToxEventGroupPeerJoin;
-
-  factory ToxEventGroupPeerJoin.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPeerJoinFromJson(json);
-
-  factory ToxEventGroupPeerJoin.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupPeerJoin(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(peerId);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPeerLimit extends Event
-    with _$ToxEventGroupPeerLimit {
-  const ToxEventGroupPeerLimit._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupPeerLimit({
-    required int groupNumber,
-    required int peerLimit,
-  }) = _ToxEventGroupPeerLimit;
-
-  factory ToxEventGroupPeerLimit.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPeerLimitFromJson(json);
-
-  factory ToxEventGroupPeerLimit.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupPeerLimit(
-      groupNumber: unpacker.unpackInt()!,
-      peerLimit: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(peerLimit);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPeerName extends Event
-    with _$ToxEventGroupPeerName {
-  const ToxEventGroupPeerName._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupPeerName({
-    required int groupNumber,
-    required int peerId,
-    required Uint8List name,
-  }) = _ToxEventGroupPeerName;
-
-  factory ToxEventGroupPeerName.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPeerNameFromJson(json);
-
-  factory ToxEventGroupPeerName.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupPeerName(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      name: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packBinary(name);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPeerStatus extends Event
-    with _$ToxEventGroupPeerStatus {
-  const ToxEventGroupPeerStatus._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupPeerStatus({
-    required int groupNumber,
-    required int peerId,
-    required Tox_User_Status status,
-  }) = _ToxEventGroupPeerStatus;
-
-  factory ToxEventGroupPeerStatus.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPeerStatusFromJson(json);
-
-  factory ToxEventGroupPeerStatus.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupPeerStatus(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      status: Tox_User_Status.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packInt(status.value);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPrivacyState extends Event
-    with _$ToxEventGroupPrivacyState {
-  const ToxEventGroupPrivacyState._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupPrivacyState({
-    required int groupNumber,
-    required Tox_Group_Privacy_State privacyState,
-  }) = _ToxEventGroupPrivacyState;
-
-  factory ToxEventGroupPrivacyState.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPrivacyStateFromJson(json);
-
-  factory ToxEventGroupPrivacyState.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupPrivacyState(
-      groupNumber: unpacker.unpackInt()!,
-      privacyState: Tox_Group_Privacy_State.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(privacyState.value);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupPrivateMessage extends Event
-    with _$ToxEventGroupPrivateMessage {
-  const ToxEventGroupPrivateMessage._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupPrivateMessage({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Message_Type messageType,
-    required Uint8List message,
-    required int messageId,
-  }) = _ToxEventGroupPrivateMessage;
-
-  factory ToxEventGroupPrivateMessage.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupPrivateMessageFromJson(json);
-
-  factory ToxEventGroupPrivateMessage.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 5);
-    return ToxEventGroupPrivateMessage(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      messageType: Tox_Message_Type.fromValue(unpacker.unpackInt()!),
-      message: unpacker.unpackBinary()!,
-      messageId: unpacker.unpackInt()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(5)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packInt(messageType.value)
-      ..packBinary(message)
-      ..packInt(messageId);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupSelfJoin extends Event
-    with _$ToxEventGroupSelfJoin {
-  const ToxEventGroupSelfJoin._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupSelfJoin({required int groupNumber}) =
-      _ToxEventGroupSelfJoin;
-
-  factory ToxEventGroupSelfJoin.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupSelfJoinFromJson(json);
-
-  factory ToxEventGroupSelfJoin.unpack(Unpacker unpacker) {
-    return ToxEventGroupSelfJoin(groupNumber: unpacker.unpackInt()!);
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer.packInt(groupNumber);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupTopic extends Event with _$ToxEventGroupTopic {
-  const ToxEventGroupTopic._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-    converters: [Uint8ListConverter()],
-  )
-  const factory ToxEventGroupTopic({
-    required int groupNumber,
-    required int peerId,
-    required Uint8List topic,
-  }) = _ToxEventGroupTopic;
-
-  factory ToxEventGroupTopic.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupTopicFromJson(json);
-
-  factory ToxEventGroupTopic.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 3);
-    return ToxEventGroupTopic(
-      groupNumber: unpacker.unpackInt()!,
-      peerId: unpacker.unpackInt()!,
-      topic: unpacker.unpackBinary()!,
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(3)
-      ..packInt(groupNumber)
-      ..packInt(peerId)
-      ..packBinary(topic);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupTopicLock extends Event
-    with _$ToxEventGroupTopicLock {
-  const ToxEventGroupTopicLock._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupTopicLock({
-    required int groupNumber,
-    required Tox_Group_Topic_Lock topicLock,
-  }) = _ToxEventGroupTopicLock;
-
-  factory ToxEventGroupTopicLock.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupTopicLockFromJson(json);
-
-  factory ToxEventGroupTopicLock.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupTopicLock(
-      groupNumber: unpacker.unpackInt()!,
-      topicLock: Tox_Group_Topic_Lock.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(topicLock.value);
-  }
-}
-
-@freezed
-abstract class ToxEventGroupVoiceState extends Event
-    with _$ToxEventGroupVoiceState {
-  const ToxEventGroupVoiceState._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventGroupVoiceState({
-    required int groupNumber,
-    required Tox_Group_Voice_State voiceState,
-  }) = _ToxEventGroupVoiceState;
-
-  factory ToxEventGroupVoiceState.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventGroupVoiceStateFromJson(json);
-
-  factory ToxEventGroupVoiceState.unpack(Unpacker unpacker) {
-    ensure(unpacker.unpackListLength(), 2);
-    return ToxEventGroupVoiceState(
-      groupNumber: unpacker.unpackInt()!,
-      voiceState: Tox_Group_Voice_State.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer
-      ..packListLength(2)
-      ..packInt(groupNumber)
-      ..packInt(voiceState.value);
-  }
-}
-
-@freezed
-abstract class ToxEventSelfConnectionStatus extends Event
-    with _$ToxEventSelfConnectionStatus {
-  const ToxEventSelfConnectionStatus._();
-  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-  const factory ToxEventSelfConnectionStatus({
-    required Tox_Connection connectionStatus,
-  }) = _ToxEventSelfConnectionStatus;
-
-  factory ToxEventSelfConnectionStatus.fromJson(Map<String, dynamic> json) =>
-      _$ToxEventSelfConnectionStatusFromJson(json);
-
-  factory ToxEventSelfConnectionStatus.unpack(Unpacker unpacker) {
-    return ToxEventSelfConnectionStatus(
-      connectionStatus: Tox_Connection.fromValue(unpacker.unpackInt()!),
-    );
-  }
-
-  @override
-  void pack(Packer packer) {
-    packer.packInt(connectionStatus.value);
   }
 }
 

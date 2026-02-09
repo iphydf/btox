@@ -83,6 +83,61 @@ void main() {
     );
   }, tags: ['models']);
 
+  testDatabase('Profile lifecycle and settings', (db) async {
+    final p1 = await db.addProfile(
+      ProfilesCompanion.insert(
+        active: Value(true),
+        settings: ProfileSettings(nickname: 'P1', statusMessage: ''),
+        secretKey: mySecretKey,
+        publicKey: myToxId.publicKey,
+        nospam: myToxId.nospam,
+      ),
+    );
+    final p2 = await db.addProfile(
+      ProfilesCompanion.insert(
+        active: Value(false),
+        settings: ProfileSettings(nickname: 'P2', statusMessage: ''),
+        secretKey: mySecretKey,
+        publicKey: myToxId.publicKey,
+        nospam: myToxId.nospam,
+      ),
+    );
+
+    // Initial state
+    expect((await db.watchProfile(p1).first).active, isTrue);
+    expect((await db.watchProfile(p2).first).active, isFalse);
+
+    // Activate P2
+    await db.activateProfile(p2);
+    expect((await db.watchProfile(p1).first).active, isFalse);
+    expect((await db.watchProfile(p2).first).active, isTrue);
+
+    // Update settings
+    final newSettings = ProfileSettings(
+      nickname: 'NewName',
+      statusMessage: 'Busy',
+    );
+    await db.updateProfileSettings(p2, newSettings);
+    expect((await db.watchProfile(p2).first).settings, newSettings);
+
+    // Delete P2 and verify cascade
+    await db.addContact(
+      ContactsCompanion.insert(
+        profileId: p2,
+        name: Value('Contact'),
+        publicKey: friendPk,
+      ),
+    );
+    await db.deleteProfile(p2);
+
+    final allProfiles = await db.watchProfiles().first;
+    expect(allProfiles.length, 1);
+    expect(allProfiles.first.id, p1);
+
+    final contacts = await db.watchContactsFor(p2).first;
+    expect(contacts, isEmpty);
+  }, tags: ['models']);
+
   testDatabase('Two separate histories can be merged', (db) async {
     final profileId = await db.addProfile(
       ProfilesCompanion.insert(
