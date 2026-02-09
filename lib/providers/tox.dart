@@ -22,6 +22,7 @@ Future<Tox> tox(Ref ref, SecretKey secretKey, ToxAddressNospam nospam) async {
     savedataType: ffi.Tox_Savedata_Type.TOX_SAVEDATA_TYPE_SECRET_KEY,
   );
 
+  // ignore: argument_type_not_assignable
   final tox = ffi.Toxcore(await ref.read(ffi.toxFfiProvider.future), options);
   ref.onDispose(tox.kill);
   tox.nospam = nospam;
