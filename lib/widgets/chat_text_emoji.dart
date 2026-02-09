@@ -20,10 +20,7 @@ final class ChatTextEmoji extends StatelessWidget {
           padding: stateIcon != null
               ? EdgeInsets.fromLTRB(0, 0, 0, 12)
               : EdgeInsets.zero,
-          child: Text(
-            emoji,
-            style: textStyle.copyWith(fontSize: 48),
-          ),
+          child: Text(emoji, style: textStyle.copyWith(fontSize: 48)),
         ),
         ?stateIcon,
       ],

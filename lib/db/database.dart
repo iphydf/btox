@@ -9,11 +9,7 @@ export 'package:drift/drift.dart' show Value;
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [
-  Contacts,
-  Messages,
-  Profiles,
-])
+@DriftDatabase(tables: [Contacts, Messages, Profiles])
 final class Database extends _$Database {
   Database(super.e);
 
@@ -28,10 +24,9 @@ final class Database extends _$Database {
     // Currently we only support 1 active profile at a time.
     await deactivateProfiles();
 
-    await (update(profiles)..where((p) => p.id.equals(id.value)))
-        .write(ProfilesCompanion(
-      active: Value(true),
-    ));
+    await (update(profiles)..where((p) => p.id.equals(id.value))).write(
+      ProfilesCompanion(active: Value(true)),
+    );
   }
 
   Future<Id<Contacts>> addContact(ContactsCompanion entry) async =>
@@ -44,17 +39,15 @@ final class Database extends _$Database {
       Id(await into(profiles).insert(entry));
 
   Future<void> deactivateProfiles() async {
-    await update(profiles).write(ProfilesCompanion(
-      active: Value(false),
-    ));
+    await update(profiles).write(ProfilesCompanion(active: Value(false)));
   }
 
   Future<void> deleteProfile(Id<Profiles> id) async {
     transaction(() async {
       // Find all the contacts for the profile.
-      final contactsForProfile = await (select(contacts)
-            ..where((c) => c.profileId.equals(id.value)))
-          .get();
+      final contactsForProfile = await (select(
+        contacts,
+      )..where((c) => c.profileId.equals(id.value))).get();
       // Delete all their messages.
       batch((batch) {
         for (final contact in contactsForProfile) {
@@ -75,23 +68,22 @@ final class Database extends _$Database {
       (select(messages)..where((m) => m.id.equals(id.value))).getSingle();
 
   Future<void> updateProfileSettings(
-      Id<Profiles> id, ProfileSettings settings) async {
+    Id<Profiles> id,
+    ProfileSettings settings,
+  ) async {
     await (update(profiles)..where((p) => p.id.equals(id.value))).write(
-      ProfilesCompanion(
-        settings: Value(settings),
-      ),
+      ProfilesCompanion(settings: Value(settings)),
     );
   }
 
   Stream<Contact> watchContact(Id<Contacts> id) =>
       (select(contacts)..where((c) => c.id.equals(id.value))).watchSingle();
 
-  Stream<List<Contact>> watchContactsFor(Id<Profiles> id) => (select(contacts)
-        ..where((c) => c.profileId.equals(id.value))
-        ..orderBy([
-          (c) => OrderingTerm(expression: c.name),
-        ]))
-      .watch();
+  Stream<List<Contact>> watchContactsFor(Id<Profiles> id) =>
+      (select(contacts)
+            ..where((c) => c.profileId.equals(id.value))
+            ..orderBy([(c) => OrderingTerm(expression: c.name)]))
+          .watch();
 
   Stream<List<Message>> watchMessagesFor(Id<Contacts> id) =>
       (select(messages)..where((m) => m.contactId.equals(id.value))).watch();

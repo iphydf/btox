@@ -22,11 +22,14 @@ import 'mocks/fake_toxcore.dart';
 // the tearDown after being reported as leaks at the test end.
 void main() {
   final mySecretKey = SecretKey.fromJson(
-      String.fromCharCodes(Iterable.generate(64, (_) => 'F'.codeUnits.first)));
+    String.fromCharCodes(Iterable.generate(64, (_) => 'F'.codeUnits.first)),
+  );
   final myToxId = ToxAddress.fromString(
-      String.fromCharCodes(Iterable.generate(76, (_) => '0'.codeUnits.first)));
+    String.fromCharCodes(Iterable.generate(76, (_) => '0'.codeUnits.first)),
+  );
   final friendToxId = ToxAddress.fromString(
-      String.fromCharCodes(Iterable.generate(76, (_) => '1'.codeUnits.first)));
+    String.fromCharCodes(Iterable.generate(76, (_) => '1'.codeUnits.first)),
+  );
 
   testWidgets('Add contact adds a contact', (WidgetTester tester) async {
     final tox = FakeToxcore();
@@ -75,7 +78,9 @@ void main() {
 
     // Fill in the contact data.
     await tester.enterText(
-        find.byKey(const Key('toxId')), friendToxId.toJson());
+      find.byKey(const Key('toxId')),
+      friendToxId.toJson(),
+    );
     await tester.pump();
     await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();

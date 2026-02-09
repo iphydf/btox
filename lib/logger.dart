@@ -15,8 +15,9 @@ class _StackFrame {
   String toString() => '$file:$line:$column';
 
   static _StackFrame? fromString(String frame) {
-    final match =
-        RegExp(r'packages?[:/]([^ :]+)[: ](\d+):(\d+)').firstMatch(frame);
+    final match = RegExp(
+      r'packages?[:/]([^ :]+)[: ](\d+):(\d+)',
+    ).firstMatch(frame);
     if (match == null) return null;
     return _StackFrame(
       match.group(1)!,
@@ -56,10 +57,18 @@ final class Logger {
       _logLine(LogLevel.info, text, stackTrace);
   void logError(Error e, [String? message]) {
     debugPrintStack(
-        stackTrace: e.stackTrace,
-        label: message != null ? '$tags $message ($e)' : tags.toString());
-    _log.add(LogLine(
-        clock.now(), LogLevel.warning, tags, '$message ($e)', e.stackTrace));
+      stackTrace: e.stackTrace,
+      label: message != null ? '$tags $message ($e)' : tags.toString(),
+    );
+    _log.add(
+      LogLine(
+        clock.now(),
+        LogLevel.warning,
+        tags,
+        '$message ($e)',
+        e.stackTrace,
+      ),
+    );
   }
 
   void v(String text, [StackTrace? stackTrace]) =>
@@ -83,7 +92,9 @@ final class Logger {
   T Function(A) catching<T, A>(T Function(A) f) {
     return (A a) {
       try {
-        v('Calling $f with ${a.toString().substring(0, min(20, a.toString().length))}');
+        v(
+          'Calling $f with ${a.toString().substring(0, min(20, a.toString().length))}',
+        );
         return f(a);
       } catch (exn, stackTrace) {
         e('Caught exception $exn', stackTrace);

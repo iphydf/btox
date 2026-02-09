@@ -36,8 +36,9 @@ final class ChatItem extends HookWidget {
     final bubbleDrag = useState(0.0);
     final showTime = useState(false);
 
-    final dragValue =
-        isSender ? max(0.0, -bubbleDrag.value) : max(0.0, bubbleDrag.value);
+    final dragValue = isSender
+        ? max(0.0, -bubbleDrag.value)
+        : max(0.0, bubbleDrag.value);
     final replyIconExtraSize =
         dragValue > _kMaxBubbleDrag * _kBubbleDragActivation ? 8.0 : 0.0;
 
@@ -45,17 +46,16 @@ final class ChatItem extends HookWidget {
       children: [
         Stack(
           children: [
-            _align(Padding(
-              padding: EdgeInsets.all(8.0 - replyIconExtraSize / 2),
-              // Transparent to opaque depending on drag state.
-              child: Opacity(
-                opacity: dragValue / _kMaxBubbleDrag,
-                child: Icon(
-                  Icons.reply,
-                  size: 24 + replyIconExtraSize,
+            _align(
+              Padding(
+                padding: EdgeInsets.all(8.0 - replyIconExtraSize / 2),
+                // Transparent to opaque depending on drag state.
+                child: Opacity(
+                  opacity: dragValue / _kMaxBubbleDrag,
+                  child: Icon(Icons.reply, size: 24 + replyIconExtraSize),
                 ),
               ),
-            )),
+            ),
             GestureDetector(
               onHorizontalDragUpdate: (details) {
                 final delta = details.primaryDelta;
@@ -85,7 +85,8 @@ final class ChatItem extends HookWidget {
                   onForward: () {},
                   onCopy: () {
                     Clipboard.setData(
-                        ClipboardData(text: message.content.toString()));
+                      ClipboardData(text: message.content.toString()),
+                    );
                   },
                   onSelect: () {},
                   onInfo: () {},
@@ -103,8 +104,9 @@ final class ChatItem extends HookWidget {
                   direction: isSender
                       ? ChatContentDirection.sent
                       : ChatContentDirection.received,
-                  state:
-                      isSender ? ChatContentState.seen : ChatContentState.none,
+                  state: isSender
+                      ? ChatContentState.seen
+                      : ChatContentState.none,
                   textStyle: Theme.of(context).textTheme.bodyLarge!,
                   onTap: () => showTime.value = !showTime.value,
                 ),

@@ -16,7 +16,8 @@ final class MessageDataJsonConverter
 
   @override
   String toJson(MessageData object) {
-    return Uint8ListConverter()
-        .toJson((Packer()..packMessageData(object)).takeBytes());
+    return Uint8ListConverter().toJson(
+      (Packer()..packMessageData(object)).takeBytes(),
+    );
   }
 }

@@ -19,7 +19,8 @@ BootstrapNodeList fakeBootstrapNodesProvider(Ref ref) {
         lastPing: 0,
         port: 33445,
         publicKey: PublicKey.fromJson(
-            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
+          'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        ),
         tcpPorts: [33446],
       ),
     ],

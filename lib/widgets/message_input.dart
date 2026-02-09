@@ -8,16 +8,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 const _logger = Logger(['MessageInput']);
 
-enum _SendMode {
-  text,
-  attachment,
-}
+enum _SendMode { text, attachment }
 
-enum _EditMode {
-  text,
-  attachment,
-  emoji,
-}
+enum _EditMode { text, attachment, emoji }
 
 final class MessageInput extends HookWidget {
   final String hintText;
@@ -71,10 +64,7 @@ final class MessageInput extends HookWidget {
         if (replyingTo != null) ...[
           Container(
             color: Theme.of(context).primaryColor,
-            padding: const EdgeInsets.symmetric(
-              vertical: 8,
-              horizontal: 16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(
               children: [
                 Icon(Icons.reply, color: buttonColor),
@@ -146,11 +136,13 @@ final class MessageInput extends HookWidget {
                     onSubmitted: (_) => send(),
                     contentInsertionConfiguration:
                         ContentInsertionConfiguration(
-                      onContentInserted: (content) {
-                        _logger.d('Content inserted: ${content.mimeType}, '
-                            '${content.uri}, ${content.data?.length} bytes');
-                      },
-                    ),
+                          onContentInserted: (content) {
+                            _logger.d(
+                              'Content inserted: ${content.mimeType}, '
+                              '${content.uri}, ${content.data?.length} bytes',
+                            );
+                          },
+                        ),
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: hintText,

@@ -9,8 +9,13 @@ import 'package:btox/packets/message_packet.dart';
 import 'package:crypto/crypto.dart';
 
 // [parent, merged, timestamp, author, content]
-Uint8List encodeMessage(Message? parent, Message? merged, DateTime timestamp,
-    PublicKey author, Content content) {
+Uint8List encodeMessage(
+  Message? parent,
+  Message? merged,
+  DateTime timestamp,
+  PublicKey author,
+  Content content,
+) {
   return MessagePacket(
     parent: parent?.sha,
     merged: merged?.sha,

@@ -15,9 +15,11 @@ part 'tox_library.ffi.g.dart';
 Future<ToxLibrary> toxFfi(Ref ref) async {
   return ToxLibrary(
     malloc,
-    ToxFfi(AnyPlatform.instance.isAndroid
-        ? DynamicLibrary.open('libtoxcore.so')
-        : DynamicLibrary.process()),
+    ToxFfi(
+      AnyPlatform.instance.isAndroid
+          ? DynamicLibrary.open('libtoxcore.so')
+          : DynamicLibrary.process(),
+    ),
   );
 }
 

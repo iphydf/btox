@@ -39,10 +39,7 @@ final class ChatText extends StatelessWidget {
       radius: bubbleRadius,
       color: color,
       stateIcon: stateIcon,
-      child: Text(
-        text,
-        style: textStyle,
-      ),
+      child: Text(text, style: textStyle),
     );
   }
 }

@@ -12,10 +12,7 @@ const _logger = Logger(['AttachmentSelector']);
 final class AttachmentSelector extends StatelessWidget {
   final void Function(List<Content>) onSelected;
 
-  const AttachmentSelector({
-    super.key,
-    required this.onSelected,
-  });
+  const AttachmentSelector({super.key, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +44,11 @@ final class AttachmentSelector extends StatelessWidget {
                     type: FileType.image,
                   );
                   if (result != null) {
-                    onSelected(await Future.wait(
-                        result.files.map((file) => _loadImage(file.xFile))));
+                    onSelected(
+                      await Future.wait(
+                        result.files.map((file) => _loadImage(file.xFile)),
+                      ),
+                    );
                   }
                 },
               ),
@@ -60,8 +60,11 @@ final class AttachmentSelector extends StatelessWidget {
                     allowMultiple: true,
                   );
                   if (result != null) {
-                    onSelected(await Future.wait(
-                        result.files.map((file) => _loadFile(file.xFile))));
+                    onSelected(
+                      await Future.wait(
+                        result.files.map((file) => _loadFile(file.xFile)),
+                      ),
+                    );
                   }
                 },
               ),

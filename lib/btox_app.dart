@@ -32,26 +32,19 @@ final class BtoxApp extends ConsumerWidget {
       title: 'bTox',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(brightness: Brightness.dark, primarySwatch: Colors.blue),
       home: _appContent(ref),
     );
   }
 
   Widget _appContent(WidgetRef ref) {
-    return ref.watch(appInitProvider).when(
-          loading: () => const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          error: (error, _) => Scaffold(
-            body: Center(
-              child: Text('Error: $error'),
-            ),
-          ),
+    return ref
+        .watch(appInitProvider)
+        .when(
+          loading: () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          error: (error, _) =>
+              Scaffold(body: Center(child: Text('Error: $error'))),
           data: (init) {
             final (database, sodium, constants) = init;
             return StreamBuilder<List<Profile>>(
@@ -66,8 +59,9 @@ final class BtoxApp extends ConsumerWidget {
                   );
                 }
 
-                final activeProfiles =
-                    profiles.where((profile) => profile.active);
+                final activeProfiles = profiles.where(
+                  (profile) => profile.active,
+                );
                 if (activeProfiles.isEmpty) {
                   return SelectProfilePage(
                     constants: constants,

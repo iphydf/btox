@@ -11,32 +11,27 @@ const _logger = Logger(['ConnectionStatusIcon']);
 final class ConnectionStatusIcon extends ConsumerWidget {
   final Profile profile;
 
-  const ConnectionStatusIcon({
-    super.key,
-    required this.profile,
-  });
+  const ConnectionStatusIcon({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(toxEventsProvider(profile.secretKey, profile.nospam)).when(
+    return ref
+        .watch(toxEventsProvider(profile.secretKey, profile.nospam))
+        .when(
           data: (event) {
-            final online = event is ToxEventSelfConnectionStatus &&
+            final online =
+                event is ToxEventSelfConnectionStatus &&
                 event.connectionStatus != Tox_Connection.TOX_CONNECTION_NONE;
             return Icon(
               online ? Icons.online_prediction : Icons.offline_bolt_outlined,
               color: online ? Colors.green : Colors.red,
             );
           },
-          loading: () => const Icon(
-            Icons.offline_bolt_outlined,
-            color: Colors.red,
-          ),
+          loading: () =>
+              const Icon(Icons.offline_bolt_outlined, color: Colors.red),
           error: (error, _) {
             _logger.e('Error: $error');
-            return const Icon(
-              Icons.error,
-              color: Colors.red,
-            );
+            return const Icon(Icons.error, color: Colors.red);
           },
         );
   }

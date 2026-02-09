@@ -35,9 +35,7 @@ final class ChatPage extends HookConsumerWidget {
         final contact = snapshot.data;
         if (contact == null) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -51,8 +49,10 @@ final class ChatPage extends HookConsumerWidget {
                     child: CircleIdenticon(publicKey: contact.publicKey),
                   ),
                 Expanded(
-                  child: Text(contact.name ??
-                      AppLocalizations.of(context)!.defaultContactName),
+                  child: Text(
+                    contact.name ??
+                        AppLocalizations.of(context)!.defaultContactName,
+                  ),
                 ),
               ],
             ),
@@ -83,10 +83,13 @@ final class ChatPage extends HookConsumerWidget {
                       left: 16,
                       top: 4,
                       right: 8,
-                      bottom: ref.watch(keyboardHeightProvider).when(
-                          data: (height) => height == 0 ? 24 : 4,
-                          error: (_, _) => 12,
-                          loading: () => 12),
+                      bottom: ref
+                          .watch(keyboardHeightProvider)
+                          .when(
+                            data: (height) => height == 0 ? 24 : 4,
+                            error: (_, _) => 12,
+                            loading: () => 12,
+                          ),
                     ),
                     child: MessageInput(
                       hintText: AppLocalizations.of(context)!.messageInput,

@@ -16,7 +16,8 @@ final class FakeToxcore extends api.Tox {
   @override
   ToxAddress get address {
     return ToxAddress.fromString(
-        '52602D8D81573725A77F602A53CD1CD8C2156595E8C3310EAC3552E99B7FB50D897BC532A375');
+      '52602D8D81573725A77F602A53CD1CD8C2156595E8C3310EAC3552E99B7FB50D897BC532A375',
+    );
   }
 
   @override

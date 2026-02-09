@@ -66,11 +66,13 @@ final class Toxcore extends api.Tox {
   @override
   ToxAddress get address {
     return _scoped(
-        _lib.allocator.free, _lib.allocator<Uint8>(_lib.ffi.tox_address_size()),
-        (ptr) {
-      _lib.ffi.tox_self_get_address(_tox, ptr);
-      return ToxAddress(ptr.asTypedList(_lib.ffi.tox_address_size()).clone());
-    });
+      _lib.allocator.free,
+      _lib.allocator<Uint8>(_lib.ffi.tox_address_size()),
+      (ptr) {
+        _lib.ffi.tox_self_get_address(_tox, ptr);
+        return ToxAddress(ptr.asTypedList(_lib.ffi.tox_address_size()).clone());
+      },
+    );
   }
 
   @override
@@ -96,12 +98,7 @@ final class Toxcore extends api.Tox {
       _handleError(
         _lib.allocator,
         Tox_Err_Set_Info.fromValue,
-        (err) => _lib.ffi.tox_self_set_status_message(
-          _tox,
-          ptr,
-          length,
-          err,
-        ),
+        (err) => _lib.ffi.tox_self_set_status_message(_tox, ptr, length, err),
       );
     });
   }
@@ -117,7 +114,12 @@ final class Toxcore extends api.Tox {
   @override
   void addTcpRelay(String host, int port, PublicKey publicKey) {
     _bootstrap(
-        host, port, publicKey, _lib.ffi.tox_add_tcp_relay, 'tox_add_tcp_relay');
+      host,
+      port,
+      publicKey,
+      _lib.ffi.tox_add_tcp_relay,
+      'tox_add_tcp_relay',
+    );
   }
 
   @override
@@ -127,20 +129,29 @@ final class Toxcore extends api.Tox {
 
   @override
   List<Event> iterate() {
-    return _handleError(_lib.allocator, Tox_Err_Events_Iterate.fromValue,
-        (err) {
-      return _scoped(_lib.ffi.tox_events_free,
-          _lib.ffi.tox_events_iterate(_tox, true, err), (events) {
-        return _scoped(_lib.allocator.free,
+    return _handleError(_lib.allocator, Tox_Err_Events_Iterate.fromValue, (
+      err,
+    ) {
+      return _scoped(
+        _lib.ffi.tox_events_free,
+        _lib.ffi.tox_events_iterate(_tox, true, err),
+        (events) {
+          return _scoped(
+            _lib.allocator.free,
             _lib.allocator<Uint8>(_lib.ffi.tox_events_bytes_size(events)),
             (ptr) {
-          if (!_lib.ffi.tox_events_get_bytes(events, ptr)) {
-            throw Exception('Failed to get events bytes');
-          }
-          return Event.unpackList(Unpacker(
-              ptr.asTypedList(_lib.ffi.tox_events_bytes_size(events))));
-        });
-      });
+              if (!_lib.ffi.tox_events_get_bytes(events, ptr)) {
+                throw Exception('Failed to get events bytes');
+              }
+              return Event.unpackList(
+                Unpacker(
+                  ptr.asTypedList(_lib.ffi.tox_events_bytes_size(events)),
+                ),
+              );
+            },
+          );
+        },
+      );
     });
   }
 
@@ -162,7 +173,8 @@ final class Toxcore extends api.Tox {
       int port,
       Pointer<Uint8> publicKey,
       Pointer<CEnum> error,
-    ) f,
+    )
+    f,
     String functionName,
   ) {
     host.scopedCString(_lib.allocator, (hostPtr) {
@@ -183,20 +195,27 @@ final class Toxcore extends api.Tox {
 extension on api.ToxOptions {
   T withNative<T>(ToxLibrary lib, T Function(Pointer<Tox_Options>) callback) {
     return _scoped(
-        lib.ffi.tox_options_free,
-        _handleError(lib.allocator, Tox_Err_Options_New.fromValue,
-            lib.ffi.tox_options_new), (options) {
-      lib.ffi.tox_options_set_ipv6_enabled(options, ipv6Enabled);
-      lib.ffi.tox_options_set_udp_enabled(options, udpEnabled);
-      lib.ffi.tox_options_set_local_discovery_enabled(
-          options, localDiscoveryEnabled);
+      lib.ffi.tox_options_free,
+      _handleError(
+        lib.allocator,
+        Tox_Err_Options_New.fromValue,
+        lib.ffi.tox_options_new,
+      ),
+      (options) {
+        lib.ffi.tox_options_set_ipv6_enabled(options, ipv6Enabled);
+        lib.ffi.tox_options_set_udp_enabled(options, udpEnabled);
+        lib.ffi.tox_options_set_local_discovery_enabled(
+          options,
+          localDiscoveryEnabled,
+        );
 
-      return savedata.scoped(lib.allocator, (ptr, length) {
-        lib.ffi.tox_options_set_savedata_type(options, savedataType);
-        lib.ffi.tox_options_set_savedata_data(options, ptr, length);
-        return callback(options);
-      });
-    });
+        return savedata.scoped(lib.allocator, (ptr, length) {
+          lib.ffi.tox_options_set_savedata_type(options, savedataType);
+          lib.ffi.tox_options_set_savedata_data(options, ptr, length);
+          return callback(options);
+        });
+      },
+    );
   }
 }
 
@@ -211,8 +230,9 @@ extension on Uint8List? {
     if (this == null) {
       return f(nullptr, 0);
     }
-    return _scoped(allocator.free, allocator.allocate<Uint8>(this!.length),
-        (ptr) {
+    return _scoped(allocator.free, allocator.allocate<Uint8>(this!.length), (
+      ptr,
+    ) {
       ptr.asTypedList(this!.length).setAll(0, this!);
       return f(ptr, this!.length);
     });
@@ -222,8 +242,9 @@ extension on Uint8List? {
 extension on String {
   T scopedBytes<T>(Allocator allocator, T Function(Pointer<Uint8>, int) f) {
     final units = utf8.encode(this);
-    return _scoped(allocator.free, allocator.allocate<Uint8>(units.length),
-        (ptr) {
+    return _scoped(allocator.free, allocator.allocate<Uint8>(units.length), (
+      ptr,
+    ) {
       for (var i = 0; i < units.length; i++) {
         ptr[i] = units[i];
       }

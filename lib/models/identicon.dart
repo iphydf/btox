@@ -41,8 +41,11 @@ Identicon identicon(Ref ref, PublicKey publicKey) {
 double _bytesToColor(Uint8List bytes) {
   assert(bytes.length == _kIdenticonColorBytes, 'bytes: $bytes');
 
-  final data =
-      ByteData.view(bytes.buffer, bytes.offsetInBytes, bytes.lengthInBytes);
+  final data = ByteData.view(
+    bytes.buffer,
+    bytes.offsetInBytes,
+    bytes.lengthInBytes,
+  );
   // Using int32 here to make sure all systems behave the same.
   final hi = _toDouble(data.getInt32(0));
   final lo = data.getUint16(4);
@@ -111,10 +114,16 @@ final class Identicon extends ImageProvider<ui.Image> {
     // hash with sha256
     var hash = Uint8List.fromList(sha256.convert(data).bytes);
     for (int colorIndex = 0; colorIndex < _kColors; ++colorIndex) {
-      final hashPart = Uint8List.view(hash.buffer,
-          hash.length - _kIdenticonColorBytes, _kIdenticonColorBytes);
+      final hashPart = Uint8List.view(
+        hash.buffer,
+        hash.length - _kIdenticonColorBytes,
+        _kIdenticonColorBytes,
+      );
       hash = Uint8List.view(
-          hash.buffer, hash.offsetInBytes, hash.length - _kIdenticonColorBytes);
+        hash.buffer,
+        hash.offsetInBytes,
+        hash.length - _kIdenticonColorBytes,
+      );
 
       final hue = _bytesToColor(hashPart);
       _logger.v('Color $colorIndex: $hue');
@@ -181,10 +190,7 @@ final class Identicon extends ImageProvider<ui.Image> {
   @override
   ImageStreamCompleter loadImage(ui.Image key, ImageDecoderCallback decode) {
     return ImmediateImageStreamCompleter(
-      ImageInfo(
-        image: key.clone(),
-        debugLabel: 'Identicon',
-      ),
+      ImageInfo(image: key.clone(), debugLabel: 'Identicon'),
     );
   }
 

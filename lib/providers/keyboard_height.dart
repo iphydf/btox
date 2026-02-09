@@ -11,7 +11,7 @@ Stream<double> keyboardHeight(Ref ref) {
     return Stream.empty();
   }
   final _ = KeyboardHeightPlugin();
-  return const EventChannel('keyboardHeightEventChannel')
-      .receiveBroadcastStream()
-      .map((event) => event as double);
+  return const EventChannel(
+    'keyboardHeightEventChannel',
+  ).receiveBroadcastStream().map((event) => event as double);
 }

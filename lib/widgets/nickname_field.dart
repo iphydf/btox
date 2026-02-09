@@ -16,34 +16,33 @@ final class NicknameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Text(
-        AppLocalizations.of(context)!.profileTextFieldNick,
-        style: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.profileTextFieldNick,
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8),
-        child: TextFormField(
-          key: const Key('nicknameField'),
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          validator: (value) {
-            value ??= '';
-            if (value.isEmpty || value.length > constants.maxNameLength) {
-              return AppLocalizations.of(context)!.nickLengthError(
-                constants.maxNameLength,
-              );
-            }
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextFormField(
+            key: const Key('nicknameField'),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: (value) {
+              value ??= '';
+              if (value.isEmpty || value.length > constants.maxNameLength) {
+                return AppLocalizations.of(
+                  context,
+                )!.nickLengthError(constants.maxNameLength);
+              }
 
-            return null;
-          },
-          controller: controller,
-          textInputAction: TextInputAction.next,
-          onChanged: onChanged,
+              return null;
+            },
+            controller: controller,
+            textInputAction: TextInputAction.next,
+            onChanged: onChanged,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }

@@ -24,8 +24,9 @@ void main() {
       TextContent(text: 'Hello'),
       UnknownContent(data: MessageDataList([MessageDataInt(42)])),
     ];
-    final l2 =
-        l1.map((c) => Content.decode(c.encode())).toList(growable: false);
+    final l2 = l1
+        .map((c) => Content.decode(c.encode()))
+        .toList(growable: false);
     const converter = ContentConverter();
     final l3 = l1
         .map((c) => converter.fromSql(converter.toSql(c)))

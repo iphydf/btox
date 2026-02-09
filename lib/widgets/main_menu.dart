@@ -55,16 +55,16 @@ final class MainMenu extends ConsumerWidget {
                   builder: (context, snapshot) {
                     final profile = snapshot.data;
                     if (profile == null) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     }
                     return UserProfilePage(
                       constants: constants,
                       profile: profile,
                       onUpdateProfile: (settings) async {
                         await database.updateProfileSettings(
-                            profile.id, settings);
+                          profile.id,
+                          settings,
+                        );
                         _logger.d('Updated profile settings');
                       },
                     );
@@ -82,10 +82,8 @@ final class MainMenu extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => SettingsPage(
-                  database: database,
-                  profile: profile,
-                ),
+                builder: (context) =>
+                    SettingsPage(database: database, profile: profile),
               ),
             );
           },
@@ -106,7 +104,7 @@ final class MainMenu extends ConsumerWidget {
             onTap: () {
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },
-          )
+          ),
       ],
     );
   }

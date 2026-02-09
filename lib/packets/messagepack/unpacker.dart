@@ -157,8 +157,11 @@ final class Unpacker {
     } else {
       throw _formatException('String', b);
     }
-    final data =
-        Uint8List.view(_list.buffer, _list.offsetInBytes + _offset, len);
+    final data = Uint8List.view(
+      _list.buffer,
+      _list.offsetInBytes + _offset,
+      len,
+    );
     _offset += len;
     return utf8.decode(data);
   }
@@ -239,8 +242,11 @@ final class Unpacker {
     } else {
       throw _formatException('Binary', b);
     }
-    final data =
-        Uint8List.view(_list.buffer, _list.offsetInBytes + _offset, len);
+    final data = Uint8List.view(
+      _list.buffer,
+      _list.offsetInBytes + _offset,
+      len,
+    );
     _offset += len;
     return data.asUnmodifiableView();
   }
@@ -303,5 +309,6 @@ final class Unpacker {
   }
 
   Exception _formatException(String type, int b) => FormatException(
-      'Try to unpack $type value, but it\'s not an $type, byte = $b');
+    'Try to unpack $type value, but it\'s not an $type, byte = $b',
+  );
 }

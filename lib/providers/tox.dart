@@ -36,16 +36,20 @@ Future<ToxConstants> toxConstants(Ref ref) async {
 
 @riverpod
 Stream<Event> toxEvents(
-    Ref ref, SecretKey secretKey, ToxAddressNospam nospam) async* {
+  Ref ref,
+  SecretKey secretKey,
+  ToxAddressNospam nospam,
+) async* {
   final tox = await ref.watch(toxProvider(secretKey, nospam).future);
 
-  final nodes = (await ref.watch(bootstrapNodesProvider.future))
-      .nodes
-      .where((node) => node.tcpPorts.isNotEmpty)
-      .toList(growable: false);
+  final nodes = (await ref.watch(
+    bootstrapNodesProvider.future,
+  )).nodes.where((node) => node.tcpPorts.isNotEmpty).toList(growable: false);
   final selectedNodes = nodes.take(8);
-  _logger.d('Got ${nodes.length} bootstrap nodes; '
-      'using ${selectedNodes.length}...');
+  _logger.d(
+    'Got ${nodes.length} bootstrap nodes; '
+    'using ${selectedNodes.length}...',
+  );
   try {
     for (final node in selectedNodes) {
       tox.bootstrap(node.ipv4, node.port, node.publicKey);

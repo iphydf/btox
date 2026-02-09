@@ -39,32 +39,32 @@ final class ChatContent extends StatelessWidget {
     final Positioned? stateIcon = switch (state) {
       ChatContentState.none => null,
       ChatContentState.sent => const Positioned(
-          bottom: _kStateIconBottom,
-          right: _kStateIconRight,
-          child: Icon(
-            Icons.done,
-            size: _kStateIconSize,
-            color: Color(0xFF97AD8E),
-          ),
+        bottom: _kStateIconBottom,
+        right: _kStateIconRight,
+        child: Icon(
+          Icons.done,
+          size: _kStateIconSize,
+          color: Color(0xFF97AD8E),
         ),
+      ),
       ChatContentState.delivered => const Positioned(
-          bottom: _kStateIconBottom,
-          right: _kStateIconRight,
-          child: Icon(
-            Icons.done_all,
-            size: _kStateIconSize,
-            color: Color(0xFF97AD8E),
-          ),
+        bottom: _kStateIconBottom,
+        right: _kStateIconRight,
+        child: Icon(
+          Icons.done_all,
+          size: _kStateIconSize,
+          color: Color(0xFF97AD8E),
         ),
+      ),
       ChatContentState.seen => const Positioned(
-          bottom: _kStateIconBottom,
-          right: _kStateIconRight,
-          child: Icon(
-            Icons.done_all,
-            size: _kStateIconSize,
-            color: Color(0xFF92DEDA),
-          ),
+        bottom: _kStateIconBottom,
+        right: _kStateIconRight,
+        child: Icon(
+          Icons.done_all,
+          size: _kStateIconSize,
+          color: Color(0xFF92DEDA),
         ),
+      ),
     };
 
     return Row(
@@ -95,9 +95,9 @@ final class ChatContent extends StatelessWidget {
           bubbleRadius: bubbleRadius,
         );
       case LocationContent(
-          latitude: final latitude,
-          longitude: final longitude
-        ):
+        latitude: final latitude,
+        longitude: final longitude,
+      ):
         return ChatLocationBubble(
           stateIcon: stateIcon,
           latitude: latitude,

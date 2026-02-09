@@ -53,12 +53,14 @@ final class ChatLocationBubble extends ConsumerWidget {
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   tileProvider: ref.read(mapTileProvider),
                 ),
-                MarkerLayer(markers: [
-                  Marker(
-                    point: LatLng(latitude, longitude),
-                    child: Icon(Icons.location_on, color: Colors.red),
-                  ),
-                ]),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: LatLng(latitude, longitude),
+                      child: Icon(Icons.location_on, color: Colors.red),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

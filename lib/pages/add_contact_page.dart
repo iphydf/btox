@@ -26,9 +26,7 @@ final class AddContactPage extends HookWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.addContact),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.addContact)),
       body: SingleChildScrollView(
         child: Form(
           key: formKey,
@@ -71,7 +69,11 @@ final class AddContactPage extends HookWidget {
   }
 
   void _onAddContact(
-      BuildContext context, FormState form, String toxId, String message) {
+    BuildContext context,
+    FormState form,
+    String toxId,
+    String message,
+  ) {
     if (form.validate()) {
       onAddContact(toxId, message);
       Navigator.pop(context);

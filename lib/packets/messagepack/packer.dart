@@ -61,11 +61,7 @@ final class Packer {
   /// Flush [_buf] to [_builder] when [_buf] if almost full
   /// or when packer completes his job and transforms to bytes
   void _flushBuf() {
-    _builder.add(Uint8List.view(
-      _buf.buffer,
-      _buf.offsetInBytes,
-      _offset,
-    ));
+    _builder.add(Uint8List.view(_buf.buffer, _buf.offsetInBytes, _offset));
   }
 
   /// Pack binary and string uses this internally.
@@ -290,11 +286,7 @@ final class Packer {
   Uint8List takeBytes() {
     Uint8List bytes;
     if (_builder.isEmpty) {
-      bytes = Uint8List.view(
-        _buf.buffer,
-        _buf.offsetInBytes,
-        _offset,
-      );
+      bytes = Uint8List.view(_buf.buffer, _buf.offsetInBytes, _offset);
     } else {
       _flushBuf();
       bytes = _builder.takeBytes();

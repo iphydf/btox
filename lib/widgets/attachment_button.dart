@@ -16,10 +16,7 @@ final class AttachmentButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        IconButton(
-          icon: Icon(icon, size: 56),
-          onPressed: onPressed,
-        ),
+        IconButton(icon: Icon(icon, size: 56), onPressed: onPressed),
         Text(text),
       ],
     );

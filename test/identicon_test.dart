@@ -7,8 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Identicon generation should agree with qTox', () {
-    final data = Uint8List.fromList(hex.decode(
-        '7A114177E3934588EED87E6FE8B18AF7DC581C1FBB67F973EE5BF07B6EFABB72'));
+    final data = Uint8List.fromList(
+      hex.decode(
+        '7A114177E3934588EED87E6FE8B18AF7DC581C1FBB67F973EE5BF07B6EFABB72',
+      ),
+    );
 
     final identicon = Identicon.fromBytes(data);
 
@@ -29,8 +32,11 @@ void main() {
   }, tags: ['identicon']);
 
   test('Identicon can generate an image', () async {
-    final data = Uint8List.fromList(hex.decode(
-        '7A114177E3934588EED87E6FE8B18AF7DC581C1FBB67F973EE5BF07B6EFABB72'));
+    final data = Uint8List.fromList(
+      hex.decode(
+        '7A114177E3934588EED87E6FE8B18AF7DC581C1FBB67F973EE5BF07B6EFABB72',
+      ),
+    );
 
     final identicon = Identicon.fromBytes(data);
 

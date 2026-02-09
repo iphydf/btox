@@ -110,10 +110,7 @@ final class ContentConverter extends TypeConverter<Content, String>
 
   @override
   Map<String, dynamic> toJson(Content value) {
-    return {
-      '_type': value.type.name,
-      ...value.toJson(),
-    };
+    return {'_type': value.type.name, ...value.toJson()};
   }
 
   @override
@@ -134,9 +131,7 @@ enum ContentType {
 @freezed
 sealed class DeleteContent extends Content with _$DeleteContent {
   @JsonSerializable(explicitToJson: true)
-  const factory DeleteContent({
-    required Sha256 message,
-  }) = _DeleteContent;
+  const factory DeleteContent({required Sha256 message}) = _DeleteContent;
 
   factory DeleteContent.fromJson(Map<String, dynamic> json) =>
       _$DeleteContentFromJson(json);
@@ -159,10 +154,8 @@ sealed class DeleteContent extends Content with _$DeleteContent {
 @freezed
 sealed class EditContent extends Content with _$EditContent {
   @JsonSerializable(explicitToJson: true)
-  const factory EditContent({
-    required Sha256 message,
-    required String text,
-  }) = _EditContent;
+  const factory EditContent({required Sha256 message, required String text}) =
+      _EditContent;
 
   factory EditContent.fromJson(Map<String, dynamic> json) =>
       _$EditContentFromJson(json);
@@ -194,9 +187,7 @@ sealed class EditContent extends Content with _$EditContent {
 
 @freezed
 sealed class FileContent extends Content with _$FileContent {
-  const factory FileContent({
-    required String url,
-  }) = _FileContent;
+  const factory FileContent({required String url}) = _FileContent;
 
   factory FileContent.fromJson(Map<String, dynamic> json) =>
       _$FileContentFromJson(json);
@@ -253,9 +244,7 @@ sealed class LocationContent extends Content with _$LocationContent {
 
 @freezed
 sealed class MediaContent extends Content with _$MediaContent {
-  const factory MediaContent({
-    required String url,
-  }) = _MediaContent;
+  const factory MediaContent({required String url}) = _MediaContent;
 
   factory MediaContent.fromJson(Map<String, dynamic> json) =>
       _$MediaContentFromJson(json);

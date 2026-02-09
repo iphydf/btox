@@ -30,17 +30,13 @@ final class CreateProfilePage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nicknameController = useTextEditingController(
-      text: 'Yanciman',
-    );
+    final nicknameController = useTextEditingController(text: 'Yanciman');
     final statusMessageController = useTextEditingController(
       text: 'Producing works of art in Kannywood',
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.newProfile),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.newProfile)),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -52,36 +48,31 @@ final class CreateProfilePage extends HookWidget {
               height: 200,
             ),
           ),
-          NicknameField(
-            constants: constants,
-            controller: nicknameController,
-          ),
-          const Padding(
-            padding: EdgeInsets.all(8),
-          ),
+          NicknameField(constants: constants, controller: nicknameController),
+          const Padding(padding: EdgeInsets.all(8)),
           StatusMessageField(
             constants: constants,
             controller: statusMessageController,
           ),
-          const Padding(
-            padding: EdgeInsets.all(8),
-          ),
+          const Padding(padding: EdgeInsets.all(8)),
           ElevatedButton(
             key: const Key('createProfileButton'),
             onPressed: () async {
               _logger.d('Creating new profile');
               final keyPair = sodium.crypto.box.keyPair();
 
-              final id = await database.addProfile(ProfilesCompanion.insert(
-                active: const Value(true),
-                settings: ProfileSettings(
-                  nickname: nicknameController.text,
-                  statusMessage: statusMessageController.text,
+              final id = await database.addProfile(
+                ProfilesCompanion.insert(
+                  active: const Value(true),
+                  settings: ProfileSettings(
+                    nickname: nicknameController.text,
+                    statusMessage: statusMessageController.text,
+                  ),
+                  secretKey: SecretKey.fromSodium(keyPair.secretKey),
+                  publicKey: PublicKey(keyPair.publicKey),
+                  nospam: ToxAddressNospam(0),
                 ),
-                secretKey: SecretKey.fromSodium(keyPair.secretKey),
-                publicKey: PublicKey(keyPair.publicKey),
-                nospam: ToxAddressNospam(0),
-              ));
+              );
               _logger.d('Created new profile with ID $id');
               onProfileCreated?.call(id);
             },

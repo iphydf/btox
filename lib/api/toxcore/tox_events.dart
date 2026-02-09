@@ -102,13 +102,15 @@ sealed class Event extends Packet {
   }
 
   static List<Event> unpackList(Unpacker unpacker) {
-    return List.unmodifiable(List.generate(unpacker.unpackListLength(), (_) {
-      ensure(unpacker.unpackListLength(), 2);
-      return Event.unpack(
-        unpacker,
-        Tox_Event_Type.fromValue(unpacker.unpackInt()!),
-      );
-    }));
+    return List.unmodifiable(
+      List.generate(unpacker.unpackListLength(), (_) {
+        ensure(unpacker.unpackListLength(), 2);
+        return Event.unpack(
+          unpacker,
+          Tox_Event_Type.fromValue(unpacker.unpackInt()!),
+        );
+      }),
+    );
   }
 }
 
@@ -116,21 +118,15 @@ sealed class Event extends Packet {
 abstract class ToxEventConferenceConnected extends Event
     with _$ToxEventConferenceConnected {
   const ToxEventConferenceConnected._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
-  const factory ToxEventConferenceConnected({
-    required int conferenceNumber,
-  }) = _ToxEventConferenceConnected;
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
+  const factory ToxEventConferenceConnected({required int conferenceNumber}) =
+      _ToxEventConferenceConnected;
 
   factory ToxEventConferenceConnected.fromJson(Map<String, dynamic> json) =>
       _$ToxEventConferenceConnectedFromJson(json);
 
   factory ToxEventConferenceConnected.unpack(Unpacker unpacker) {
-    return ToxEventConferenceConnected(
-      conferenceNumber: unpacker.unpackInt()!,
-    );
+    return ToxEventConferenceConnected(conferenceNumber: unpacker.unpackInt()!);
   }
 
   @override
@@ -220,17 +216,14 @@ abstract class ToxEventConferenceMessage extends Event
 abstract class ToxEventConferencePeerListChanged extends Event
     with _$ToxEventConferencePeerListChanged {
   const ToxEventConferencePeerListChanged._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventConferencePeerListChanged({
     required int conferenceNumber,
   }) = _ToxEventConferencePeerListChanged;
 
   factory ToxEventConferencePeerListChanged.fromJson(
-          Map<String, dynamic> json) =>
-      _$ToxEventConferencePeerListChangedFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$ToxEventConferencePeerListChangedFromJson(json);
 
   factory ToxEventConferencePeerListChanged.unpack(Unpacker unpacker) {
     return ToxEventConferencePeerListChanged(
@@ -359,10 +352,7 @@ abstract class ToxEventDhtNodesResponse extends Event
 abstract class ToxEventFileChunkRequest extends Event
     with _$ToxEventFileChunkRequest {
   const ToxEventFileChunkRequest._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFileChunkRequest({
     required int length,
     required int fileNumber,
@@ -480,10 +470,7 @@ abstract class ToxEventFileRecvChunk extends Event
 abstract class ToxEventFileRecvControl extends Event
     with _$ToxEventFileRecvControl {
   const ToxEventFileRecvControl._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFileRecvControl({
     required Tox_File_Control control,
     required int fileNumber,
@@ -516,10 +503,7 @@ abstract class ToxEventFileRecvControl extends Event
 abstract class ToxEventFriendConnectionStatus extends Event
     with _$ToxEventFriendConnectionStatus {
   const ToxEventFriendConnectionStatus._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFriendConnectionStatus({
     required Tox_Connection connectionStatus,
     required int friendNumber,
@@ -696,10 +680,7 @@ abstract class ToxEventFriendName extends Event with _$ToxEventFriendName {
 abstract class ToxEventFriendReadReceipt extends Event
     with _$ToxEventFriendReadReceipt {
   const ToxEventFriendReadReceipt._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFriendReadReceipt({
     required int friendNumber,
     required int messageId,
@@ -762,10 +743,7 @@ abstract class ToxEventFriendRequest extends Event
 @freezed
 abstract class ToxEventFriendStatus extends Event with _$ToxEventFriendStatus {
   const ToxEventFriendStatus._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFriendStatus({
     required Tox_User_Status status,
     required int friendNumber,
@@ -828,10 +806,7 @@ abstract class ToxEventFriendStatusMessage extends Event
 @freezed
 abstract class ToxEventFriendTyping extends Event with _$ToxEventFriendTyping {
   const ToxEventFriendTyping._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventFriendTyping({
     required bool typing,
     required int friendNumber,
@@ -910,8 +885,8 @@ abstract class ToxEventGroupCustomPrivatePacket extends Event
   }) = _ToxEventGroupCustomPrivatePacket;
 
   factory ToxEventGroupCustomPrivatePacket.fromJson(
-          Map<String, dynamic> json) =>
-      _$ToxEventGroupCustomPrivatePacketFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$ToxEventGroupCustomPrivatePacketFromJson(json);
 
   factory ToxEventGroupCustomPrivatePacket.unpack(Unpacker unpacker) {
     ensure(unpacker.unpackListLength(), 3);
@@ -972,10 +947,7 @@ abstract class ToxEventGroupInvite extends Event with _$ToxEventGroupInvite {
 abstract class ToxEventGroupJoinFail extends Event
     with _$ToxEventGroupJoinFail {
   const ToxEventGroupJoinFail._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupJoinFail({
     required int groupNumber,
     required Tox_Group_Join_Fail failType,
@@ -1047,10 +1019,7 @@ abstract class ToxEventGroupMessage extends Event with _$ToxEventGroupMessage {
 abstract class ToxEventGroupModeration extends Event
     with _$ToxEventGroupModeration {
   const ToxEventGroupModeration._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupModeration({
     required int groupNumber,
     required int sourcePeerId,
@@ -1163,10 +1132,7 @@ abstract class ToxEventGroupPeerExit extends Event
 abstract class ToxEventGroupPeerJoin extends Event
     with _$ToxEventGroupPeerJoin {
   const ToxEventGroupPeerJoin._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupPeerJoin({
     required int groupNumber,
     required int peerId,
@@ -1196,10 +1162,7 @@ abstract class ToxEventGroupPeerJoin extends Event
 abstract class ToxEventGroupPeerLimit extends Event
     with _$ToxEventGroupPeerLimit {
   const ToxEventGroupPeerLimit._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupPeerLimit({
     required int groupNumber,
     required int peerLimit,
@@ -1266,10 +1229,7 @@ abstract class ToxEventGroupPeerName extends Event
 abstract class ToxEventGroupPeerStatus extends Event
     with _$ToxEventGroupPeerStatus {
   const ToxEventGroupPeerStatus._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupPeerStatus({
     required int groupNumber,
     required int peerId,
@@ -1302,10 +1262,7 @@ abstract class ToxEventGroupPeerStatus extends Event
 abstract class ToxEventGroupPrivacyState extends Event
     with _$ToxEventGroupPrivacyState {
   const ToxEventGroupPrivacyState._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupPrivacyState({
     required int groupNumber,
     required Tox_Group_Privacy_State privacyState,
@@ -1378,21 +1335,15 @@ abstract class ToxEventGroupPrivateMessage extends Event
 abstract class ToxEventGroupSelfJoin extends Event
     with _$ToxEventGroupSelfJoin {
   const ToxEventGroupSelfJoin._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
-  const factory ToxEventGroupSelfJoin({
-    required int groupNumber,
-  }) = _ToxEventGroupSelfJoin;
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
+  const factory ToxEventGroupSelfJoin({required int groupNumber}) =
+      _ToxEventGroupSelfJoin;
 
   factory ToxEventGroupSelfJoin.fromJson(Map<String, dynamic> json) =>
       _$ToxEventGroupSelfJoinFromJson(json);
 
   factory ToxEventGroupSelfJoin.unpack(Unpacker unpacker) {
-    return ToxEventGroupSelfJoin(
-      groupNumber: unpacker.unpackInt()!,
-    );
+    return ToxEventGroupSelfJoin(groupNumber: unpacker.unpackInt()!);
   }
 
   @override
@@ -1441,10 +1392,7 @@ abstract class ToxEventGroupTopic extends Event with _$ToxEventGroupTopic {
 abstract class ToxEventGroupTopicLock extends Event
     with _$ToxEventGroupTopicLock {
   const ToxEventGroupTopicLock._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupTopicLock({
     required int groupNumber,
     required Tox_Group_Topic_Lock topicLock,
@@ -1474,10 +1422,7 @@ abstract class ToxEventGroupTopicLock extends Event
 abstract class ToxEventGroupVoiceState extends Event
     with _$ToxEventGroupVoiceState {
   const ToxEventGroupVoiceState._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventGroupVoiceState({
     required int groupNumber,
     required Tox_Group_Voice_State voiceState,
@@ -1507,10 +1452,7 @@ abstract class ToxEventGroupVoiceState extends Event
 abstract class ToxEventSelfConnectionStatus extends Event
     with _$ToxEventSelfConnectionStatus {
   const ToxEventSelfConnectionStatus._();
-  @JsonSerializable(
-    explicitToJson: true,
-    fieldRename: FieldRename.snake,
-  )
+  @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
   const factory ToxEventSelfConnectionStatus({
     required Tox_Connection connectionStatus,
   }) = _ToxEventSelfConnectionStatus;

@@ -48,20 +48,22 @@ final class ContactListPage extends ConsumerWidget {
             );
           },
         ),
-        title: Row(children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ConnectionStatusIcon(profile: profile),
+        title: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: SizedBox(
+                height: 24,
+                width: 24,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ConnectionStatusIcon(profile: profile),
+                ),
               ),
             ),
-          ),
-          Text(AppLocalizations.of(context)!.title),
-        ]),
+            Text(AppLocalizations.of(context)!.title),
+          ],
+        ),
       ),
       body: StreamBuilder<List<Contact>>(
         stream: database.watchContactsFor(profile.id),
@@ -83,14 +85,16 @@ final class ContactListPage extends ConsumerWidget {
                         contact: database.watchContact(contact.id),
                         messages: database.watchMessagesFor(contact.id),
                         onSendMessage: (Message? parent, Content content) {
-                          database.addMessage(newMessage(
-                            contactId: contact.id,
-                            parent: parent,
-                            merged: null,
-                            author: profile.publicKey,
-                            timestamp: clock.now().toUtc(),
-                            content: content,
-                          ));
+                          database.addMessage(
+                            newMessage(
+                              contactId: contact.id,
+                              parent: parent,
+                              merged: null,
+                              author: profile.publicKey,
+                              timestamp: clock.now().toUtc(),
+                              content: content,
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -113,7 +117,8 @@ final class ContactListPage extends ConsumerWidget {
                   ContactsCompanion.insert(
                     profileId: profile.id,
                     publicKey: PublicKey.fromJson(
-                        toxID.substring(0, toxID.length - 12)),
+                      toxID.substring(0, toxID.length - 12),
+                    ),
                   ),
                 );
                 _logger.d('Added contact: $id');

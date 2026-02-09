@@ -16,33 +16,33 @@ final class StatusMessageField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Text(
-        AppLocalizations.of(context)!.profileTextFieldUserStatusMessage,
-        style: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.profileTextFieldUserStatusMessage,
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8),
-        child: TextFormField(
-          key: const Key('statusMessageField'),
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          validator: (value) {
-            value ??= '';
-            if (value.length > constants.maxStatusMessageLength) {
-              return AppLocalizations.of(context)!
-                  .statusMessageLengthError(constants.maxStatusMessageLength);
-            }
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextFormField(
+            key: const Key('statusMessageField'),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: (value) {
+              value ??= '';
+              if (value.length > constants.maxStatusMessageLength) {
+                return AppLocalizations.of(
+                  context,
+                )!.statusMessageLengthError(constants.maxStatusMessageLength);
+              }
 
-            return null;
-          },
-          controller: controller,
-          textInputAction: TextInputAction.next,
-          onChanged: onChanged,
+              return null;
+            },
+            controller: controller,
+            textInputAction: TextInputAction.next,
+            onChanged: onChanged,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }

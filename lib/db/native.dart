@@ -26,18 +26,23 @@ Future<Database> constructDb(String databaseKey) async {
   await _setupSqlCipher;
 
   // https://drift.simonbinder.eu/platforms/encryption/#using
-  return Database(NativeDatabase(file, setup: (database) {
-    // https://drift.simonbinder.eu/platforms/encryption/#important-notice
-    final cipherVersion = database.select('PRAGMA cipher_version;');
-    if (cipherVersion.isEmpty) {
-      throw Exception('Failed to get cipher version');
-    }
-    _logger.d('Encrypted database: ${cipherVersion.first}');
+  return Database(
+    NativeDatabase(
+      file,
+      setup: (database) {
+        // https://drift.simonbinder.eu/platforms/encryption/#important-notice
+        final cipherVersion = database.select('PRAGMA cipher_version;');
+        if (cipherVersion.isEmpty) {
+          throw Exception('Failed to get cipher version');
+        }
+        _logger.d('Encrypted database: ${cipherVersion.first}');
 
-    final escapedKey = databaseKey.replaceAll("'", "''");
-    database.execute("PRAGMA key = '$escapedKey';");
+        final escapedKey = databaseKey.replaceAll("'", "''");
+        database.execute("PRAGMA key = '$escapedKey';");
 
-    // Recommended option, not enabled by default on SQLCipher
-    database.config.doubleQuotedStringLiterals = false;
-  }));
+        // Recommended option, not enabled by default on SQLCipher
+        database.config.doubleQuotedStringLiterals = false;
+      },
+    ),
+  );
 }

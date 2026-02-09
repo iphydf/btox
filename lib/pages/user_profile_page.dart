@@ -48,24 +48,18 @@ final class UserProfilePage extends HookWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.menuProfile),
-      ),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.menuProfile)),
       body: Form(
         key: formKey,
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(8),
-            ),
+            const Padding(padding: EdgeInsets.all(8)),
             NicknameField(
               constants: constants,
               controller: nickInputController,
               onChanged: (value) => applyButtonPressed.value = false,
             ),
-            const Padding(
-              padding: EdgeInsets.all(8),
-            ),
+            const Padding(padding: EdgeInsets.all(8)),
             StatusMessageField(
               constants: constants,
               controller: statusMessageInputController,
@@ -73,8 +67,9 @@ final class UserProfilePage extends HookWidget {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    applyButtonPressed.value ? Colors.green : Colors.blue,
+                backgroundColor: applyButtonPressed.value
+                    ? Colors.green
+                    : Colors.blue,
                 foregroundColor: Colors.white,
               ),
               onPressed: () => onValidate(),

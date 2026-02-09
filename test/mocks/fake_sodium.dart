@@ -26,8 +26,10 @@ final class FakeSecureKey implements SecureKey {
   int get length => _data.length;
 
   @override
-  FutureOr<T> runUnlockedAsync<T>(SecureCallbackFn<FutureOr<T>> callback,
-      {bool writable = false}) {
+  FutureOr<T> runUnlockedAsync<T>(
+    SecureCallbackFn<FutureOr<T>> callback, {
+    bool writable = false,
+  }) {
     return callback(_data);
   }
 
@@ -56,20 +58,22 @@ final class FakeBox implements Box {
   const FakeBox();
 
   @override
-  DetachedCipherResult detached(
-      {required Uint8List message,
-      required Uint8List nonce,
-      required Uint8List publicKey,
-      required SecureKey secretKey}) {
+  DetachedCipherResult detached({
+    required Uint8List message,
+    required Uint8List nonce,
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Uint8List easy(
-      {required Uint8List message,
-      required Uint8List nonce,
-      required Uint8List publicKey,
-      required SecureKey secretKey}) {
+  Uint8List easy({
+    required Uint8List message,
+    required Uint8List nonce,
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
@@ -87,27 +91,31 @@ final class FakeBox implements Box {
   int get nonceBytes => throw UnimplementedError();
 
   @override
-  Uint8List openDetached(
-      {required Uint8List cipherText,
-      required Uint8List mac,
-      required Uint8List nonce,
-      required Uint8List publicKey,
-      required SecureKey secretKey}) {
+  Uint8List openDetached({
+    required Uint8List cipherText,
+    required Uint8List mac,
+    required Uint8List nonce,
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Uint8List openEasy(
-      {required Uint8List cipherText,
-      required Uint8List nonce,
-      required Uint8List publicKey,
-      required SecureKey secretKey}) {
+  Uint8List openEasy({
+    required Uint8List cipherText,
+    required Uint8List nonce,
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  PrecalculatedBox precalculate(
-      {required Uint8List publicKey, required SecureKey secretKey}) {
+  PrecalculatedBox precalculate({
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
@@ -123,10 +131,11 @@ final class FakeBox implements Box {
   int get sealBytes => throw UnimplementedError();
 
   @override
-  Uint8List sealOpen(
-      {required Uint8List cipherText,
-      required Uint8List publicKey,
-      required SecureKey secretKey}) {
+  Uint8List sealOpen({
+    required Uint8List cipherText,
+    required Uint8List publicKey,
+    required SecureKey secretKey,
+  }) {
     throw UnimplementedError();
   }
 
@@ -200,13 +209,15 @@ final class FakeSodium implements Sodium {
 
   @override
   KeyPair materializeTransferrableKeyPair(
-      TransferrableKeyPair transferrableKeyPair) {
+    TransferrableKeyPair transferrableKeyPair,
+  ) {
     throw UnimplementedError();
   }
 
   @override
   SecureKey materializeTransferrableSecureKey(
-      TransferrableSecureKey transferrableSecureKey) {
+    TransferrableSecureKey transferrableSecureKey,
+  ) {
     throw UnimplementedError();
   }
 
@@ -219,9 +230,11 @@ final class FakeSodium implements Sodium {
   Randombytes get randombytes => throw UnimplementedError();
 
   @override
-  Future<T> runIsolated<T>(SodiumIsolateCallback<T> callback,
-      {List<SecureKey> secureKeys = const [],
-      List<KeyPair> keyPairs = const []}) {
+  Future<T> runIsolated<T>(
+    SodiumIsolateCallback<T> callback, {
+    List<SecureKey> secureKeys = const [],
+    List<KeyPair> keyPairs = const [],
+  }) {
     throw UnimplementedError();
   }
 

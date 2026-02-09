@@ -17,11 +17,15 @@ void main() {
     id: Id(0),
     active: true,
     settings: ProfileSettings(
-        nickname: 'Yeetman', statusMessage: 'Yeeting everyone.'),
+      nickname: 'Yeetman',
+      statusMessage: 'Yeeting everyone.',
+    ),
     secretKey: SecretKey.fromJson(
-        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+      'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    ),
     publicKey: PublicKey.fromJson(
-        '0000000000000000000000000000000000000000000000000000000000000000'),
+      '0000000000000000000000000000000000000000000000000000000000000000',
+    ),
     nospam: ToxAddressNospam(0),
   );
 
@@ -30,148 +34,172 @@ void main() {
     profileId: profile.id,
     name: 'Testman',
     publicKey: PublicKey.fromJson(
-        '1111111111111111111111111111111111111111111111111111111111111111'),
+      '1111111111111111111111111111111111111111111111111111111111111111',
+    ),
   );
 
-  testWidgets('Empty chat page should display message entry box',
-      (WidgetTester tester) async {
+  testWidgets('Empty chat page should display message entry box', (
+    WidgetTester tester,
+  ) async {
     final messages = <Message>[];
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/empty.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/empty.png'),
+    );
   });
 
   testWidgets('Chat page should display messages', (WidgetTester tester) async {
     final messages = <Message>[];
 
-    messages.add(_fakeInsertMessage(
-      Id(0),
-      newMessage(
-        contactId: contact.id,
-        parent: null,
-        merged: null,
-        author: contact.publicKey,
-        timestamp: DateTime(2025, 1, 1, 0, 1, 12),
-        content: TextContent(text: 'Happy New Year!'),
+    messages.add(
+      _fakeInsertMessage(
+        Id(0),
+        newMessage(
+          contactId: contact.id,
+          parent: null,
+          merged: null,
+          author: contact.publicKey,
+          timestamp: DateTime(2025, 1, 1, 0, 1, 12),
+          content: TextContent(text: 'Happy New Year!'),
+        ),
       ),
-    ));
-    messages.add(_fakeInsertMessage(
-      Id(1),
-      newMessage(
-        contactId: contact.id,
-        parent: messages.last,
-        merged: null,
-        author: profile.publicKey,
-        timestamp: DateTime(2025, 1, 1, 0, 2, 23),
-        content: TextContent(text: 'Thank you! Happy New Year to you too!'),
+    );
+    messages.add(
+      _fakeInsertMessage(
+        Id(1),
+        newMessage(
+          contactId: contact.id,
+          parent: messages.last,
+          merged: null,
+          author: profile.publicKey,
+          timestamp: DateTime(2025, 1, 1, 0, 2, 23),
+          content: TextContent(text: 'Thank you! Happy New Year to you too!'),
+        ),
       ),
-    ));
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/messages.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/messages.png'),
+    );
   });
 
-  testWidgets('Long messages should be shown in a big bubble',
-      (WidgetTester tester) async {
+  testWidgets('Long messages should be shown in a big bubble', (
+    WidgetTester tester,
+  ) async {
     final messages = <Message>[];
 
-    messages.add(_fakeInsertMessage(
-      Id(0),
-      newMessage(
-        contactId: contact.id,
-        parent: null,
-        merged: null,
-        author: profile.publicKey,
-        timestamp: DateTime(2025, 1, 1, 0, 1, 12),
-        content: TextContent(text: 'Here is a long message.\n' * 10),
+    messages.add(
+      _fakeInsertMessage(
+        Id(0),
+        newMessage(
+          contactId: contact.id,
+          parent: null,
+          merged: null,
+          author: profile.publicKey,
+          timestamp: DateTime(2025, 1, 1, 0, 1, 12),
+          content: TextContent(text: 'Here is a long message.\n' * 10),
+        ),
       ),
-    ));
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/messages_long.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/messages_long.png'),
+    );
   });
 
   testWidgets('Tapping a message shows the time', (WidgetTester tester) async {
     final messages = <Message>[];
 
-    messages.add(_fakeInsertMessage(
-      Id(0),
-      newMessage(
-        contactId: contact.id,
-        parent: null,
-        merged: null,
-        author: contact.publicKey,
-        timestamp: DateTime(2025, 1, 1, 0, 1, 12),
-        content: TextContent(text: 'Happy New Year!'),
+    messages.add(
+      _fakeInsertMessage(
+        Id(0),
+        newMessage(
+          contactId: contact.id,
+          parent: null,
+          merged: null,
+          author: contact.publicKey,
+          timestamp: DateTime(2025, 1, 1, 0, 1, 12),
+          content: TextContent(text: 'Happy New Year!'),
+        ),
       ),
-    ));
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
 
     // Tap the message.
     // TODO(iphydf): This is a hack. Find a better way to tap the message.
-    final bubble = find.byType(GestureDetector).first.evaluate().first.widget
-        as GestureDetector;
+    final bubble =
+        find.byType(GestureDetector).first.evaluate().first.widget
+            as GestureDetector;
     bubble.onTap!();
 
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/messages_time.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/messages_time.png'),
+    );
   });
 
   testWidgets('Tapping smiley shows emoji picker', (WidgetTester tester) async {
@@ -179,15 +207,16 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
-          recentEmojis: false,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+            recentEmojis: false,
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
@@ -196,50 +225,60 @@ void main() {
     await tester.tap(find.byIcon(Icons.emoji_emotions_outlined));
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/emoji_picker.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/emoji_picker.png'),
+    );
 
     // Tap the smiley again to close the emoji picker.
     await tester.tap(find.byIcon(Icons.emoji_emotions_outlined));
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/emoji_picker_closed.png'));
-  });
-
-  testWidgets('Tapping an emoji in the emoji picker puts an emoji in the input',
-      (WidgetTester tester) async {
-    final messages = <Message>[];
-
-    await tester.pumpWidget(
-      ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
-          recentEmojis: false,
-        ),
-      )),
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/emoji_picker_closed.png'),
     );
-
-    await tester.pumpAndSettle();
-
-    // Tap the smiley.
-    await tester.tap(find.byIcon(Icons.emoji_emotions_outlined));
-    await tester.pumpAndSettle();
-
-    // Tap the emoji.
-    await tester.tap(find.text('😀'));
-    await tester.pumpAndSettle();
-
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/emoji_picker_tapped.png'));
   });
 
-  testWidgets('Sending a single emoji shows a big emoji',
-      (WidgetTester tester) async {
+  testWidgets(
+    'Tapping an emoji in the emoji picker puts an emoji in the input',
+    (WidgetTester tester) async {
+      final messages = <Message>[];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: ChatPage(
+              profile: profile,
+              contact: Stream.value(contact),
+              messages: Stream.value(messages),
+              recentEmojis: false,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tap the smiley.
+      await tester.tap(find.byIcon(Icons.emoji_emotions_outlined));
+      await tester.pumpAndSettle();
+
+      // Tap the emoji.
+      await tester.tap(find.text('😀'));
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byType(ChatPage),
+        matchesGoldenFile('goldens/chat_page/emoji_picker_tapped.png'),
+      );
+    },
+  );
+
+  testWidgets('Sending a single emoji shows a big emoji', (
+    WidgetTester tester,
+  ) async {
     final messages = <Message>[
       _fakeInsertMessage(
         Id(0),
@@ -256,49 +295,56 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
-          recentEmojis: false,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+            recentEmojis: false,
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(ChatPage),
-        matchesGoldenFile('goldens/chat_page/emoji_sent.png'));
+    await expectLater(
+      find.byType(ChatPage),
+      matchesGoldenFile('goldens/chat_page/emoji_sent.png'),
+    );
   });
 
-  testWidgets('Long-pressing a message shows a context menu',
-      (WidgetTester tester) async {
+  testWidgets('Long-pressing a message shows a context menu', (
+    WidgetTester tester,
+  ) async {
     final messages = <Message>[];
 
-    messages.add(_fakeInsertMessage(
-      Id(0),
-      newMessage(
-        contactId: contact.id,
-        parent: null,
-        merged: null,
-        author: contact.publicKey,
-        timestamp: DateTime(2025, 1, 1, 0, 1, 12),
-        content: TextContent(text: 'Happy New Year!'),
+    messages.add(
+      _fakeInsertMessage(
+        Id(0),
+        newMessage(
+          contactId: contact.id,
+          parent: null,
+          merged: null,
+          author: contact.publicKey,
+          timestamp: DateTime(2025, 1, 1, 0, 1, 12),
+          content: TextContent(text: 'Happy New Year!'),
+        ),
       ),
-    ));
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-          child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: ChatPage(
-          profile: profile,
-          contact: Stream.value(contact),
-          messages: Stream.value(messages),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ChatPage(
+            profile: profile,
+            contact: Stream.value(contact),
+            messages: Stream.value(messages),
+          ),
         ),
-      )),
+      ),
     );
 
     await tester.pumpAndSettle();
@@ -309,8 +355,10 @@ void main() {
 
     // MaterialApp instead of ChatPage because the context menu is a separate
     // route and is displayed on top of the ChatPage, not inside it.
-    await expectLater(find.byType(MaterialApp),
-        matchesGoldenFile('goldens/chat_page/message_context_menu.png'));
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/chat_page/message_context_menu.png'),
+    );
   });
 }
 

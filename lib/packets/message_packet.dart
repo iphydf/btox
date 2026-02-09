@@ -27,12 +27,15 @@ final class MessagePacket extends Packet {
       throw Exception('Invalid message packet');
     }
 
-    final Sha256? parent =
-        unpacker.unpackBinary()?.let((sha) => Sha256.fromDigest(Digest(sha)));
-    final Sha256? merged =
-        unpacker.unpackBinary()?.let((sha) => Sha256.fromDigest(Digest(sha)));
-    final DateTime timestamp =
-        DateTime.fromMillisecondsSinceEpoch(unpacker.unpackInt()!);
+    final Sha256? parent = unpacker.unpackBinary()?.let(
+      (sha) => Sha256.fromDigest(Digest(sha)),
+    );
+    final Sha256? merged = unpacker.unpackBinary()?.let(
+      (sha) => Sha256.fromDigest(Digest(sha)),
+    );
+    final DateTime timestamp = DateTime.fromMillisecondsSinceEpoch(
+      unpacker.unpackInt()!,
+    );
     final PublicKey author = PublicKey.unpack(unpacker);
     final Content content = Content.unpack(unpacker);
 

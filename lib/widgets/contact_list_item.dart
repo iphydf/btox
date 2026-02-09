@@ -17,9 +17,12 @@ final class ContactListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(
-          contact.name ?? AppLocalizations.of(context)!.defaultContactName),
-      subtitle:
-          Text(contact.publicKey.toJson(), overflow: TextOverflow.ellipsis),
+        contact.name ?? AppLocalizations.of(context)!.defaultContactName,
+      ),
+      subtitle: Text(
+        contact.publicKey.toJson(),
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: CircleIdenticon(publicKey: contact.publicKey),
       onTap: () => onTap(contact),
     );

@@ -11,17 +11,14 @@ import 'package:flutter_test/flutter_test.dart';
 import '../mocks/fake_tile_provider.dart';
 
 void main() {
-  testWidgets('Location content is displayed as map',
-      (WidgetTester tester) async {
+  testWidgets('Location content is displayed as map', (
+    WidgetTester tester,
+  ) async {
     final fakeTileProvider = FakeTileProvider();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          mapTileProvider.overrideWith(
-            (ref) => fakeTileProvider,
-          ),
-        ],
+        overrides: [mapTileProvider.overrideWith((ref) => fakeTileProvider)],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: ChatContent(

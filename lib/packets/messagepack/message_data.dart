@@ -131,8 +131,10 @@ final class MessageDataList extends MessageData<MessageDataList> {
   @override
   bool _equals(MessageDataList other) =>
       value.length == other.value.length &&
-      List.generate(value.length, (i) => value[i]._equals(other.value[i]))
-          .every((e) => e);
+      List.generate(
+        value.length,
+        (i) => value[i]._equals(other.value[i]),
+      ).every((e) => e);
 }
 
 final class MessageDataMap extends MessageData<MessageDataMap> {

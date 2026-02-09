@@ -24,9 +24,7 @@ final class SelectProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Profile'),
-      ),
+      appBar: AppBar(title: const Text('Select Profile')),
       body: ListView.builder(
         itemCount: profiles.length,
         itemBuilder: (context, index) {

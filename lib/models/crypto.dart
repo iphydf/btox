@@ -136,9 +136,11 @@ final class ToxAddress extends _CryptoBytes {
     return ToxAddress(Uint8List.fromList(hex.decode(value)));
   }
 
-  ToxAddressHash get hash => ToxAddressHash(bytes.buffer
-      .asByteData()
-      .getUint16(PublicKey.kLength + ToxAddressNospam.kLength));
+  ToxAddressHash get hash => ToxAddressHash(
+    bytes.buffer.asByteData().getUint16(
+      PublicKey.kLength + ToxAddressNospam.kLength,
+    ),
+  );
 
   @override
   int get length => ToxAddress.kLength;

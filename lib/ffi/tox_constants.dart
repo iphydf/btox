@@ -8,10 +8,10 @@ ToxConstants toxcoreConstants(ToxLibrary lib) {
     conferenceIdSize: lib.ffi.tox_conference_id_size(),
     fileIdLength: lib.ffi.tox_file_id_length(),
     groupChatIdSize: lib.ffi.tox_group_chat_id_size(),
-    groupMaxCustomLosslessPacketLength:
-        lib.ffi.tox_group_max_custom_lossless_packet_length(),
-    groupMaxCustomLossyPacketLength:
-        lib.ffi.tox_group_max_custom_lossy_packet_length(),
+    groupMaxCustomLosslessPacketLength: lib.ffi
+        .tox_group_max_custom_lossless_packet_length(),
+    groupMaxCustomLossyPacketLength: lib.ffi
+        .tox_group_max_custom_lossy_packet_length(),
     groupMaxGroupNameLength: lib.ffi.tox_group_max_group_name_length(),
     groupMaxMessageLength: lib.ffi.tox_group_max_message_length(),
     groupMaxPartLength: lib.ffi.tox_group_max_part_length(),

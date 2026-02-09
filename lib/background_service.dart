@@ -88,7 +88,8 @@ final class _BackgroundService {
     _isRunning = true;
     while (_isRunning) {
       _logger.d(
-          'Background service is successfully running ${DateTime.now().minute}');
+        'Background service is successfully running ${DateTime.now().minute}',
+      );
       await Future.delayed(const Duration(minutes: 1));
     }
   }
