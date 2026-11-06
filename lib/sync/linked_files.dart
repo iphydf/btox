@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/attachments/attachments.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_File_Control;
 import 'package:btox/logger.dart';
 import 'package:btox/models/app_defaults.dart';
 import 'package:btox/models/content.dart';
@@ -19,7 +18,7 @@ import 'package:clock/clock.dart';
 const _logger = Logger(['LinkedFiles']);
 
 /// A file of the home device's, by friend number and file number.
-typedef _Key = (int, int);
+typedef _Key = (FriendNumber, FileNumber);
 
 final class _Moving {
   final Transfer row;
@@ -44,7 +43,7 @@ final class LinkedFiles implements ToxFiles {
 
   var _transfers = const <Transfer>[];
   // The home device, while in a session with it.
-  int? _home;
+  FriendNumber? _home;
   // Asked of the home device in this session.
   final _wanted = <BlobId>{};
   // Files whose fetch was decided on, so it's decided once.
@@ -76,14 +75,14 @@ final class LinkedFiles implements ToxFiles {
   /// A session with the home device, [home], started, or ended with null.
   /// Toxcore drops the transfers of a friend that goes offline, and blobs
   /// cut off are asked for again in the next session.
-  void session(int? home) {
+  void session(FriendNumber? home) {
     _home = home;
     _wanted.clear();
     // A session started again asks for its blobs again, so those still
     // moving would stall.
     if (home != null) {
       for (final key in [..._incoming.keys, ..._outgoing.keys]) {
-        _control(key, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+        _control(key, FileControl.cancel);
       }
     }
     _stop();
@@ -238,7 +237,7 @@ final class LinkedFiles implements ToxFiles {
         home,
         blobFileKind,
         row.size,
-        blob.bytes,
+        FileId(blob.bytes),
         Uint8List(0),
       );
       _outgoing[(home, fileNumber)] = _Moving(row, file);
@@ -250,10 +249,15 @@ final class LinkedFiles implements ToxFiles {
 
   /// Takes a file the home device sends if it's a blob asked of it, and
   /// cancels any other.
-  void offered(int friendNumber, int fileNumber, int kind, int size) {
+  void offered(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileKind kind,
+    int size,
+  ) {
     final key = (friendNumber, fileNumber);
     final blob = friendNumber == _home && kind == blobFileKind
-        ? BlobId(_tox.fileGetFileId(friendNumber, fileNumber))
+        ? BlobId(_tox.fileGetFileId(friendNumber, fileNumber).bytes)
         : null;
     if (blob != null &&
         _wanted.contains(blob) &&
@@ -270,7 +274,7 @@ final class LinkedFiles implements ToxFiles {
     }
     final row = blob == null ? null : _fetchOf(blob);
     if (row == null) {
-      _control(key, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+      _control(key, FileControl.cancel);
       return;
     }
     try {
@@ -285,10 +289,10 @@ final class LinkedFiles implements ToxFiles {
       _incoming[key] = _Moving(row, file);
     } catch (e) {
       _logger.e('Cannot write ${row.path}: $e');
-      _control(key, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+      _control(key, FileControl.cancel);
       return;
     }
-    _control(key, Tox_File_Control.TOX_FILE_CONTROL_RESUME);
+    _control(key, FileControl.resume);
   }
 
   Transfer? _fetchOf(BlobId blob) => _wanted.contains(blob)
@@ -301,7 +305,12 @@ final class LinkedFiles implements ToxFiles {
       : null;
 
   @override
-  void chunk(int friendNumber, int fileNumber, int position, Uint8List data) {
+  void chunk(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    Uint8List data,
+  ) {
     final key = (friendNumber, fileNumber);
     final moving = _incoming[key];
     if (moving == null) {
@@ -332,7 +341,12 @@ final class LinkedFiles implements ToxFiles {
   }
 
   @override
-  void requested(int friendNumber, int fileNumber, int position, int length) {
+  void requested(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    int length,
+  ) {
     final key = (friendNumber, fileNumber);
     final moving = _outgoing[key];
     if (moving == null) {
@@ -370,8 +384,12 @@ final class LinkedFiles implements ToxFiles {
   /// A blob the home device cancelled is asked for again in the next
   /// session.
   @override
-  void controlled(int friendNumber, int fileNumber, Tox_File_Control control) {
-    if (control != Tox_File_Control.TOX_FILE_CONTROL_CANCEL) {
+  void controlled(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  ) {
+    if (control != FileControl.cancel) {
       return;
     }
     final key = (friendNumber, fileNumber);
@@ -379,7 +397,7 @@ final class LinkedFiles implements ToxFiles {
     _outgoing.remove(key)?.file.close();
   }
 
-  void _control(_Key key, Tox_File_Control control) {
+  void _control(_Key key, FileControl control) {
     try {
       _tox.fileControl(key.$1, key.$2, control);
     } on ApiException catch (e) {

@@ -1,6 +1,3 @@
-// The analyzer resolves ToxLibrary's conditional export to the stub.
-// ignore_for_file: argument_type_not_assignable
-
 import 'dart:ffi' show DynamicLibrary;
 import 'dart:typed_data';
 

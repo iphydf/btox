@@ -1,17 +1,13 @@
-// The analyzer resolves ToxLibrary's conditional export to the stub.
-// ignore_for_file: argument_type_not_assignable
-
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:btox/api/toxcore/tox.dart';
+import 'package:btox/api/toxcore/tox.dart' hide ProxyType;
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/db/database.dart';
 import 'package:btox/ffi/generated/toxcore.ffi.dart' as gen;
 import 'package:btox/ffi/tox_library.ffi.dart' as tox_lib;
-import 'package:btox/ffi/toxcore.dart' as ffi;
 import 'package:btox/models/bootstrap_nodes.dart';
 import 'package:btox/models/connection_status.dart';
 import 'package:btox/models/crypto.dart';
@@ -116,15 +112,15 @@ void main() {
     }
 
     const connected = ToxEventSelfConnectionStatus(
-      connectionStatus: ffi.Tox_Connection.TOX_CONNECTION_UDP,
+      connectionStatus: Connection.udp,
     );
 
     test('gives the events in order, without DHT node responses', () async {
       final tox = FakeToxcore();
       final events = run(tox, (_) {});
       final message = ToxEventFriendMessage(
-        friendNumber: 0,
-        type: ffi.Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        friendNumber: const FriendNumber(0),
+        type: MessageType.normal,
         message: Uint8List(1),
       );
       tox
@@ -289,9 +285,7 @@ void main() {
       );
 
       fakeTox.pushEvent(
-        ToxEventSelfConnectionStatus(
-          connectionStatus: ffi.Tox_Connection.TOX_CONNECTION_TCP,
-        ),
+        ToxEventSelfConnectionStatus(connectionStatus: Connection.tcp),
       );
       for (var i = 0; i < 100 && !statuses.last.online; i++) {
         await Future.delayed(const Duration(milliseconds: 10));
@@ -303,9 +297,7 @@ void main() {
     test('a proxy toxcore rejects shows as rejected', () async {
       final statuses = await watch([
         toxProvider(secretKey, nospam).overrideWith(
-          (ref) => throw const ApiException(
-            ffi.Tox_Err_New.TOX_ERR_NEW_PROXY_BAD_HOST,
-          ),
+          (ref) => throw const ApiException(NewError.proxyBadHost),
         ),
         networkSettingsProvider(secretKey).overrideWithValue(
           const NetworkSettings(

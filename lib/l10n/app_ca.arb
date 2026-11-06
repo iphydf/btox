@@ -308,7 +308,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Accepta fitxers automàticament fins a",
+    "autoAcceptFiles": "Accepta fitxers automàticament",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -331,6 +331,10 @@
     "fileCancelled": "Cancel·lat",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Torna a enviar",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "En pausa fins que torni a estar en línia",
     "@filePaused": {
@@ -619,13 +623,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Encara no està disponible",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Cap aplicació pot obrir aquest enllaç",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Cap aplicació pot obrir aquest fitxer",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} està escrivint",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Indicadors d'escriptura",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Veus quan els amics escriuen, i ells veuen quan escrius tu",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Respon",
     "@reply": {
@@ -1076,5 +1097,145 @@
     "noChatsHint": "Afegeix un contacte amb el botó + per començar a xatejar",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Escriu en privat",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "en privat",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "En privat a {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Escriu a tothom",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} ha sortit del grup, així que no s’ha enviat res",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Grup nou",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Uneix-te a un grup públic",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Privat",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Públic",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Conferència",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Nom",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "Un grup necessita un nom",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Aquest nom és massa llarg",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "ID del xat",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "Un ID de xat té 64 dígits hexadecimals",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Contrasenya",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Aquesta contrasenya és massa llarga",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Convida amics",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "No hi ha cap amic connectat",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "Convidat: {name}",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Surt del xat",
+    "leaveChatMessage": "Vols sortir de \"{name}\"? Ja no en rebràs els missatges.",
+    "leave": "Surt",
+    "chatLeft": "Has sortit de \"{name}\"",
+    "memberJoined": "{name} s’ha unit al xat",
+    "memberLeft": "{name} ha sortit del xat",
+    "memberRenamed": "{old} ara es diu {name}",
+    "topicSet": "{name} ha canviat el tema a \"{topic}\"",
+    "topicSetBySomeone": "El tema ara és \"{topic}\"",
+    "titleSet": "{name} ha canviat el nom del xat a \"{title}\"",
+    "titleSetBySomeone": "El xat ara es diu \"{title}\"",
+    "memberKicked": "{name} ha tret {member}",
+    "memberKickedBySomeone": "S’ha tret {member}",
+    "memberRole": "{name} ha donat a {member} el rol {role, select, founder{de fundador} moderator{de moderador} observer{d’observador} other{de membre}}",
+    "memberRoleBySomeone": "{member} ara té el rol {role, select, founder{de fundador} moderator{de moderador} observer{d’observador} other{de membre}}",
+    "membersJoined": "{people, select, one{{names} s’ha unit al xat} other{{names} s’han unit al xat}}",
+    "membersLeft": "{people, select, one{{names} ha sortit del xat} other{{names} han sortit del xat}}",
+    "namesTwo": "{first} i {second}",
+    "namesThree": "{first}, {second} i {third}",
+    "namesMore": "{first}, {second} i {count} més",
+    "changeTopic": "Canvia el tema",
+    "groupTopic": "Tema",
+    "topicTooLong": "Aquest tema és massa llarg",
+    "groupSettings": "Configuració del grup",
+    "privateGroupHint": "Només hi poden entrar els amics que convidis",
+    "publicGroupHint": "Qualsevol amb l’ID del xat hi pot entrar",
+    "topicLock": "Bloca el tema",
+    "topicLockHint": "Només els moderadors el poden canviar",
+    "whoCanSpeak": "Qui pot enviar missatges",
+    "voiceEveryone": "Tothom excepte els observadors",
+    "voiceModerators": "Els moderadors i tu",
+    "voiceFounder": "Només tu",
+    "peerLimit": "Límit de membres",
+    "peerLimitInvalid": "Introdueix un número de l’1 al {max}",
+    "groupPasswordOn": "Cal per entrar",
+    "groupPasswordOff": "Cap",
+    "groupPasswordEmptyForNone": "Deixa-ho buit per no tenir-ne cap",
+    "makeModerator": "Fes-lo moderador",
+    "makeUser": "Fes-lo membre normal",
+    "makeObserver": "Fes-lo observador (només pot llegir)",
+    "removeMember": "Treu del grup",
+    "removeMemberMessage": "Vols treure \"{name}\" del grup?",
+    "remove": "Treu",
+    "chatIdCopied": "ID del xat copiat",
+    "autoAcceptUpTo": "Fins a {size}"
 }

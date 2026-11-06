@@ -1,3 +1,4 @@
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/l10n/generated/app_localizations.dart';
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/models/chat_view.dart';
@@ -23,7 +24,7 @@ MessageKey? keyOf(EventContent content, MessageFormats formats) =>
 /// Whether [content] is someone else's message or file, which counts as
 /// unread until read and notifies.
 bool isIncoming(EventContent content) => switch (content) {
-  Received() || FileStarted(incoming: true) => true,
+  Received() || ReceivedPrivately() || FileStarted(incoming: true) => true,
   _ => false,
 };
 
@@ -61,6 +62,99 @@ List<NotifiedMessage> notifying(
   _ => messages,
 };
 
+/// What to call someone in a chat: their name, or while they have none, the
+/// start of their key, which tells them apart.
+String memberName(AppLocalizations l10n, String? name, PublicKey? key) =>
+    switch ((name, key)) {
+      (final name?, _) when name.isNotEmpty => name,
+      (_, final key?) => key.toJson().substring(0, 8),
+      _ => l10n.defaultContactName,
+    };
+
+/// What [entry] says: for a notice of something that happened, in the
+/// reader's language.
+String noticeText(AppLocalizations l10n, ChatEntry entry) {
+  String named(String name, PublicKey? key) => memberName(l10n, name, key);
+  return switch (entry.happened) {
+    PeerJoined(:final peer, :final name) => l10n.memberJoined(
+      named(name, peer),
+    ),
+    PeerLeft(:final peer, :final name) => l10n.memberLeft(named(name, peer)),
+    PeerRenamed(:final peer, :final old, :final name) => l10n.memberRenamed(
+      named(old, peer),
+      named(name, peer),
+    ),
+    TopicSet(name: '', by: null, :final topic) => l10n.topicSetBySomeone(topic),
+    TopicSet(:final by, :final name, :final topic) => l10n.topicSet(
+      named(name, by),
+      topic,
+    ),
+    TitleSet(name: '', by: null, :final title) => l10n.titleSetBySomeone(title),
+    TitleSet(:final by, :final name, :final title) => l10n.titleSet(
+      named(name, by),
+      title,
+    ),
+    Moderated(name: '', by: null, :final peer, :final peerName, role: null) =>
+      l10n.memberKickedBySomeone(named(peerName, peer)),
+    Moderated(
+      :final by,
+      :final name,
+      :final peer,
+      :final peerName,
+      role: null,
+    ) =>
+      l10n.memberKicked(named(name, by), named(peerName, peer)),
+    Moderated(name: '', by: null, :final peer, :final peerName, :final role?) =>
+      l10n.memberRoleBySomeone(named(peerName, peer), role.name),
+    Moderated(
+      :final by,
+      :final name,
+      :final peer,
+      :final peerName,
+      :final role?,
+    ) =>
+      l10n.memberRole(named(name, by), named(peerName, peer), role.name),
+    _ => entry.content.plainText,
+  };
+}
+
+/// Who of [run] joined and who left, as one line.
+String comingsText(AppLocalizations l10n, List<ChatEntry> run) {
+  // Each once, by key.
+  final came = <PublicKey, String>{};
+  final went = <PublicKey, String>{};
+  for (final entry in run) {
+    switch (entry.happened) {
+      case PeerJoined(:final peer, :final name):
+        came.putIfAbsent(peer, () => name);
+      case PeerLeft(:final peer, :final name):
+        went.putIfAbsent(peer, () => name);
+      default:
+        break;
+    }
+  }
+  String names(Map<PublicKey, String> all) {
+    final named = [
+      for (final MapEntry(key: key, value: name) in all.entries)
+        memberName(l10n, name, key),
+    ];
+    return switch (named) {
+      [final a] => a,
+      [final a, final b] => l10n.namesTwo(a, b),
+      [final a, final b, final c] => l10n.namesThree(a, b, c),
+      [final a, final b, ...final more] => l10n.namesMore(a, b, more.length),
+      [] => '',
+    };
+  }
+
+  String people(Map<PublicKey, String> who) =>
+      who.length == 1 ? 'one' : 'other';
+  return [
+    if (came.isNotEmpty) l10n.membersJoined(names(came), people(came)),
+    if (went.isNotEmpty) l10n.membersLeft(names(went), people(went)),
+  ].join(' \u00b7 ');
+}
+
 /// The text for an invite to a chat from the friend named [from].
 String inviteText(AppLocalizations l10n, AccountInvite invite, String? from) {
   final friend = from ?? l10n.defaultContactName;
@@ -75,6 +169,8 @@ String notificationText(EventContent content, MessageFormats formats) =>
     switch (content) {
       Received(:final from, :final message) =>
         formats.read(message, friend: from == null).text,
+      ReceivedPrivately(:final message) =>
+        formats.read(message, friend: false).text,
       FileStarted(:final name) => '📎 $name',
       _ => '',
     };
@@ -275,6 +371,8 @@ ChatEntry endedAs(ChatEntry entry, CallEnded end) => switch (entry.content) {
   _ => entry,
 };
 
+bool _isAction(MessageType kind) => kind == MessageType.action;
+
 DateTime _timeOf(SyncEvent event) =>
     DateTime.fromMillisecondsSinceEpoch(event.time, isUtc: true);
 
@@ -284,19 +382,47 @@ ChatEntry? entryOf(EventId id, SyncEvent event, MessageFormats formats) {
   final timestamp = _timeOf(event);
   return switch (event.content) {
     // Only group senders have keys. In friend chats it's the friend.
-    Received(:final from, :final sender, :final message) => ChatEntry(
-      event: id,
-      sender: from == null ? null : sender,
-      from: from,
-      mine: false,
-      content: contentOfMessage(
-        formats.read(message, friend: from == null).text,
+    Received(:final from, :final sender, :final message, :final kind) =>
+      ChatEntry(
+        event: id,
+        sender: from == null ? null : sender,
+        from: from,
+        mine: false,
+        action: _isAction(kind),
+        content: contentOfMessage(
+          formats.read(message, friend: from == null).text,
+        ),
+        timestamp: timestamp,
       ),
-      timestamp: timestamp,
-    ),
-    Send(:final message) => ChatEntry(
+    Send(:final message, :final kind) => ChatEntry(
       event: id,
       mine: true,
+      action: _isAction(kind),
+      content: contentOfMessage(plainText(message)),
+      timestamp: timestamp,
+      state: ChatContentState.pending,
+    ),
+    ReceivedPrivately(
+      :final from,
+      :final sender,
+      :final message,
+      :final kind,
+    ) =>
+      ChatEntry(
+        event: id,
+        sender: sender,
+        from: from,
+        privately: from,
+        mine: false,
+        action: _isAction(kind),
+        content: contentOfMessage(formats.read(message, friend: false).text),
+        timestamp: timestamp,
+      ),
+    SendPrivately(:final to, :final message, :final kind) => ChatEntry(
+      event: id,
+      privately: to,
+      mine: true,
+      action: _isAction(kind),
       content: contentOfMessage(plainText(message)),
       timestamp: timestamp,
       state: ChatContentState.pending,
@@ -306,6 +432,19 @@ ChatEntry? entryOf(EventId id, SyncEvent event, MessageFormats formats) {
       mine: false,
       notice: true,
       content: TextContent(text: text),
+      timestamp: timestamp,
+    ),
+    PeerJoined() ||
+    PeerLeft() ||
+    PeerRenamed() ||
+    TopicSet() ||
+    TitleSet() ||
+    Moderated() => ChatEntry(
+      event: id,
+      mine: false,
+      notice: true,
+      content: const TextContent(text: ''),
+      happened: event.content,
       timestamp: timestamp,
     ),
     Call(:final incoming, :final video) => ChatEntry(

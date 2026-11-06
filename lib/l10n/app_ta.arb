@@ -318,7 +318,7 @@
       }
     }
   },
-  "autoAcceptFiles": "இந்த அளவு வரையிலான கோப்புகளைத் தானாக ஏற்கவும்",
+  "autoAcceptFiles": "கோப்புகளைத் தானாக ஏற்கவும்",
   "@autoAcceptFiles": {
     "description": "The setting for the largest incoming file accepted without asking"
   },
@@ -341,6 +341,10 @@
   "fileCancelled": "ரத்துசெய்யப்பட்டது",
   "@fileCancelled": {
     "description": "A file transfer that was declined or stopped"
+  },
+  "sendAgain": "மீண்டும் அனுப்பு",
+  "@sendAgain": {
+    "description": "Button by a file of ours that was cancelled, to send it from the start"
   },
   "filePaused": "அவர் மீண்டும் ஆன்லைனுக்கு வரும் வரை இடைநிறுத்தப்பட்டது",
   "@filePaused": {
@@ -619,13 +623,30 @@
   "@callsNotAvailable": {
     "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
   },
-  "notImplemented": "இன்னும் கிடைக்கவில்லை",
-  "@notImplemented": {
-    "description": "Shown for a menu item that doesn't work yet"
-  },
   "openLinkFailed": "இந்த இணைப்பைத் திறக்க எந்தச் செயலியும் இல்லை",
   "@openLinkFailed": {
     "description": "Shown when tapping a link in a message opens nothing"
+  },
+  "openFileFailed": "இந்தக் கோப்பைத் திறக்க எந்தச் செயலியும் இல்லை",
+  "@openFileFailed": {
+    "description": "Shown when tapping a file in a chat opens nothing"
+  },
+  "isTyping": "{name} தட்டச்சு செய்கிறார்",
+  "@isTyping": {
+    "description": "Read out for the dots that show while a friend is typing",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "typingIndicators": "தட்டச்சு குறிகாட்டிகள்",
+  "@typingIndicators": {
+    "description": "Setting that shows friends typing, and shows them when you type"
+  },
+  "typingIndicatorsHint": "நண்பர்கள் தட்டச்சு செய்வதை நீங்கள் பார்க்கலாம், நீங்கள் தட்டச்சு செய்வதை அவர்களும் பார்க்கலாம்",
+  "@typingIndicatorsHint": {
+    "description": "Under the typing indicators setting"
   },
   "reply": "பதிலளி",
   "@reply": {
@@ -1076,5 +1097,145 @@
   "noChatsHint": "அரட்டையைத் தொடங்க + பொத்தான் மூலம் ஒரு தொடர்பைச் சேர்க்கவும்",
   "@noChatsHint": {
     "description": "How to start a first chat, under noChats"
-  }
+  },
+    "messagePrivately": "தனிப்பட்ட முறையில் எழுது",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "தனிப்பட்ட முறையில்",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "{name} க்கு மட்டும்",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "அனைவருக்கும் எழுது",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} குழுவை விட்டு வெளியேறினார், எனவே எதுவும் அனுப்பப்படவில்லை",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "புதிய குழு",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "பொது குழுவில் சேர்",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "தனிப்பட்டது",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "பொது",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "மாநாடு",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "பெயர்",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "குழுவுக்கு ஒரு பெயர் தேவை",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "அந்தப் பெயர் மிக நீளமானது",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "அரட்டை ஐடி",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "அரட்டை ஐடி 64 பதினறும இலக்கங்கள்",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "கடவுச்சொல்",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "அந்தக் கடவுச்சொல் மிக நீளமானது",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "நண்பர்களை அழை",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "இணைப்பில் நண்பர்கள் இல்லை",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} அழைக்கப்பட்டார்",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+  "leaveChat": "அரட்டையிலிருந்து வெளியேறு",
+  "leaveChatMessage": "\"{name}\" இலிருந்து வெளியேறவா? இனி அதன் செய்திகள் உங்களுக்கு வராது.",
+  "leave": "வெளியேறு",
+  "chatLeft": "\"{name}\" இலிருந்து வெளியேறினீர்கள்",
+  "memberJoined": "{name} அரட்டையில் சேர்ந்தார்",
+  "memberLeft": "{name} அரட்டையை விட்டு வெளியேறினார்",
+  "memberRenamed": "{old} இப்போது {name}",
+  "topicSet": "{name} தலைப்பை \"{topic}\" என மாற்றினார்",
+  "topicSetBySomeone": "தலைப்பு இப்போது \"{topic}\"",
+  "titleSet": "{name} அரட்டையின் பெயரை \"{title}\" என மாற்றினார்",
+  "titleSetBySomeone": "அரட்டையின் பெயர் இப்போது \"{title}\"",
+  "memberKicked": "{name} {member}-ஐ நீக்கினார்",
+  "memberKickedBySomeone": "{member} நீக்கப்பட்டார்",
+  "memberRole": "{name} {member}-ஐ {role, select, founder{நிறுவனர்} moderator{மட்டுறுத்துநர்} observer{பார்வையாளர்} other{உறுப்பினர்}} ஆக்கினார்",
+  "memberRoleBySomeone": "{member} இப்போது {role, select, founder{நிறுவனர்} moderator{மட்டுறுத்துநர்} observer{பார்வையாளர்} other{உறுப்பினர்}}",
+  "membersJoined": "{people, select, one{{names} அரட்டையில் சேர்ந்தார்} other{{names} அரட்டையில் சேர்ந்தனர்}}",
+  "membersLeft": "{people, select, one{{names} அரட்டையை விட்டு வெளியேறினார்} other{{names} அரட்டையை விட்டு வெளியேறினர்}}",
+  "namesTwo": "{first} மற்றும் {second}",
+  "namesThree": "{first}, {second} மற்றும் {third}",
+  "namesMore": "{first}, {second} மற்றும் மேலும் {count} பேர்",
+  "changeTopic": "தலைப்பை மாற்று",
+  "groupTopic": "தலைப்பு",
+  "topicTooLong": "அந்தத் தலைப்பு மிக நீளமானது",
+  "groupSettings": "குழு அமைப்புகள்",
+  "privateGroupHint": "நீங்கள் அழைக்கும் நண்பர்கள் மட்டுமே சேர முடியும்",
+  "publicGroupHint": "அரட்டை ஐடி உள்ள எவரும் சேரலாம்",
+  "topicLock": "தலைப்பைப் பூட்டு",
+  "topicLockHint": "மட்டுறுத்துநர்கள் மட்டுமே அதை மாற்ற முடியும்",
+  "whoCanSpeak": "யார் செய்திகளை அனுப்பலாம்",
+  "voiceEveryone": "பார்வையாளர்கள் தவிர அனைவரும்",
+  "voiceModerators": "மட்டுறுத்துநர்களும் நீங்களும்",
+  "voiceFounder": "நீங்கள் மட்டும்",
+  "peerLimit": "உறுப்பினர் வரம்பு",
+  "peerLimitInvalid": "1 முதல் {max} வரை ஒரு எண்ணை உள்ளிடவும்",
+  "groupPasswordOn": "சேரத் தேவை",
+  "groupPasswordOff": "இல்லை",
+  "groupPasswordEmptyForNone": "கடவுச்சொல் வேண்டாமெனில் காலியாக விடவும்",
+  "makeModerator": "மட்டுறுத்துநர் ஆக்கு",
+  "makeUser": "சாதாரண உறுப்பினர் ஆக்கு",
+  "makeObserver": "பார்வையாளர் ஆக்கு (படிக்க மட்டும்)",
+  "removeMember": "குழுவிலிருந்து நீக்கு",
+  "removeMemberMessage": "\"{name}\" என்பவரைக் குழுவிலிருந்து நீக்கவா?",
+  "remove": "நீக்கு",
+  "chatIdCopied": "அரட்டை ஐடி நகலெடுக்கப்பட்டது",
+  "autoAcceptUpTo": "{size} வரை"
 }

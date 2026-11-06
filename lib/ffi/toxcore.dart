@@ -60,14 +60,14 @@ final class Toxcore extends api.Tox with api.ToxFfiApi {
       lib.ffi.tox_options_free,
       _handleError(
         lib.allocator,
-        Tox_Err_Options_New.fromValue,
+        api.OptionsNewError.fromValue,
         lib.ffi.tox_options_new,
       ),
       (native) {
         options.applyTo(lib, native);
         final ptr = _handleError(
           lib.allocator,
-          Tox_Err_New.fromValue,
+          api.NewError.fromValue,
           (err) => lib.ffi.tox_new(native, err),
         );
         lib.ffi.tox_events_init(ptr);
@@ -87,7 +87,7 @@ final class Toxcore extends api.Tox with api.ToxFfiApi {
   List<Event> iterate() {
     return _handleError(
       lib.allocator,
-      Tox_Err_Iterate_Options_New.fromValue,
+      api.IterateOptionsNewError.fromValue,
       (optErr) => _scoped(
         lib.ffi.tox_iterate_options_free,
         lib.ffi.tox_iterate_options_new(optErr),
@@ -100,7 +100,7 @@ final class Toxcore extends api.Tox with api.ToxFfiApi {
   }
 
   List<Event> _iterate(Pointer<Tox_Iterate_Options> options) {
-    return _handleError(lib.allocator, Tox_Err_Events_Iterate.fromValue, (err) {
+    return _handleError(lib.allocator, api.EventsIterateError.fromValue, (err) {
       return _scoped(
         lib.ffi.tox_events_free,
         lib.ffi.tox_events_iterate(pointer, options, err),
@@ -121,6 +121,44 @@ final class Toxcore extends api.Tox with api.ToxFfiApi {
 
   @override
   api.ToxAv startAv() => _av ??= ToxAvFfi(lib, pointer);
+
+  @override
+  Uint8List groupGetSavedata(api.GroupNumber groupNumber) {
+    final size = _handleError(
+      lib.allocator,
+      api.GroupStateQueryError.fromValue,
+      (err) =>
+          lib.ffi.tox_group_get_savedata_size(pointer, groupNumber.value, err),
+      'tox_group_get_savedata_size',
+    );
+    return _scoped(lib.allocator.free, lib.allocator<Uint8>(size), (ptr) {
+      _handleError(
+        lib.allocator,
+        api.GroupStateQueryError.fromValue,
+        (err) => lib.ffi.tox_group_get_savedata(
+          pointer,
+          groupNumber.value,
+          ptr,
+          err,
+        ),
+        'tox_group_get_savedata',
+      );
+      return ptr.asTypedList(size).clone();
+    });
+  }
+
+  @override
+  api.GroupNumber groupLoadSavedata(Uint8List savedata) =>
+      savedata.scoped(lib.allocator, (ptr, length) {
+        return api.GroupNumber(
+          _handleError(
+            lib.allocator,
+            api.GroupLoadError.fromValue,
+            (err) => lib.ffi.tox_group_load_savedata(pointer, ptr, length, err),
+            'tox_group_load_savedata',
+          ),
+        );
+      });
 
   @override
   void kill() {
@@ -146,7 +184,7 @@ Uint8List decryptToxSave(ToxLibrary lib, Uint8List save, String passphrase) {
       ) {
         _handleError(
           lib.allocator,
-          Tox_Err_Decryption.fromValue,
+          api.DecryptionError.fromValue,
           (err) => lib.ffi.tox_pass_decrypt(
             savePtr,
             length,
@@ -172,7 +210,7 @@ Uint8List passEncrypt(ToxLibrary lib, Uint8List data, String passphrase) {
       ) {
         _handleError(
           lib.allocator,
-          Tox_Err_Encryption.fromValue,
+          api.EncryptionError.fromValue,
           (err) => lib.ffi.tox_pass_encrypt(
             dataPtr,
             dataLength,

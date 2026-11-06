@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:btox/api/toxcore/tox.dart';
+import 'package:btox/api/toxcore/tox.dart' hide Connection;
+import 'package:btox/api/toxcore/tox.dart' as toxcore show Connection;
 import 'package:btox/api/toxcore/tox_constants.dart';
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/attachments/attachments.dart';
@@ -14,8 +15,6 @@ import 'package:btox/calls/plugin_call_media.dart';
 import 'package:btox/calls/relay_protocol.dart';
 import 'package:btox/calls/toxav_protocol.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart'
-    show Tox_Connection, Tox_File_Kind, Tox_Message_Type;
 import 'package:btox/logger.dart';
 import 'package:btox/messages/split_message.dart';
 import 'package:btox/messages/formats.dart';
@@ -32,8 +31,11 @@ import 'package:btox/providers/message_formats.dart'
     show knownMessageFormatsProvider;
 import 'package:btox/providers/profiles.dart';
 import 'package:btox/providers/tox.dart';
+import 'package:btox/services/chat_channel.dart';
 import 'package:btox/services/file_transfers.dart';
 import 'package:btox/services/message_notifier.dart';
+import 'package:btox/services/tox_facts.dart';
+import 'package:btox/services/tox_groups.dart';
 import 'package:btox/sync/avatar_files.dart';
 import 'package:btox/sync/event.dart';
 import 'package:btox/sync/fact.dart';
@@ -83,15 +85,15 @@ Future<ToxSync> toxSync(
 
 /// One of our messages on its way to a friend, in the parts Tox takes.
 final class _Outgoing {
-  final int friendNumber;
-  final Tox_Message_Type kind;
+  final FriendNumber friendNumber;
+  final MessageType kind;
   final List<Uint8List> parts;
   // Tox delivers in order, so the delivered parts are the first ones.
-  var delivered = 0;
+  int delivered;
   // Tox's IDs of the parts after those that it has.
-  final pending = <int>[];
+  final pending = <FriendMessageId>[];
 
-  _Outgoing(this.friendNumber, this.kind, this.parts);
+  _Outgoing(this.friendNumber, this.kind, this.parts, {this.delivered = 0});
 
   int get next => delivered + pending.length;
 }
@@ -106,25 +108,31 @@ final class ToxSync {
   final Id<Profiles> _profileId;
   final int _maxMessageLength;
   final Duration _retryDelay;
+  // Tox doesn't time out typing, so we do.
+  final Duration _typingFor;
   final MessageNotifier? _notifier;
   final List<MessageFormat> _knownFormats;
 
   final _subscriptions = <StreamSubscription<Object?>>[];
-  final _connectionChanges = StreamController<Tox_Connection>.broadcast();
+  final _connectionChanges = StreamController<toxcore.Connection>.broadcast();
   var _disposed = false;
 
   Profile? _profile;
   Home? _home;
+  ToxGroups? _groups;
 
-  final _friendNumbers = <PublicKey, int>{};
+  final _friendNumbers = <PublicKey, FriendNumber>{};
   // The request each friend was added to Tox with, if any.
   final _requests = <PublicKey, (ToxAddress, String?)?>{};
   // The friend requests that came since starting.
   final _toldRequests = <PublicKey, String>{};
-  final _onlineFriends = <int>{};
+  final _onlineFriends = <FriendNumber>{};
+  final _typingTo = <FriendNumber, Timer>{};
 
   /// Our messages on their way, by their Send event.
   final _outgoing = <EventId, _Outgoing>{};
+  // How many parts of each message had arrived before the last restart.
+  var _deliveredBefore = <EventId, int>{};
   // Sends what Tox didn't take again, if nothing else does first.
   Timer? _retry;
 
@@ -145,6 +153,7 @@ final class ToxSync {
     this._profileId, {
     required int maxMessageLength,
     Duration retryDelay = const Duration(seconds: 1),
+    Duration typingFor = const Duration(seconds: 3),
     MessageNotifier? notifier,
     Future<String> Function()? attachmentsDirectory,
     List<MessageFormat> knownFormats = messageFormats,
@@ -154,6 +163,7 @@ final class ToxSync {
        _callAudio = callAudio,
        _callVideo = callVideo,
        _retryDelay = retryDelay,
+       _typingFor = typingFor,
        _notifier = notifier,
        _knownFormats = knownFormats,
        _avatars = AvatarFiles(_db, _tox, _profileId) {
@@ -182,9 +192,9 @@ final class ToxSync {
     );
   }
 
-  Tox_Connection get connection => _tox.selfGetConnectionStatus();
+  toxcore.Connection get connection => _tox.selfGetConnectionStatus();
 
-  Stream<Tox_Connection> get connectionChanges => _connectionChanges.stream;
+  Stream<toxcore.Connection> get connectionChanges => _connectionChanges.stream;
 
   void start() {
     _logger.unawaited('forget live facts', _db.clearLiveFacts(_profileId));
@@ -205,6 +215,10 @@ final class ToxSync {
       CallHost.instance.remove(_profileId);
     }
     _retry?.cancel();
+    ChatHost.instance.remove(_profileId);
+    for (final timer in _typingTo.values) {
+      timer.cancel();
+    }
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -223,7 +237,7 @@ final class ToxSync {
         :final friendNumber,
         :final connectionStatus,
       ):
-        final online = connectionStatus != Tox_Connection.TOX_CONNECTION_NONE;
+        final online = connectionStatus != toxcore.Connection.none;
         final publicKey = _publicKeyOf(friendNumber);
         // A linked account's friends' states come from its home device.
         if (publicKey != null && _home != null) {
@@ -232,7 +246,7 @@ final class ToxSync {
             _db.updateLiveFacts(_profileId, [
               (
                 Subject.friend(publicKey),
-                FactValue.connection(Connection.values[connectionStatus.value]),
+                FactValue.connection(connectionStatus.fact),
               ),
             ]),
           );
@@ -250,6 +264,10 @@ final class ToxSync {
             _calls?.friendOffline(publicKey);
           }
           _syncSessions.offline(friendNumber);
+          _typingTo.remove(friendNumber)?.cancel();
+          if (publicKey != null && _home != null) {
+            _friendTyping([publicKey], typing: false);
+          }
           // Tox forgets the messages it hasn't delivered yet.
           for (final message in _outgoing.values) {
             if (message.friendNumber == friendNumber) {
@@ -278,6 +296,11 @@ final class ToxSync {
               message.pending.remove(messageId)) {
             if (++message.delivered == message.parts.length) {
               _delivered(id);
+            } else {
+              _logger.unawaited(
+                'keep how much of a message arrived',
+                _db.setDeliveredParts(_profileId, id, message.delivered),
+              );
             }
             break;
           }
@@ -291,6 +314,26 @@ final class ToxSync {
       case ToxEventFriendName(:final friendNumber, :final name):
         if (_publicKeyOf(friendNumber) case final pk?) {
           _home?.named(pk, utf8.decode(name, allowMalformed: true));
+        }
+      case ToxEventFriendStatusMessage(:final friendNumber, :final message):
+        if (_publicKeyOf(friendNumber) case final pk?) {
+          _home?.fact(
+            Subject.friend(pk),
+            FactValue.statusMessage(utf8.decode(message, allowMalformed: true)),
+          );
+        }
+      case ToxEventFriendStatus(:final friendNumber, :final status):
+        if (_publicKeyOf(friendNumber) case final pk? when _home != null) {
+          _logger.unawaited(
+            'update away state',
+            _db.updateLiveFacts(_profileId, [
+              (Subject.friend(pk), FactValue.status(status.fact)),
+            ]),
+          );
+        }
+      case ToxEventFriendTyping(:final friendNumber, :final typing):
+        if (_publicKeyOf(friendNumber) case final pk? when _typingShown) {
+          _friendTyping([pk], typing: typing);
         }
       case ToxEventFriendRequest(:final publicKey, :final message):
         _logger.i('Received friend request from ${publicKey.toJson()}');
@@ -334,7 +377,7 @@ final class ToxSync {
             _files.decline(friendNumber, fileNumber);
           }
         } else if (_publicKeyOf(friendNumber) case final pk?
-            when kind == Tox_File_Kind.TOX_FILE_KIND_AVATAR.value) {
+            when kind == FileKind.avatar) {
           _logger.unawaited(
             'receive an avatar',
             _avatarOffered(home, pk, friendNumber, fileNumber, fileSize),
@@ -369,22 +412,22 @@ final class ToxSync {
           e.fileNumber,
         ).controlled(e.friendNumber, e.fileNumber, e.control);
       default:
-        break;
+        _groups?.handleEvent(event);
     }
   }
 
   // A linked account's files come from its home device.
   ToxFiles get _toxFiles => _syncSessions.files ?? _files;
 
-  ToxFiles _filesOf(int friendNumber, int fileNumber) =>
+  ToxFiles _filesOf(FriendNumber friendNumber, FileNumber fileNumber) =>
       _avatars.moves(friendNumber, fileNumber) ? _avatars : _toxFiles;
 
   /// Its file ID is its blob ID. An empty file says there's none.
   Future<void> _avatarOffered(
     Home home,
     PublicKey pk,
-    int friendNumber,
-    int fileNumber,
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
     int size,
   ) async {
     if (size == 0 || size > maxAvatarSize) {
@@ -394,7 +437,7 @@ final class ToxSync {
       }
       return;
     }
-    final blob = BlobId(_tox.fileGetFileId(friendNumber, fileNumber));
+    final blob = BlobId(_tox.fileGetFileId(friendNumber, fileNumber).bytes);
     if (await _db.getAvatar(_profileId, blob) != null) {
       _avatars.decline(friendNumber, fileNumber);
       await home.avatarOf(pk, blob);
@@ -410,7 +453,7 @@ final class ToxSync {
   }
 
   /// An empty file says the account has none.
-  Future<void> _sendAvatar(int friendNumber) async {
+  Future<void> _sendAvatar(FriendNumber friendNumber) async {
     final blob = _profile?.settings.avatar;
     final bytes = blob == null
         ? Uint8List(0)
@@ -420,12 +463,16 @@ final class ToxSync {
     }
   }
 
-  PublicKey? _publicKeyOf(int friendNumber) => _friendNumbers.entries
+  PublicKey? _publicKeyOf(FriendNumber friendNumber) => _friendNumbers.entries
       .where((entry) => entry.value == friendNumber)
       .firstOrNull
       ?.key;
 
-  void _receive(int friendNumber, Tox_Message_Type type, Uint8List message) {
+  void _receive(
+    FriendNumber friendNumber,
+    MessageType type,
+    Uint8List message,
+  ) {
     final home = _home;
     final pk = _publicKeyOf(friendNumber);
     final friend = home?.state.friends[pk];
@@ -442,16 +489,24 @@ final class ToxSync {
     );
   }
 
-  /// Records a friend's message or file, and shows it unless it repeats one.
-  Future<NewEvent?> _recordIncoming(GraphId chat, EventContent content) async {
+  /// Notifies the user unless it repeats an earlier one.
+  Future<NewEvent?> _recordIncoming(
+    GraphId chat,
+    EventContent content, {
+    String? title,
+    String? sender,
+  }) async {
     final home = _home!;
     final recorded = await home.record(chat, content);
-    if (recorded case (final id, final event, _)
-        when !home.earlier.repeats(id, event, _formats)) {
+    if (recorded case (
+      final id,
+      final event,
+      _,
+    ) when !home.earlier.repeats(id, event, _formats)) {
       final listed = notifying(
         [
           (
-            sender: null,
+            sender: sender,
             text: notificationText(content, _formats),
             time: DateTime.fromMillisecondsSinceEpoch(event.time),
           ),
@@ -463,7 +518,7 @@ final class ToxSync {
       if (listed.isNotEmpty) {
         _notifier?.notify(
           ChatRef(_profileId, chat),
-          home.state.friends[home.friendOf(chat)]?.name,
+          title ?? home.state.friends[home.friendOf(chat)]?.name,
           listed,
           _profile?.settings.nickname,
         );
@@ -493,6 +548,9 @@ final class ToxSync {
       ..link(profile.publicKey, profile.home?.publicKey);
     if (!first) {
       _home?.profileChanged(settings);
+      if (!settings.typingIndicators) {
+        _stopTyping();
+      }
       if (avatarChanged && _home != null) {
         for (final friendNumber in _onlineFriends) {
           _logger.unawaited('send our avatar', _sendAvatar(friendNumber));
@@ -516,6 +574,53 @@ final class ToxSync {
     } else {
       _logger.unawaited('load the account', _startHome(profile));
     }
+  }
+
+  bool get _typingShown =>
+      _home != null && (_profile?.settings.typingIndicators ?? false);
+
+  void _userTyping(GraphId chat, {required bool typing}) {
+    final friend = _home?.friendOf(chat);
+    final friendNumber = friend == null ? null : _friendNumbers[friend];
+    if (friendNumber == null || !_typingShown) {
+      return;
+    }
+    _typingTo.remove(friendNumber)?.cancel();
+    if (typing) {
+      _typingTo[friendNumber] = Timer(_typingFor, () {
+        _typingTo.remove(friendNumber);
+        _tellTyping(friendNumber, typing: false);
+      });
+    }
+    _tellTyping(friendNumber, typing: typing);
+  }
+
+  void _tellTyping(FriendNumber friendNumber, {required bool typing}) {
+    try {
+      _tox.selfSetTyping(friendNumber, typing);
+    } on ApiException catch (e) {
+      _logger.w('Failed to tell friend $friendNumber of typing: $e');
+    }
+  }
+
+  void _friendTyping(Iterable<PublicKey> friends, {required bool typing}) =>
+      _logger.unawaited(
+        'update typing',
+        _db.updateLiveFacts(_profileId, [
+          for (final pk in friends)
+            (Subject.friend(pk), FactValue.typing(typing)),
+        ]),
+      );
+
+  void _stopTyping() {
+    for (final MapEntry(key: friendNumber, value: timer) in [
+      ..._typingTo.entries,
+    ]) {
+      timer.cancel();
+      _tellTyping(friendNumber, typing: false);
+    }
+    _typingTo.clear();
+    _friendTyping(_friendNumbers.keys, typing: false);
   }
 
   /// Its home device connects and records them.
@@ -550,10 +655,12 @@ final class ToxSync {
 
   Future<void> _startHome(Profile profile) async {
     final home = await Home.load(_db, profile);
+    _deliveredBefore = await _db.getDeliveredParts(_profileId);
     if (_disposed) {
       return;
     }
     _home = home;
+    ChatHost.instance.add(_profileId, _userTyping);
     await home.endInterrupted(stopped: () => _disposed);
     if (_disposed) {
       return;
@@ -564,6 +671,23 @@ final class ToxSync {
       return;
     }
     _updateFriends();
+    final groups = _groups = ToxGroups(
+      _tox,
+      _db,
+      _profileId,
+      home,
+      (pk) => _friendNumbers[pk],
+      _publicKeyOf,
+      () => _nickname,
+      (chat, content, {title, sender}) => _logger.unawaited(
+        'save a group message',
+        _recordIncoming(chat, content, title: title, sender: sender),
+      ),
+    );
+    await groups.load();
+    if (_disposed) {
+      return;
+    }
     if (_callAudio case final audio?) {
       final calls = _calls = Calls(
         _profileId,
@@ -590,9 +714,19 @@ final class ToxSync {
 
   void _intents(List<StoredIntent> intents) => _logger.unawaited(
     'write intents',
-    _home!.intents(intents, _nickname).then((files) {
+    _home!.intents(intents, _nickname).then((written) async {
+      final (files, events) = written;
       for (final file in files) {
         _logger.unawaited('delete $file', deleteAttachment(file));
+      }
+      await _groups?.written(events);
+      for (final (_, event, _) in events) {
+        if (event.content
+            case WantFriend(:final pk) || UnwantFriend(:final pk)) {
+          // After an answer, a new request from them is shown again.
+          _toldRequests.remove(pk);
+          _notifier?.unrequested(pk);
+        }
       }
       _updateFriends();
       _sendMessages();
@@ -604,7 +738,7 @@ final class ToxSync {
 
   void _transfersChanged(List<Transfer> transfers) {
     _transfers = transfers;
-    _files.incomingChanged(transfers);
+    _files.transfersChanged(transfers);
     _logger.unawaited(
       'start files',
       _home!.startFiles(transfers, _nickname).then((_) => _sendMessages()),
@@ -694,8 +828,15 @@ final class ToxSync {
   }
 
   void _delivered(EventId id) {
-    _outgoing.remove(id);
+    final message = _outgoing.remove(id);
     _home?.delivered(id);
+    _deliveredBefore.remove(id);
+    if (message != null && message.parts.length > 1) {
+      _logger.unawaited(
+        'forget how much of a message arrived',
+        _db.forgetDeliveredParts(_profileId, id),
+      );
+    }
   }
 
   void _sendMessages() {
@@ -717,6 +858,7 @@ final class ToxSync {
             friendNumber,
             kind,
             splitMessage(message, _maxMessageLength),
+            delivered: _deliveredBefore[id] ?? 0,
           ),
         );
       }

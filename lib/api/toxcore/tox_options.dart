@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox_enums.dart';
 import 'package:btox/ffi/tox_library.dart';
 
 /// The options for a new Tox. Unset ones keep toxcore's defaults.
@@ -10,14 +11,14 @@ final class ToxOptions {
   final bool? udpEnabled;
   final bool? localDiscoveryEnabled;
   final bool? dhtAnnouncementsEnabled;
-  final Tox_Proxy_Type? proxyType;
+  final ProxyType? proxyType;
   final String? proxyHost;
   final int? proxyPort;
   final int? startPort;
   final int? endPort;
   final int? tcpPort;
   final bool? holePunchingEnabled;
-  final Tox_Savedata_Type? savedataType;
+  final SavedataType? savedataType;
   final Uint8List? savedata;
   final bool? experimentalThreadSafety;
   final bool? experimentalGroupsPersistence;
@@ -67,7 +68,10 @@ final class ToxOptions {
         lib.ffi.tox_options_set_dht_announcements_enabled(options, value);
       }
       if (proxyType case final value?) {
-        lib.ffi.tox_options_set_proxy_type(options, value);
+        lib.ffi.tox_options_set_proxy_type(
+          options,
+          Tox_Proxy_Type.fromValue(value.value),
+        );
       }
       if (proxyHost case final value?) {
         _owned(
@@ -93,7 +97,10 @@ final class ToxOptions {
         lib.ffi.tox_options_set_hole_punching_enabled(options, value);
       }
       if (savedataType case final value?) {
-        lib.ffi.tox_options_set_savedata_type(options, value);
+        lib.ffi.tox_options_set_savedata_type(
+          options,
+          Tox_Savedata_Type.fromValue(value.value),
+        );
       }
       if (savedata case final value?) {
         _owned(

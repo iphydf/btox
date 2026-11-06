@@ -37,7 +37,7 @@ final class AddContactPage extends HookWidget {
       Navigator.pop(context);
       try {
         await onAddContact(
-          ToxAddress.fromString(toxIdInputController.text),
+          ToxAddress.fromString(toxIdOf(toxIdInputController.text)),
           messageInputController.text,
         );
       } on Exception catch (e) {

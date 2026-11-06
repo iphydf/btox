@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_File_Control, Tox_File_Kind;
 import 'package:btox/logger.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
@@ -15,7 +14,7 @@ const _logger = Logger(['AvatarFiles']);
 
 const maxAvatarSize = 64 * 1024;
 
-typedef _Key = (int, int);
+typedef _Key = (FriendNumber, FileNumber);
 
 final class _Incoming {
   final BlobId blob;
@@ -36,36 +35,34 @@ final class AvatarFiles implements ToxFiles {
 
   AvatarFiles(this._db, this._tox, this._profileId);
 
-  bool moves(int friendNumber, int fileNumber) =>
+  bool moves(FriendNumber friendNumber, FileNumber fileNumber) =>
       _incoming.containsKey((friendNumber, fileNumber)) ||
       _outgoing.containsKey((friendNumber, fileNumber));
 
   /// Calls [kept] once [blob] is stored.
   void receive(
-    int friendNumber,
-    int fileNumber,
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
     BlobId blob,
     int size,
     Future<void> Function() kept,
   ) {
     final key = (friendNumber, fileNumber);
     _incoming[key] = _Incoming(blob, size, kept);
-    _control(key, Tox_File_Control.TOX_FILE_CONTROL_RESUME);
+    _control(key, FileControl.resume);
   }
 
-  void decline(int friendNumber, int fileNumber) => _control((
-    friendNumber,
-    fileNumber,
-  ), Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+  void decline(FriendNumber friendNumber, FileNumber fileNumber) =>
+      _control((friendNumber, fileNumber), FileControl.cancel);
 
   /// With no [blob], an empty file says there's none.
-  void send(int friendNumber, BlobId? blob, Uint8List bytes) {
+  void send(FriendNumber friendNumber, BlobId? blob, Uint8List bytes) {
     try {
       final fileNumber = _tox.fileSend(
         friendNumber,
-        Tox_File_Kind.TOX_FILE_KIND_AVATAR.value,
+        FileKind.avatar,
         bytes.length,
-        blob?.bytes ?? Uint8List(32),
+        FileId(blob?.bytes ?? Uint8List(32)),
         // Some clients read an avatar without a name as none.
         blob == null
             ? Uint8List(0)
@@ -80,7 +77,12 @@ final class AvatarFiles implements ToxFiles {
   }
 
   @override
-  void chunk(int friendNumber, int fileNumber, int position, Uint8List data) {
+  void chunk(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    Uint8List data,
+  ) {
     final key = (friendNumber, fileNumber);
     final incoming = _incoming[key];
     if (incoming == null) {
@@ -90,7 +92,7 @@ final class AvatarFiles implements ToxFiles {
       if (position != incoming.bytes.length ||
           position + data.length > incoming.size) {
         _incoming.remove(key);
-        _control(key, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+        _control(key, FileControl.cancel);
         return;
       }
       incoming.bytes.add(data);
@@ -111,7 +113,12 @@ final class AvatarFiles implements ToxFiles {
   }
 
   @override
-  void requested(int friendNumber, int fileNumber, int position, int length) {
+  void requested(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    int length,
+  ) {
     final key = (friendNumber, fileNumber);
     final bytes = _outgoing[key];
     if (bytes == null) {
@@ -134,19 +141,23 @@ final class AvatarFiles implements ToxFiles {
   }
 
   @override
-  void controlled(int friendNumber, int fileNumber, Tox_File_Control control) {
-    if (control == Tox_File_Control.TOX_FILE_CONTROL_CANCEL) {
+  void controlled(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  ) {
+    if (control == FileControl.cancel) {
       _incoming.remove((friendNumber, fileNumber));
       _outgoing.remove((friendNumber, fileNumber));
     }
   }
 
-  void friendOffline(int friendNumber) {
+  void friendOffline(FriendNumber friendNumber) {
     _incoming.removeWhere((key, _) => key.$1 == friendNumber);
     _outgoing.removeWhere((key, _) => key.$1 == friendNumber);
   }
 
-  void _control(_Key key, Tox_File_Control control) {
+  void _control(_Key key, FileControl control) {
     try {
       _tox.fileControl(key.$1, key.$2, control);
     } on ApiException catch (e) {

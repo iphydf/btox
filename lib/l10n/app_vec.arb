@@ -319,7 +319,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Acetar i file in automàtico fin a",
+    "autoAcceptFiles": "Acetar i file in automàtico",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -342,6 +342,10 @@
     "fileCancelled": "Anułà",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Manda de novo",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "In pausa fin che no i torna in łinea",
     "@filePaused": {
@@ -620,13 +624,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Gnancora disponìbiłe",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Nisuna app ła pol vèrzar 'sto link",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Nisuna app ła pol vèrzar 'sto file",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} xe drio scrìvar",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Indicadori de scritura",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Te vedi quando i to amighi i scrive, e lori i vede quando te scrivi",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Respóndar",
     "@reply": {
@@ -1077,5 +1098,145 @@
     "noChatsHint": "Zonta un contato col boton + par scuminsiar a ciacołar",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Scrivi in privà",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "in privà",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "In privà a {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Scrivi a tuti",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} el ga lasà el grupo, cuindi no xe stà mandà gnente",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Grupo novo",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Entra in un grupo publico",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Privà",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Publico",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Conferensa",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Nome",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "Un grupo el ga bisogno de un nome",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Sto nome el xe massa longo",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "ID de la chat",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "Un ID de chat el ga 64 caràtari esadesimałi",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Password",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Sta password ła xe massa longa",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Invita amighi",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Nisun amigo in linea",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} invità",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Ndar fora da ła chat",
+    "leaveChatMessage": "Ndar fora da \"{name}\"? No te riçevarà pì i so mesaji.",
+    "leave": "Ndar fora",
+    "chatLeft": "Te si ndà fora da \"{name}\"",
+    "memberJoined": "{name} el xe entrà in ła chat",
+    "memberLeft": "{name} el ga lasà ła chat",
+    "memberRenamed": "{old} deso el se ciama {name}",
+    "topicSet": "{name} el ga canbià el tema in \"{topic}\"",
+    "topicSetBySomeone": "El tema deso el xe \"{topic}\"",
+    "titleSet": "{name} el ga canbià el nome de ła chat in \"{title}\"",
+    "titleSetBySomeone": "Ła chat deso ła se ciama \"{title}\"",
+    "memberKicked": "{name} el ga cavà {member}",
+    "memberKickedBySomeone": "{member} el xe stà cavà",
+    "memberRole": "{name} el ga fato {member} {role, select, founder{fondador} moderator{moderador} observer{osarvador} other{menbro}}",
+    "memberRoleBySomeone": "{member} deso el xe {role, select, founder{fondador} moderator{moderador} observer{osarvador} other{menbro}}",
+    "membersJoined": "{people, select, one{{names} el xe entrà in ła chat} other{{names} i xe entrài in ła chat}}",
+    "membersLeft": "{people, select, one{{names} el ga lasà ła chat} other{{names} i ga lasà ła chat}}",
+    "namesTwo": "{first} e {second}",
+    "namesThree": "{first}, {second} e {third}",
+    "namesMore": "{first}, {second} e altri {count}",
+    "changeTopic": "Canbia el tema",
+    "groupTopic": "Tema",
+    "topicTooLong": "Sto tema el xe massa longo",
+    "groupSettings": "Asestasion del grupo",
+    "privateGroupHint": "Pol entrar soło i amighi che te inviti",
+    "publicGroupHint": "Chi che gabia l'ID de la chat el pol entrar",
+    "topicLock": "Bloca el tema",
+    "topicLockHint": "Soło i moderadori i pol canbiarlo",
+    "whoCanSpeak": "Chi che pol mandar mesaji",
+    "voiceEveryone": "Tuti fora che i osarvadori",
+    "voiceModerators": "I moderadori e ti",
+    "voiceFounder": "Soło ti",
+    "peerLimit": "Lìmite de menbri",
+    "peerLimitInvalid": "Meti un nùmaro da 1 a {max}",
+    "groupPasswordOn": "Ghe vol par entrar",
+    "groupPasswordOff": "Nisuna",
+    "groupPasswordEmptyForNone": "Łasa vodo par nisuna",
+    "makeModerator": "Fa moderador",
+    "makeUser": "Fa menbro normałe",
+    "makeObserver": "Fa osarvador (pol soło łèzar)",
+    "removeMember": "Cava dal grupo",
+    "removeMemberMessage": "Cavar \"{name}\" dal grupo?",
+    "remove": "Cava",
+    "chatIdCopied": "ID de la chat copià",
+    "autoAcceptUpTo": "Fin a {size}"
 }

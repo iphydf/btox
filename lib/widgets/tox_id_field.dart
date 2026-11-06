@@ -4,6 +4,10 @@ import 'package:btox/models/crypto.dart';
 import 'package:flutter/material.dart';
 
 final _hex = RegExp(r'^[0-9A-Fa-f]*$');
+final _scheme = RegExp('^tox:', caseSensitive: false);
+
+/// Links and QR codes have a `tox:` prefix.
+String toxIdOf(String text) => text.trim().replaceFirst(_scheme, '');
 
 final class ToxIdField extends StatelessWidget {
   final TextEditingController controller;
@@ -19,11 +23,12 @@ final class ToxIdField extends StatelessWidget {
       child: TextFormField(
         key: const Key('toxId'),
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: (value) {
-          value ??= '';
+        validator: (text) {
+          final value = toxIdOf(text ?? '');
           if (value.length != toxAddressSize * 2 || !_hex.hasMatch(value)) {
-            final msg = AppLocalizations.of(context)!
-                .toxIdLengthError(toxAddressSize * 2);
+            final msg = AppLocalizations.of(
+              context,
+            )!.toxIdLengthError(toxAddressSize * 2);
             return '$msg (${value.length}/${toxAddressSize * 2})';
           }
           final address = ToxAddress.fromString(value);

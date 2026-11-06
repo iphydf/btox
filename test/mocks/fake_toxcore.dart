@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:btox/api/toxcore/tox.dart' as api;
 import 'package:btox/api/toxcore/tox_av.dart' as api;
 import 'package:btox/api/toxcore/tox_events.dart';
-import 'package:btox/ffi/toxcore.dart' as ffi;
 import 'package:btox/logger.dart';
 import 'package:btox/models/crypto.dart';
 
@@ -47,10 +46,10 @@ final class FakeToxcore extends api.Tox {
   /// How many more messages Tox takes before its queue is full, if limited.
   int? sendQueueRoom;
 
-  final List<(int, int, ffi.Tox_File_Control)> fileControls = [];
+  final List<(int, int, api.FileControl)> fileControls = [];
   final List<(int, int, String)> fileSends = [];
   // By file number, as fileSends.
-  final List<(int, Uint8List)> fileSendKinds = [];
+  final List<(api.FileKind, FileId?)> fileSendKinds = [];
   final List<(int, int, int, Uint8List)> fileChunks = [];
   final List<(int, int, int)> fileSeeks = [];
   // Of files friends send, by friend number and file number, else made up
@@ -61,10 +60,12 @@ final class FakeToxcore extends api.Tox {
   // Where each file's next chunk must start, as Tox takes them in order.
   final _nextChunk = <(int, int), int>{};
   final List<(int, Uint8List)> losslessPackets = [];
+  // By friend, in order.
+  final List<(int, bool)> typingTold = [];
 
   int _nextMessageId = 0;
 
-  var _connection = ffi.Tox_Connection.TOX_CONNECTION_NONE;
+  var _connection = api.Connection.none;
 
   void pushEvent(Event event) {
     if (event case ToxEventSelfConnectionStatus(:final connectionStatus)) {
@@ -79,7 +80,7 @@ final class FakeToxcore extends api.Tox {
   api.ToxAv startAv() => av;
 
   @override
-  ffi.Tox_Connection selfGetConnectionStatus() => _connection;
+  api.Connection selfGetConnectionStatus() => _connection;
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -102,22 +103,20 @@ final class FakeToxcore extends api.Tox {
       this.statusMessage = utf8.decode(statusMessage);
 
   @override
-  int friendAdd(ToxAddress address, Uint8List message) {
+  api.FriendNumber friendAdd(ToxAddress address, Uint8List message) {
     final friendNumber = friendAddNorequest(address.publicKey);
     friendRequests.add((address, utf8.decode(message)));
     return friendNumber;
   }
 
   @override
-  int friendAddNorequest(PublicKey publicKey) {
+  api.FriendNumber friendAddNorequest(PublicKey publicKey) {
     final existing = friends.indexOf(publicKey);
     if (existing != -1 && !deletedFriends.contains(existing)) {
-      throw api.ApiException(
-        ffi.Tox_Err_Friend_Add.TOX_ERR_FRIEND_ADD_ALREADY_SENT,
-      );
+      throw const api.ApiException(api.FriendAddError.alreadySent);
     }
     friends.add(publicKey);
-    return friends.length - 1;
+    return api.FriendNumber(friends.length - 1);
   }
 
   int tcpRelaysAdded = 0;
@@ -125,7 +124,7 @@ final class FakeToxcore extends api.Tox {
   @override
   void addTcpRelay(String host, int port, PublicKey publicKey) {
     if (throwOnBootstrap) {
-      throw api.ApiException(ffi.Tox_Err_Bootstrap.TOX_ERR_BOOTSTRAP_BAD_HOST);
+      throw const api.ApiException(api.BootstrapError.badHost);
     }
     tcpRelaysAdded++;
   }
@@ -133,19 +132,25 @@ final class FakeToxcore extends api.Tox {
   @override
   void bootstrap(String host, int port, PublicKey publicKey) {
     if (throwOnBootstrap) {
-      throw api.ApiException(ffi.Tox_Err_Bootstrap.TOX_ERR_BOOTSTRAP_BAD_HOST);
+      throw const api.ApiException(api.BootstrapError.badHost);
     }
   }
 
   @override
-  void friendDelete(int friendNumber) => deletedFriends.add(friendNumber);
+  void friendDelete(api.FriendNumber friendNumber) =>
+      deletedFriends.add(friendNumber.value);
 
   @override
-  PublicKey friendGetPublicKey(int friendNumber) {
-    if (friendNumber < friends.length) {
-      return friends[friendNumber];
+  void selfSetTyping(api.FriendNumber friendNumber, bool typing) =>
+      typingTold.add((friendNumber.value, typing));
+
+  @override
+  PublicKey friendGetPublicKey(api.FriendNumber friendNumber) {
+    final n = friendNumber.value;
+    if (n < friends.length) {
+      return friends[n];
     }
-    return PublicKey(Uint8List.fromList(List.filled(32, friendNumber + 1)));
+    return PublicKey(Uint8List.fromList(List.filled(32, n + 1)));
   }
 
   @override
@@ -166,102 +171,95 @@ final class FakeToxcore extends api.Tox {
   }
 
   @override
-  void friendSendLosslessPacket(int friendNumber, Uint8List data) {
-    if (unconnectedFriends.contains(friendNumber)) {
+  void friendSendLosslessPacket(api.FriendNumber friendNumber, Uint8List data) {
+    if (unconnectedFriends.contains(friendNumber.value)) {
       throw const api.ApiException(
-        ffi
-            .Tox_Err_Friend_Custom_Packet
-            .TOX_ERR_FRIEND_CUSTOM_PACKET_FRIEND_NOT_CONNECTED,
+        api.FriendCustomPacketError.friendNotConnected,
       );
     }
-    losslessPackets.add((friendNumber, data));
+    losslessPackets.add((friendNumber.value, data));
   }
 
   @override
-  int friendSendMessage(
-    int friendNumber,
-    ffi.Tox_Message_Type type,
+  api.FriendMessageId friendSendMessage(
+    api.FriendNumber friendNumber,
+    api.MessageType type,
     Uint8List message,
   ) {
-    if (friendNumber >= friends.length) {
-      throw api.ApiException(
-        ffi
-            .Tox_Err_Friend_Send_Message
-            .TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND,
-      );
+    if (friendNumber.value >= friends.length) {
+      throw const api.ApiException(api.FriendSendMessageError.friendNotFound);
     }
-    if (unreachableFriends.contains(friendNumber)) {
-      throw api.ApiException(
-        ffi
-            .Tox_Err_Friend_Send_Message
-            .TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED,
+    if (unreachableFriends.contains(friendNumber.value)) {
+      throw const api.ApiException(
+        api.FriendSendMessageError.friendNotConnected,
       );
     }
     if (sendQueueRoom case final room?) {
       if (room == 0) {
-        throw api.ApiException(
-          ffi.Tox_Err_Friend_Send_Message.TOX_ERR_FRIEND_SEND_MESSAGE_SENDQ,
-        );
+        throw const api.ApiException(api.FriendSendMessageError.sendQueueFull);
       }
       sendQueueRoom = room - 1;
     }
     final messageId = _nextMessageId++;
-    sentMessages.add((friendNumber, messageId, utf8.decode(message)));
-    return messageId;
+    sentMessages.add((friendNumber.value, messageId, utf8.decode(message)));
+    return api.FriendMessageId(messageId);
   }
 
   @override
   void fileControl(
-    int friendNumber,
-    int fileNumber,
-    ffi.Tox_File_Control control,
-  ) => fileControls.add((friendNumber, fileNumber, control));
+    api.FriendNumber friendNumber,
+    api.FileNumber fileNumber,
+    api.FileControl control,
+  ) => fileControls.add((friendNumber.value, fileNumber.value, control));
 
   @override
-  int fileSend(
-    int friendNumber,
-    int kind,
+  api.FileNumber fileSend(
+    api.FriendNumber friendNumber,
+    api.FileKind kind,
     int fileSize,
-    Uint8List fileId,
+    FileId? fileId,
     Uint8List filename,
   ) {
-    fileSends.add((friendNumber, fileSize, utf8.decode(filename)));
+    fileSends.add((friendNumber.value, fileSize, utf8.decode(filename)));
     fileSendKinds.add((kind, fileId));
-    _nextChunk[(friendNumber, fileSends.length - 1)] = 0;
-    return fileSends.length - 1;
+    _nextChunk[(friendNumber.value, fileSends.length - 1)] = 0;
+    return api.FileNumber(fileSends.length - 1);
   }
 
   @override
-  void fileSeek(int friendNumber, int fileNumber, int position) =>
-      fileSeeks.add((friendNumber, fileNumber, position));
+  void fileSeek(
+    api.FriendNumber friendNumber,
+    api.FileNumber fileNumber,
+    int position,
+  ) => fileSeeks.add((friendNumber.value, fileNumber.value, position));
 
   @override
-  Uint8List fileGetFileId(int friendNumber, int fileNumber) =>
-      fileIds[(friendNumber, fileNumber)] ??
-      (Uint8List(32)
-        ..[0] = friendNumber
-        ..[1] = fileNumber);
+  FileId fileGetFileId(
+    api.FriendNumber friendNumber,
+    api.FileNumber fileNumber,
+  ) => FileId(
+    fileIds[(friendNumber.value, fileNumber.value)] ??
+        (Uint8List(32)
+          ..[0] = friendNumber.value
+          ..[1] = fileNumber.value),
+  );
 
   @override
   void fileSendChunk(
-    int friendNumber,
-    int fileNumber,
+    api.FriendNumber friendNumber,
+    api.FileNumber fileNumber,
     int position,
     Uint8List data,
   ) {
-    final key = (friendNumber, fileNumber);
+    final key = (friendNumber.value, fileNumber.value);
     if (position != (_nextChunk[key] ?? position)) {
-      throw const api.ApiException(
-        ffi.Tox_Err_File_Send_Chunk.TOX_ERR_FILE_SEND_CHUNK_WRONG_POSITION,
-      );
+      throw const api.ApiException(api.FileSendChunkError.wrongPosition);
     }
     if (fullChunkQueues > 0) {
       fullChunkQueues--;
-      throw const api.ApiException(
-        ffi.Tox_Err_File_Send_Chunk.TOX_ERR_FILE_SEND_CHUNK_SENDQ,
-      );
+      throw const api.ApiException(api.FileSendChunkError.sendQueueFull);
     }
     _nextChunk[key] = position + data.length;
-    fileChunks.add((friendNumber, fileNumber, position, data));
+    fileChunks.add((friendNumber.value, fileNumber.value, position, data));
   }
 }

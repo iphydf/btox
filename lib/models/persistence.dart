@@ -28,14 +28,6 @@ abstract class AppSettings extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-abstract class CachedBootstrapNodes extends Table {
-  IntColumn get id => integer()();
-  TextColumn get json => text()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
 /// What the pages want written as events, until the background service
 /// writes them: in [graph], or in the account where it's null.
 @DataClassName('StoredIntent')
@@ -61,6 +53,29 @@ abstract class DeletedChats extends Table {
 
   @override
   Set<Column> get primaryKey => {profileId, graph};
+}
+
+/// Lets Tox rejoin groups and conferences without the rest of its savedata.
+abstract class ChatSaves extends Table {
+  IntColumn get profileId =>
+      integer().references(Profiles, #id).map(const IdConverter<Profiles>())();
+  TextColumn get graph => text().map(const HexConverter(GraphId.fromJson))();
+  TextColumn get kind => textEnum<ChatKind>()();
+  BlobColumn get state => blob()();
+
+  @override
+  Set<Column> get primaryKey => {profileId, graph};
+}
+
+/// Parts of our split messages that arrived, so a restart sends the rest.
+abstract class DeliveredParts extends Table {
+  IntColumn get profileId =>
+      integer().references(Profiles, #id).map(const IdConverter<Profiles>())();
+  TextColumn get event => text().map(const HexConverter(EventId.fromJson))();
+  IntColumn get parts => integer()();
+
+  @override
+  Set<Column> get primaryKey => {profileId, event};
 }
 
 /// Files moving between this device's Tox and its attachments directory, by

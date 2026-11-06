@@ -13,6 +13,9 @@ Future<String> attachmentsDirectory() async => '';
 Future<FileContent> saveAttachment(String directory, XFile file) =>
     throw UnsupportedError('No attachments on the web');
 
+Future<FileContent> savePicture(String directory, XFile file) =>
+    throw UnsupportedError('No attachments on the web');
+
 Future<FileContent> savePictureAsQoi(String directory, XFile file) =>
     throw UnsupportedError('No attachments on the web');
 
@@ -22,6 +25,8 @@ Future<FileContent> copyAttachment(String directory, FileContent file) =>
 Future<void> deleteAttachment(String path) async {}
 
 bool attachmentExists(String path) => false;
+
+Future<bool> openAttachment(String path) async => false;
 
 Future<BlobId> blobOf(String path) =>
     throw UnsupportedError('No attachments on the web');

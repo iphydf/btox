@@ -318,7 +318,7 @@
       }
     }
   },
-  "autoAcceptFiles": "Automātiski pieņemt failus līdz",
+  "autoAcceptFiles": "Automātiski pieņemt failus",
   "@autoAcceptFiles": {
     "description": "The setting for the largest incoming file accepted without asking"
   },
@@ -341,6 +341,10 @@
   "fileCancelled": "Atcelts",
   "@fileCancelled": {
     "description": "A file transfer that was declined or stopped"
+  },
+  "sendAgain": "Sūtīt vēlreiz",
+  "@sendAgain": {
+    "description": "Button by a file of ours that was cancelled, to send it from the start"
   },
   "filePaused": "Apturēts, līdz sūtītājs atkal būs tiešsaistē",
   "@filePaused": {
@@ -619,13 +623,30 @@
   "@callsNotAvailable": {
     "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
   },
-  "notImplemented": "Vēl nav pieejams",
-  "@notImplemented": {
-    "description": "Shown for a menu item that doesn't work yet"
-  },
   "openLinkFailed": "Neviena lietotne nevar atvērt šo saiti",
   "@openLinkFailed": {
     "description": "Shown when tapping a link in a message opens nothing"
+  },
+  "openFileFailed": "Neviena lietotne nevar atvērt šo failu",
+  "@openFileFailed": {
+    "description": "Shown when tapping a file in a chat opens nothing"
+  },
+  "isTyping": "{name} raksta",
+  "@isTyping": {
+    "description": "Read out for the dots that show while a friend is typing",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "typingIndicators": "Rakstīšanas indikatori",
+  "@typingIndicators": {
+    "description": "Setting that shows friends typing, and shows them when you type"
+  },
+  "typingIndicatorsHint": "Jūs redzat, kad draugi raksta, un viņi redz, kad rakstāt jūs",
+  "@typingIndicatorsHint": {
+    "description": "Under the typing indicators setting"
   },
   "reply": "Atbildēt",
   "@reply": {
@@ -1076,5 +1097,145 @@
   "noChatsHint": "Pievienojiet kontaktpersonu ar pogu +, lai sāktu sarunu",
   "@noChatsHint": {
     "description": "How to start a first chat, under noChats"
-  }
+  },
+    "messagePrivately": "Rakstīt privāti",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "privāti",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "Privāti: {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Rakstīt visiem",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} pameta grupu, tāpēc nekas netika nosūtīts",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Jauna grupa",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Pievienoties publiskai grupai",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Privāta",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Publiska",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Konference",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Nosaukums",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "Grupai vajag nosaukumu",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Šis nosaukums ir pārāk garš",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "Tērzēšanas ID",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "Tērzēšanas ID ir 64 heksadecimāli cipari",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Parole",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Šī parole ir pārāk gara",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Uzaicināt draugus",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Neviens draugs nav tiešsaistē",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} uzaicināts",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+  "leaveChat": "Pamest tērzēšanu",
+  "leaveChatMessage": "Pamest \"{name}\"? Jūs vairs nesaņemsiet tās ziņas.",
+  "leave": "Pamest",
+  "chatLeft": "Jūs pametāt \"{name}\"",
+  "memberJoined": "{name} pievienojās tērzēšanai",
+  "memberLeft": "{name} pameta tērzēšanu",
+  "memberRenamed": "{old} tagad ir {name}",
+  "topicSet": "{name} nomainīja tēmu uz \"{topic}\"",
+  "topicSetBySomeone": "Tēma tagad ir \"{topic}\"",
+  "titleSet": "{name} pārdēvēja tērzēšanu par \"{title}\"",
+  "titleSetBySomeone": "Tērzēšana tagad saucas \"{title}\"",
+  "memberKicked": "{name} izslēdza {member}",
+  "memberKickedBySomeone": "{member} izslēgts(-a)",
+  "memberRole": "{name} piešķīra {member} lomu: {role, select, founder{dibinātājs} moderator{moderators} observer{novērotājs} other{dalībnieks}}",
+  "memberRoleBySomeone": "{member} tagad ir {role, select, founder{dibinātājs} moderator{moderators} observer{novērotājs} other{dalībnieks}}",
+  "membersJoined": "{people, select, one{{names} pievienojās tērzēšanai} other{{names} pievienojās tērzēšanai}}",
+  "membersLeft": "{people, select, one{{names} pameta tērzēšanu} other{{names} pameta tērzēšanu}}",
+  "namesTwo": "{first} un {second}",
+  "namesThree": "{first}, {second} un {third}",
+  "namesMore": "{first}, {second} un vēl {count}",
+  "changeTopic": "Mainīt tēmu",
+  "groupTopic": "Tēma",
+  "topicTooLong": "Šī tēma ir pārāk gara",
+  "groupSettings": "Grupas iestatījumi",
+  "privateGroupHint": "Pievienoties var tikai jūsu uzaicināti draugi",
+  "publicGroupHint": "Pievienoties var ikviens, kam ir tērzēšanas ID",
+  "topicLock": "Bloķēt tēmu",
+  "topicLockHint": "Mainīt to var tikai moderatori",
+  "whoCanSpeak": "Kas var sūtīt ziņas",
+  "voiceEveryone": "Visi, izņemot novērotājus",
+  "voiceModerators": "Moderatori un jūs",
+  "voiceFounder": "Tikai jūs",
+  "peerLimit": "Dalībnieku limits",
+  "peerLimitInvalid": "Ievadiet skaitli no 1 līdz {max}",
+  "groupPasswordOn": "Vajadzīga, lai pievienotos",
+  "groupPasswordOff": "Nav",
+  "groupPasswordEmptyForNone": "Atstājiet tukšu, lai paroles nebūtu",
+  "makeModerator": "Padarīt par moderatoru",
+  "makeUser": "Padarīt par parastu dalībnieku",
+  "makeObserver": "Padarīt par novērotāju (var tikai lasīt)",
+  "removeMember": "Izslēgt no grupas",
+  "removeMemberMessage": "Izslēgt \"{name}\" no grupas?",
+  "remove": "Izslēgt",
+  "chatIdCopied": "Tērzēšanas ID nokopēts",
+  "autoAcceptUpTo": "Līdz {size}"
 }

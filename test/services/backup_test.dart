@@ -1,10 +1,8 @@
 import 'dart:convert';
-// The analyzer resolves ToxLibrary's conditional export to the stub.
-// ignore_for_file: argument_type_not_assignable
-
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart' hide Connection;
 import 'package:btox/db/database.dart';
 import 'package:btox/ffi/generated/toxcore.ffi.dart' as gen;
 import 'package:btox/ffi/tox_library.ffi.dart' as tox_lib;
@@ -46,7 +44,7 @@ Future<Id<Profiles>> _addAccount(Database db, String name, int key) async {
   Received said(String text) => Received(
     sender: "$name's friend",
     message: utf8.encode(text),
-    kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+    kind: MessageType.normal,
   );
   account
     ..add(account.account, time, WantFriend(pk: friend))

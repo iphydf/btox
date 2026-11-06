@@ -1,13 +1,18 @@
 package chat.tox.btox
 
 import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
+import android.webkit.MimeTypeMap
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +40,14 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "btox/files")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    // True if an app opened the file.
+                    "open" -> result.success(open(File(call.arguments as String)))
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "btox/clipboard")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -44,5 +57,24 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun open(file: File): Boolean {
+        val type = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(file.extension.lowercase()) ?: "*/*"
+        return try {
+            // Throws for files outside attachments/ (only that is shared).
+            val uri = FileProvider.getUriForFile(this, "$packageName.attachments", file)
+            startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, type)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION),
+            )
+            true
+        } catch (e: IllegalArgumentException) {
+            false
+        } catch (e: ActivityNotFoundException) {
+            false
+        }
     }
 }

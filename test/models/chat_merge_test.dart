@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/models/chat_merge.dart';
 import 'package:btox/models/content.dart';
@@ -41,7 +41,7 @@ Received _from(PublicKey from, String sender, String text) => Received(
   from: from,
   sender: sender,
   message: utf8.encode(text),
-  kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+  kind: MessageType.normal,
 );
 
 List<(String?, String)> _shown(_Events group, _Events conference) =>
@@ -86,7 +86,7 @@ void main() {
       Send(
         sender: 'iphy',
         message: utf8.encode('hey'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     );
     _add(
@@ -109,7 +109,7 @@ void main() {
       Send(
         sender: 'iphy',
         message: utf8.encode('ho'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     );
     // Bob saying it again is another message, with its own copy.
@@ -167,7 +167,7 @@ void main() {
       Send(
         sender: 'iphy',
         message: utf8.encode('split?'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     );
     _add(group, _group, 200000, Sent(intent: group.first.$1));

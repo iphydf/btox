@@ -2,6 +2,8 @@
 // coverage:ignore-file
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox_enums.dart';
+import 'package:btox/api/toxcore/tox_ids.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'tox_av_events.freezed.dart';
@@ -9,12 +11,12 @@ part 'tox_av_events.freezed.dart';
 @freezed
 sealed class AvEvent with _$AvEvent {
   const factory AvEvent.audioBitRate({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required int audioBitRate,
   }) = ToxAvEventAudioBitRate;
 
   const factory AvEvent.audioReceiveFrame({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Int16List pcm,
     required int sampleCount,
     required int channels,
@@ -22,23 +24,23 @@ sealed class AvEvent with _$AvEvent {
   }) = ToxAvEventAudioReceiveFrame;
 
   const factory AvEvent.call({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required bool audioEnabled,
     required bool videoEnabled,
   }) = ToxAvEventCall;
 
   const factory AvEvent.callState({
-    required int friendNumber,
-    required int state,
+    required FriendNumber friendNumber,
+    required FriendCallState state,
   }) = ToxAvEventCallState;
 
   const factory AvEvent.videoBitRate({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required int videoBitRate,
   }) = ToxAvEventVideoBitRate;
 
   const factory AvEvent.videoReceiveFrame({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required int width,
     required int height,
     required Uint8List y,

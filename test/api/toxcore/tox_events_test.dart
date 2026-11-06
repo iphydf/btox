@@ -1,3 +1,4 @@
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/ffi/generated/toxcore.ffi.dart';
 import 'package:btox/packets/messagepack.dart';
@@ -27,7 +28,7 @@ void main() {
       ..packBool(true);
 
     expect(unpackEvents(Unpacker(packer.takeBytes())), [
-      const Event.friendTyping(friendNumber: 0, typing: true),
+      const Event.friendTyping(friendNumber: FriendNumber(0), typing: true),
     ]);
   });
 }

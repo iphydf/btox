@@ -1,5 +1,5 @@
+import 'package:btox/api/toxcore/tox.dart' hide ProxyType;
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_Connection;
 import 'package:btox/models/connection_status.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/profile_settings.dart';
@@ -86,6 +86,21 @@ void main() {
     });
   });
 
+  testWidgets('auto-accepting files reads up to its size, or never', (
+    tester,
+  ) async {
+    await _withSettingsPage(tester, (db, profile) async {
+      expect(find.text('Auto-accept files'), findsOneWidget);
+      expect(find.text('Up to 4.0 MB'), findsOneWidget);
+      await tester.tap(find.text('Auto-accept files'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Never'));
+      await tester.runAsync(pumpEventQueue);
+      await tester.pumpAndSettle();
+      expect(find.text('Never'), findsOneWidget);
+    });
+  });
+
   testWidgets('network settings are saved', (tester) async {
     await _withSettingsPage(tester, (db, profile) async {
       await tester.tap(find.text('Use UDP'));
@@ -137,7 +152,7 @@ void main() {
         );
       },
       status: const ConnectionStatus(
-        connection: Tox_Connection.TOX_CONNECTION_NONE,
+        connection: Connection.none,
         proxyProblem: ProxyProblem.unreachable,
         proxy: '127.0.0.1:9050',
       ),

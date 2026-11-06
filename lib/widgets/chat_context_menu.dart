@@ -11,7 +11,6 @@ final class ChatContextMenu {
     required void Function()? onCopy,
     required void Function() onSelect,
     required void Function() onInfo,
-    required void Function() onDelete,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final overlay =
@@ -33,7 +32,6 @@ final class ChatContextMenu {
           if (onCopy != null) (l10n.copy, Icons.copy, onCopy),
           (l10n.select, Icons.check_circle_outline, onSelect),
           (l10n.info, Icons.info_outline, onInfo),
-          (l10n.delete, Icons.delete_outline, onDelete),
         ])
           PopupMenuItem(
             value: action,

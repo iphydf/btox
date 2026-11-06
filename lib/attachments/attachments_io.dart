@@ -2,16 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:btox/attachments/pictures.dart';
 import 'package:btox/attachments/qoi.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/models/crypto.dart';
+import 'package:btox/platform/any_platform.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const filesSupported = true;
 
@@ -24,6 +28,13 @@ Future<String> attachmentsDirectory() async {
   await dir.create(recursive: true);
   return dir.path;
 }
+
+const _files = MethodChannel('btox/files');
+
+/// Returns whether an app opened it.
+Future<bool> openAttachment(String path) async => AnyPlatform.instance.isAndroid
+    ? await _files.invokeMethod<bool>('open', path) ?? false
+    : launchUrl(Uri.file(path));
 
 // The longest file name most file systems take, in bytes.
 const _maxNameBytes = 255;
@@ -77,15 +88,40 @@ Future<FileContent> copyAttachment(String directory, FileContent file) async {
   return file.copyWith(path: target);
 }
 
-/// Copies the picture [file] into [directory] as QOI, or as it is if it isn't
-/// a still picture or is too big.
+/// Shrunk and stripped by [sendablePicture].
+Future<FileContent> savePicture(String directory, XFile file) async {
+  final size = await _sizeOf(file.path);
+  final sendable = size == null
+      ? null
+      : await sendablePicture(
+          file.path,
+          width: size.width.round(),
+          height: size.height.round(),
+        );
+  if (sendable == null) {
+    return saveAttachment(directory, file);
+  }
+  final (bytes, extension) = sendable;
+  final name = '${path.basenameWithoutExtension(file.name)}$extension';
+  final target = newAttachmentPath(directory, name);
+  await File(target).writeAsBytes(bytes);
+  return FileContent(name: name, size: bytes.length, path: target);
+}
+
+/// Animated pictures, and ones too big to decode, are copied as they are.
 Future<FileContent> savePictureAsQoi(String directory, XFile file) async {
   ui.Image? image;
   // Decoding needs memory for every pixel.
   if (await _sizeOf(file.path) case final size?
       when size.width * size.height <= maxQoiPixels) {
     try {
-      final codec = await ui.instantiateImageCodec(await file.readAsBytes());
+      final codec = await ui.instantiateImageCodecWithSize(
+        await ui.ImmutableBuffer.fromUint8List(await file.readAsBytes()),
+        getTargetSize: (width, height) {
+          final (fittedWidth, fittedHeight) = fittedSize(width, height);
+          return ui.TargetImageSize(width: fittedWidth, height: fittedHeight);
+        },
+      );
       try {
         if (codec.frameCount == 1) {
           image = (await codec.getNextFrame()).image;

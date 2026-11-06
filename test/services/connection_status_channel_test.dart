@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:btox/ffi/toxcore.dart';
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/models/connection_status.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
@@ -8,7 +8,7 @@ import 'package:btox/services/connection_status_channel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Publishes a status, then exits once told to, without closing the publisher.
-void _publisher((Tox_Connection, SendPort) args) {
+void _publisher((Connection, SendPort) args) {
   final (connection, ready) = args;
   ConnectionStatusPublisher().publish({
     Id<Profiles>(1): ConnectionStatus(connection: connection),
@@ -18,7 +18,7 @@ void _publisher((Tox_Connection, SendPort) args) {
   exit.first.then((_) => Isolate.exit());
 }
 
-Future<SendPort> _spawnPublisher(Tox_Connection status) async {
+Future<SendPort> _spawnPublisher(Connection status) async {
   final ready = ReceivePort();
   await Isolate.spawn(_publisher, (status, ready.sendPort));
   return await ready.first as SendPort;
@@ -55,7 +55,7 @@ void main() {
   });
 
   test('publisher exit reads as null until a new one appears', () async {
-    final exit = await _spawnPublisher(Tox_Connection.TOX_CONNECTION_UDP);
+    final exit = await _spawnPublisher(Connection.udp);
 
     final subscription = watchConnectionStatuses().listen(statuses.add);
     addTearDown(subscription.cancel);
@@ -64,14 +64,14 @@ void main() {
     exit.send(null);
     await untilReceived(2);
 
-    const tcp = ConnectionStatus(connection: Tox_Connection.TOX_CONNECTION_TCP);
+    const tcp = ConnectionStatus(connection: Connection.tcp);
     final publisher = ConnectionStatusPublisher()
       ..publish({Id<Profiles>(1): tcp});
     addTearDown(publisher.close);
     await untilReceived(3);
 
     const unreachable = ConnectionStatus(
-      connection: Tox_Connection.TOX_CONNECTION_NONE,
+      connection: Connection.none,
       proxyProblem: ProxyProblem.unreachable,
       proxy: '127.0.0.1:9050',
     );
@@ -79,11 +79,7 @@ void main() {
     await untilReceived(4);
 
     expect(statuses, [
-      {
-        Id<Profiles>(1): const ConnectionStatus(
-          connection: Tox_Connection.TOX_CONNECTION_UDP,
-        ),
-      },
+      {Id<Profiles>(1): const ConnectionStatus(connection: Connection.udp)},
       null,
       {Id<Profiles>(1): tcp},
       {Id<Profiles>(1): tcp, Id<Profiles>(2): unreachable},

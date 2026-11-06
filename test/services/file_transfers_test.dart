@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
@@ -17,9 +17,9 @@ import '../mocks/fake_toxcore.dart';
 
 final _me = PublicKey(Uint8List(32));
 final _chat = GraphId.friend(_me, PublicKey(Uint8List(32)..[0] = 1));
-const _data = Tox_File_Kind.TOX_FILE_KIND_DATA;
-const _resume = Tox_File_Control.TOX_FILE_CONTROL_RESUME;
-const _cancel = Tox_File_Control.TOX_FILE_CONTROL_CANCEL;
+const _data = FileKind.data;
+const _resume = FileControl.resume;
+const _cancel = FileControl.cancel;
 
 Future<void> _settle() => Future.delayed(const Duration(milliseconds: 50));
 
@@ -69,17 +69,33 @@ void main() {
 
   test('a file sent again after it stopped goes on where it stopped', () async {
     tox.fileIds[(0, 0)] = tox.fileIds[(0, 1)] = Uint8List(32)..[0] = 7;
-    await files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'a.txt');
-    files.chunk(0, 0, 0, utf8.encode('abc'));
-    files.friendOffline(0);
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(0),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
+    files.chunk(FriendNumber(0), FileNumber(0), 0, utf8.encode('abc'));
+    files.friendOffline(FriendNumber(0));
     await _settle();
     expect((await transfer()).state, FileState.paused);
 
-    await files.offered(_chat, 'Bob', 0, 1, _data.value, 6, 'a.txt');
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(1),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
     expect(tox.fileSeeks, [(0, 1, 3)]);
     expect(tox.fileControls, [(0, 0, _resume), (0, 1, _resume)]);
-    files.chunk(0, 1, 3, utf8.encode('def'));
-    files.chunk(0, 1, 6, Uint8List(0));
+    files.chunk(FriendNumber(0), FileNumber(1), 3, utf8.encode('def'));
+    files.chunk(FriendNumber(0), FileNumber(1), 6, Uint8List(0));
     await _settle();
 
     final done = await transfer();
@@ -93,16 +109,48 @@ void main() {
     files.autoAcceptSize = 10;
     tox.fileIds[(0, 0)] = tox.fileIds[(0, 1)] = Uint8List(32)..[0] = 7;
     tox.fileIds[(0, 2)] = tox.fileIds[(0, 3)] = Uint8List(32)..[0] = 8;
-    await files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'a.txt');
-    files.chunk(0, 0, 0, utf8.encode('abc'));
-    files.controlled(0, 0, _cancel);
-    await files.offered(_chat, 'Bob', 0, 2, _data.value, 6, 'b.txt');
-    files.chunk(0, 2, 0, utf8.encode('abc'));
-    files.friendOffline(0);
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(0),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
+    files.chunk(FriendNumber(0), FileNumber(0), 0, utf8.encode('abc'));
+    files.controlled(FriendNumber(0), FileNumber(0), _cancel);
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(2),
+      FileKind(_data.value),
+      6,
+      'b.txt',
+    );
+    files.chunk(FriendNumber(0), FileNumber(2), 0, utf8.encode('abc'));
+    files.friendOffline(FriendNumber(0));
     await _settle();
 
-    await files.offered(_chat, 'Bob', 0, 1, _data.value, 6, 'a.txt');
-    await files.offered(_chat, 'Bob', 0, 3, _data.value, 1 << 30, 'b.txt');
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(1),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
+    await files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(3),
+      FileKind(_data.value),
+      1 << 30,
+      'b.txt',
+    );
     expect(tox.fileSeeks, isEmpty);
     expect(tox.fileControls, [
       (0, 0, _resume),
@@ -113,8 +161,16 @@ void main() {
   });
 
   test('a file cancelled while it is recorded ends cancelled', () async {
-    final offered = files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'a.txt');
-    files.controlled(0, 0, _cancel);
+    final offered = files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(0),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
+    files.controlled(FriendNumber(0), FileNumber(0), _cancel);
     await offered;
     await _settle();
 
@@ -124,9 +180,25 @@ void main() {
 
   test('a file cancelled while it is recorded, its number taken by the next '
       'one, ends cancelled', () async {
-    final first = files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'a.txt');
-    files.controlled(0, 0, _cancel);
-    final next = files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'b.txt');
+    final first = files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(0),
+      FileKind(_data.value),
+      6,
+      'a.txt',
+    );
+    files.controlled(FriendNumber(0), FileNumber(0), _cancel);
+    final next = files.offered(
+      _chat,
+      'Bob',
+      FriendNumber(0),
+      FileNumber(0),
+      FileKind(_data.value),
+      6,
+      'b.txt',
+    );
     await first;
     await next;
     await _settle();
@@ -141,17 +213,56 @@ void main() {
     );
   });
 
-  test('a file declined while it comes keeps how much came', () async {
-    await files.offered(_chat, 'Bob', 0, 0, _data.value, 6, 'a.txt');
-    files.chunk(0, 0, 0, utf8.encode('abc'));
-    files.incomingChanged([
+  test(
+    'a file declined while it comes keeps how much came, not what came',
+    () async {
+      await files.offered(
+        _chat,
+        'Bob',
+        FriendNumber(0),
+        FileNumber(0),
+        FileKind(_data.value),
+        6,
+        'a.txt',
+      );
+      files.chunk(FriendNumber(0), FileNumber(0), 0, utf8.encode('abc'));
+      files.transfersChanged([
+        (await transfer()).copyWith(state: FileState.cancelled),
+      ]);
+      await _settle();
+
+      expect(tox.fileControls.last, (0, 0, _cancel));
+      expect((await transfer()).transferred, 3);
+      expect(recorded.last, isA<FileEnded>().having((e) => e.ok, 'ok', false));
+      expect(File((await transfer()).path).existsSync(), isFalse);
+    },
+  );
+
+  test('a file of ours cancelled while it goes stops', () async {
+    final path = '${directory.path}/b.txt';
+    await File(path).writeAsString('abc');
+    await db.addTransfer(
+      TransfersCompanion.insert(
+        profileId: profileId,
+        graph: _chat,
+        event: Value(EventId(Uint8List(32)..[0] = 9)),
+        incoming: false,
+        name: 'b.txt',
+        size: 3,
+        path: path,
+        state: FileState.active,
+      ),
+    );
+    files.send(await transfer(), FriendNumber(0));
+    files.transfersChanged([
       (await transfer()).copyWith(state: FileState.cancelled),
     ]);
     await _settle();
 
     expect(tox.fileControls.last, (0, 0, _cancel));
-    expect((await transfer()).transferred, 3);
     expect(recorded.last, isA<FileEnded>().having((e) => e.ok, 'ok', false));
+    // Our own file stays, so it can be sent again.
+    expect(File(path).existsSync(), isTrue);
   });
 
   test('a chunk Tox has no room for is sent again', () async {
@@ -170,14 +281,14 @@ void main() {
         state: FileState.active,
       ),
     );
-    files.send(await transfer(), 0);
+    files.send(await transfer(), FriendNumber(0));
     // The friend can go on with it if it stops.
-    expect(tox.fileSendKinds.single.$2, event.bytes);
+    expect(tox.fileSendKinds.single.$2?.bytes, event.bytes);
 
     // Tox asks for chunks ahead, and takes each only after the one before.
     tox.fullChunkQueues = 1;
     for (final position in [0, 1, 2]) {
-      files.requested(0, 0, position, 1);
+      files.requested(FriendNumber(0), FileNumber(0), position, 1);
     }
     await Future.delayed(chunkRetryDelay * 3);
     expect(

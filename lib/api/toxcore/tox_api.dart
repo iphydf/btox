@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:btox/api/toxcore/tox_constants.dart';
+import 'package:btox/api/toxcore/tox_enums.dart';
+import 'package:btox/api/toxcore/tox_errors.dart';
+import 'package:btox/api/toxcore/tox_ids.dart';
 import 'package:btox/ffi/tox_library.dart';
 import 'package:btox/models/crypto.dart';
 
@@ -21,222 +24,247 @@ final class ApiException<T extends Enum> implements Exception {
 
 /// The toxcore functions, apart from creating, iterating and killing a Tox.
 abstract interface class ToxApi {
-  int conferenceNew();
+  ConferenceNumber conferenceNew();
 
-  void conferenceDelete(int conferenceNumber);
+  void conferenceDelete(ConferenceNumber conferenceNumber);
 
-  int conferencePeerCount(int conferenceNumber);
+  int conferencePeerCount(ConferenceNumber conferenceNumber);
 
-  int conferenceOfflinePeerCount(int conferenceNumber);
+  int conferenceOfflinePeerCount(ConferenceNumber conferenceNumber);
 
-  void conferenceSetMaxOffline(int conferenceNumber, int maxOffline);
+  void conferenceSetMaxOffline(
+    ConferenceNumber conferenceNumber,
+    int maxOffline,
+  );
 
-  int conferenceJoin(int friendNumber, Uint8List cookie);
+  ConferenceNumber conferenceJoin(FriendNumber friendNumber, Uint8List cookie);
 
   void conferenceSendMessage(
-    int conferenceNumber,
-    Tox_Message_Type type,
+    ConferenceNumber conferenceNumber,
+    MessageType type,
     Uint8List message,
   );
 
-  Uint8List conferenceGetTitle(int conferenceNumber);
+  Uint8List conferenceGetTitle(ConferenceNumber conferenceNumber);
 
-  void conferenceSetTitle(int conferenceNumber, Uint8List title);
+  void conferenceSetTitle(ConferenceNumber conferenceNumber, Uint8List title);
 
-  Tox_Conference_Type conferenceGetType(int conferenceNumber);
+  ConferenceType conferenceGetType(ConferenceNumber conferenceNumber);
 
-  Uint8List conferenceGetId(int conferenceNumber);
+  ConferenceId conferenceGetId(ConferenceNumber conferenceNumber);
 
-  int conferenceById(Uint8List id);
+  ConferenceNumber conferenceById(ConferenceId id);
 
   Uint8List conferenceOfflinePeerGetName(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   );
 
   PublicKey conferenceOfflinePeerGetPublicKey(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   );
 
   int conferenceOfflinePeerGetLastActive(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   );
 
   Uint8List conferencePeerGetName(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   );
 
   PublicKey conferencePeerGetPublicKey(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   );
 
   bool conferencePeerNumberIsOurs(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   );
 
-  int fileById(int friendNumber, Uint8List fileId);
+  FileNumber fileById(FriendNumber friendNumber, FileId fileId);
 
-  int fileSend(
-    int friendNumber,
-    int kind,
+  FileNumber fileSend(
+    FriendNumber friendNumber,
+    FileKind kind,
     int fileSize,
-    Uint8List fileId,
+    FileId? fileId,
     Uint8List filename,
   );
 
-  int friendAdd(ToxAddress address, Uint8List message);
+  FriendNumber friendAdd(ToxAddress address, Uint8List message);
 
-  int friendAddNorequest(PublicKey publicKey);
+  FriendNumber friendAddNorequest(PublicKey publicKey);
 
-  void friendDelete(int friendNumber);
+  void friendDelete(FriendNumber friendNumber);
 
-  int friendByPublicKey(PublicKey publicKey);
+  FriendNumber friendByPublicKey(PublicKey publicKey);
 
-  bool friendExists(int friendNumber);
+  bool friendExists(FriendNumber friendNumber);
 
-  PublicKey friendGetPublicKey(int friendNumber);
+  PublicKey friendGetPublicKey(FriendNumber friendNumber);
 
-  int friendGetLastOnline(int friendNumber);
+  int friendGetLastOnline(FriendNumber friendNumber);
 
-  Uint8List friendGetName(int friendNumber);
+  Uint8List friendGetName(FriendNumber friendNumber);
 
-  Uint8List friendGetStatusMessage(int friendNumber);
+  Uint8List friendGetStatusMessage(FriendNumber friendNumber);
 
-  Tox_User_Status friendGetStatus(int friendNumber);
+  UserStatus friendGetStatus(FriendNumber friendNumber);
 
-  Tox_Connection friendGetConnectionStatus(int friendNumber);
+  Connection friendGetConnectionStatus(FriendNumber friendNumber);
 
-  bool friendGetTyping(int friendNumber);
+  bool friendGetTyping(FriendNumber friendNumber);
 
-  int friendSendMessage(
-    int friendNumber,
-    Tox_Message_Type type,
+  FriendMessageId friendSendMessage(
+    FriendNumber friendNumber,
+    MessageType type,
     Uint8List message,
   );
 
-  void friendSendLossyPacket(int friendNumber, Uint8List data);
+  void friendSendLossyPacket(FriendNumber friendNumber, Uint8List data);
 
-  void friendSendLosslessPacket(int friendNumber, Uint8List data);
+  void friendSendLosslessPacket(FriendNumber friendNumber, Uint8List data);
 
-  int groupNew(
-    Tox_Group_Privacy_State privacyState,
+  GroupNumber groupNew(
+    GroupPrivacyState privacyState,
     Uint8List groupName,
     Uint8List name,
   );
 
-  int groupJoin(Uint8List chatId, Uint8List name, Uint8List password);
+  GroupNumber groupJoin(GroupChatId chatId, Uint8List name, Uint8List password);
 
-  bool groupIsConnected(int groupNumber);
+  bool groupIsConnected(GroupNumber groupNumber);
 
-  void groupDisconnect(int groupNumber);
+  void groupDisconnect(GroupNumber groupNumber);
 
-  void groupLeave(int groupNumber, Uint8List partMessage);
+  void groupLeave(GroupNumber groupNumber, Uint8List partMessage);
 
-  void groupSelfSetName(int groupNumber, Uint8List name);
+  void groupSelfSetName(GroupNumber groupNumber, Uint8List name);
 
-  Uint8List groupSelfGetName(int groupNumber);
+  Uint8List groupSelfGetName(GroupNumber groupNumber);
 
-  void groupSelfSetStatus(int groupNumber, Tox_User_Status status);
+  void groupSelfSetStatus(GroupNumber groupNumber, UserStatus status);
 
-  Tox_User_Status groupSelfGetStatus(int groupNumber);
+  UserStatus groupSelfGetStatus(GroupNumber groupNumber);
 
-  Tox_Group_Role groupSelfGetRole(int groupNumber);
+  GroupRole groupSelfGetRole(GroupNumber groupNumber);
 
-  int groupSelfGetPeerId(int groupNumber);
+  GroupPeerNumber groupSelfGetPeerId(GroupNumber groupNumber);
 
-  PublicKey groupSelfGetPublicKey(int groupNumber);
+  PublicKey groupSelfGetPublicKey(GroupNumber groupNumber);
 
-  void groupSetTopic(int groupNumber, Uint8List topic);
+  void groupSetTopic(GroupNumber groupNumber, Uint8List topic);
 
-  Uint8List groupGetTopic(int groupNumber);
+  Uint8List groupGetTopic(GroupNumber groupNumber);
 
-  Uint8List groupGetName(int groupNumber);
+  Uint8List groupGetName(GroupNumber groupNumber);
 
-  Uint8List groupGetChatId(int groupNumber);
+  GroupChatId groupGetChatId(GroupNumber groupNumber);
 
-  int groupById(Uint8List chatId);
+  GroupNumber groupById(GroupChatId chatId);
 
-  Tox_Group_Privacy_State groupGetPrivacyState(int groupNumber);
+  GroupPrivacyState groupGetPrivacyState(GroupNumber groupNumber);
 
-  Tox_Group_Voice_State groupGetVoiceState(int groupNumber);
+  GroupVoiceState groupGetVoiceState(GroupNumber groupNumber);
 
-  Tox_Group_Topic_Lock groupGetTopicLock(int groupNumber);
+  GroupTopicLock groupGetTopicLock(GroupNumber groupNumber);
 
-  int groupGetPeerLimit(int groupNumber);
+  int groupGetPeerLimit(GroupNumber groupNumber);
 
-  Uint8List groupGetPassword(int groupNumber);
+  Uint8List groupGetPassword(GroupNumber groupNumber);
 
-  int groupSendMessage(
-    int groupNumber,
-    Tox_Message_Type messageType,
+  GroupMessageId groupSendMessage(
+    GroupNumber groupNumber,
+    MessageType messageType,
     Uint8List message,
   );
 
-  int groupSendPrivateMessage(
-    int groupNumber,
-    int peerId,
-    Tox_Message_Type messageType,
+  GroupMessageId groupSendPrivateMessage(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    MessageType messageType,
     Uint8List message,
   );
 
-  void groupSendCustomPacket(int groupNumber, bool lossless, Uint8List data);
-
-  void groupSendCustomPrivatePacket(
-    int groupNumber,
-    int peerId,
+  void groupSendCustomPacket(
+    GroupNumber groupNumber,
     bool lossless,
     Uint8List data,
   );
 
-  void groupInviteFriend(int groupNumber, int friendNumber);
+  void groupSendCustomPrivatePacket(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    bool lossless,
+    Uint8List data,
+  );
 
-  int groupInviteAccept(
-    int friendNumber,
+  void groupInviteFriend(GroupNumber groupNumber, FriendNumber friendNumber);
+
+  GroupNumber groupInviteAccept(
+    FriendNumber friendNumber,
     Uint8List inviteData,
     Uint8List name,
     Uint8List password,
   );
 
-  void groupSetPassword(int groupNumber, Uint8List password);
+  void groupSetPassword(GroupNumber groupNumber, Uint8List password);
 
-  void groupSetTopicLock(int groupNumber, Tox_Group_Topic_Lock topicLock);
+  void groupSetTopicLock(GroupNumber groupNumber, GroupTopicLock topicLock);
 
-  void groupSetVoiceState(int groupNumber, Tox_Group_Voice_State voiceState);
+  void groupSetVoiceState(GroupNumber groupNumber, GroupVoiceState voiceState);
 
   void groupSetPrivacyState(
-    int groupNumber,
-    Tox_Group_Privacy_State privacyState,
+    GroupNumber groupNumber,
+    GroupPrivacyState privacyState,
   );
 
-  void groupSetPeerLimit(int groupNumber, int peerLimit);
+  void groupSetPeerLimit(GroupNumber groupNumber, int peerLimit);
 
-  void groupSetIgnore(int groupNumber, int peerId, bool ignore);
-
-  void groupSetRole(int groupNumber, int peerId, Tox_Group_Role role);
-
-  void groupKickPeer(int groupNumber, int peerId);
-
-  Uint8List groupPeerGetName(int groupNumber, int groupPeerNumber);
-
-  Tox_User_Status groupPeerGetStatus(int groupNumber, int groupPeerNumber);
-
-  Tox_Group_Role groupPeerGetRole(int groupNumber, int groupPeerNumber);
-
-  Tox_Connection groupPeerGetConnectionStatus(
-    int groupNumber,
-    int groupPeerNumber,
+  void groupSetIgnore(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    bool ignore,
   );
 
-  PublicKey groupPeerGetPublicKey(int groupNumber, int groupPeerNumber);
+  void groupSetRole(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    GroupRole role,
+  );
 
-  int groupchatDisableAv(int conferenceNumber);
+  void groupKickPeer(GroupNumber groupNumber, GroupPeerNumber peerId);
 
-  bool groupchatAvEnabled(int conferenceNumber);
+  Uint8List groupPeerGetName(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  );
+
+  UserStatus groupPeerGetStatus(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  );
+
+  GroupRole groupPeerGetRole(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  );
+
+  Connection groupPeerGetConnectionStatus(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  );
+
+  PublicKey groupPeerGetPublicKey(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  );
+
+  bool groupchatAvEnabled(ConferenceNumber conferenceNumber);
 
   Uint8List getSavedata();
 
@@ -244,7 +272,7 @@ abstract interface class ToxApi {
 
   void addTcpRelay(String host, int port, PublicKey publicKey);
 
-  Tox_Connection selfGetConnectionStatus();
+  Connection selfGetConnectionStatus();
 
   int iterationInterval();
 
@@ -266,30 +294,37 @@ abstract interface class ToxApi {
 
   Uint8List selfGetStatusMessage();
 
-  void selfSetStatus(Tox_User_Status status);
+  void selfSetStatus(UserStatus status);
 
-  Tox_User_Status selfGetStatus();
+  UserStatus selfGetStatus();
 
-  List<int> selfGetFriendList();
+  List<FriendNumber> selfGetFriendList();
 
-  void selfSetTyping(int friendNumber, bool typing);
+  void selfSetTyping(FriendNumber friendNumber, bool typing);
 
-  void fileControl(int friendNumber, int fileNumber, Tox_File_Control control);
+  void fileControl(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  );
 
-  void fileSeek(int friendNumber, int fileNumber, int position);
+  void fileSeek(FriendNumber friendNumber, FileNumber fileNumber, int position);
 
-  Uint8List fileGetFileId(int friendNumber, int fileNumber);
+  FileId fileGetFileId(FriendNumber friendNumber, FileNumber fileNumber);
 
   void fileSendChunk(
-    int friendNumber,
-    int fileNumber,
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
     int position,
     Uint8List data,
   );
 
-  void conferenceInvite(int friendNumber, int conferenceNumber);
+  void conferenceInvite(
+    FriendNumber friendNumber,
+    ConferenceNumber conferenceNumber,
+  );
 
-  List<int> conferenceGetChatlist();
+  List<ConferenceNumber> conferenceGetChatlist();
 
   PublicKey selfGetDhtId();
 
@@ -297,7 +332,7 @@ abstract interface class ToxApi {
 
   int selfGetTcpPort();
 
-  List<int> groupGetGroupList();
+  List<GroupNumber> groupGetGroupList();
 
   void eventsInit();
 }
@@ -309,26 +344,27 @@ mixin ToxFfiApi implements ToxApi {
   Pointer<Tox> get pointer;
 
   @override
-  int conferenceNew() {
+  ConferenceNumber conferenceNew() {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_new(pointer, err);
-      _check(Tox_Err_Conference_New.fromValue(err.value), 'tox_conference_new');
-      return result;
+      _check(err.value, ConferenceNewError.fromValue, 'tox_conference_new');
+      return ConferenceNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  void conferenceDelete(int conferenceNumber) {
+  void conferenceDelete(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_conference_delete(pointer, conferenceNumber, err);
+      lib.ffi.tox_conference_delete(pointer, conferenceNumber.value, err);
       _check(
-        Tox_Err_Conference_Delete.fromValue(err.value),
+        err.value,
+        ConferenceDeleteError.fromValue,
         'tox_conference_delete',
       );
     } finally {
@@ -337,17 +373,18 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int conferencePeerCount(int conferenceNumber) {
+  int conferencePeerCount(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_peer_count(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_peer_count',
       );
       return result;
@@ -357,17 +394,18 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int conferenceOfflinePeerCount(int conferenceNumber) {
+  int conferenceOfflinePeerCount(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_offline_peer_count(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_offline_peer_count',
       );
       return result;
@@ -377,18 +415,22 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void conferenceSetMaxOffline(int conferenceNumber, int maxOffline) {
+  void conferenceSetMaxOffline(
+    ConferenceNumber conferenceNumber,
+    int maxOffline,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_conference_set_max_offline(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         maxOffline,
         err,
       );
       _check(
-        Tox_Err_Conference_Set_Max_Offline.fromValue(err.value),
+        err.value,
+        ConferenceSetMaxOfflineError.fromValue,
         'tox_conference_set_max_offline',
       );
     } finally {
@@ -397,22 +439,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int conferenceJoin(int friendNumber, Uint8List cookie) {
+  ConferenceNumber conferenceJoin(FriendNumber friendNumber, Uint8List cookie) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_join(
         pointer,
-        friendNumber,
+        friendNumber.value,
         a.bytes(cookie),
         cookie.length,
         err,
       );
-      _check(
-        Tox_Err_Conference_Join.fromValue(err.value),
-        'tox_conference_join',
-      );
-      return result;
+      _check(err.value, ConferenceJoinError.fromValue, 'tox_conference_join');
+      return ConferenceNumber(result);
     } finally {
       a.free();
     }
@@ -420,8 +459,8 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   void conferenceSendMessage(
-    int conferenceNumber,
-    Tox_Message_Type type,
+    ConferenceNumber conferenceNumber,
+    MessageType type,
     Uint8List message,
   ) {
     final a = _Arena(lib);
@@ -429,14 +468,15 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       lib.ffi.tox_conference_send_message(
         pointer,
-        conferenceNumber,
-        type,
+        conferenceNumber.value,
+        Tox_Message_Type.fromValue(type.value),
         a.bytes(message),
         message.length,
         err,
       );
       _check(
-        Tox_Err_Conference_Send_Message.fromValue(err.value),
+        err.value,
+        ConferenceSendMessageError.fromValue,
         'tox_conference_send_message',
       );
     } finally {
@@ -445,23 +485,30 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List conferenceGetTitle(int conferenceNumber) {
+  Uint8List conferenceGetTitle(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_conference_get_title_size(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Title.fromValue(err.value),
+        err.value,
+        ConferenceTitleError.fromValue,
         'tox_conference_get_title_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_conference_get_title(pointer, conferenceNumber, out, err);
+      lib.ffi.tox_conference_get_title(
+        pointer,
+        conferenceNumber.value,
+        out,
+        err,
+      );
       _check(
-        Tox_Err_Conference_Title.fromValue(err.value),
+        err.value,
+        ConferenceTitleError.fromValue,
         'tox_conference_get_title',
       );
       return _read(out, size);
@@ -471,19 +518,20 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void conferenceSetTitle(int conferenceNumber, Uint8List title) {
+  void conferenceSetTitle(ConferenceNumber conferenceNumber, Uint8List title) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_conference_set_title(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         a.bytes(title),
         title.length,
         err,
       );
       _check(
-        Tox_Err_Conference_Title.fromValue(err.value),
+        err.value,
+        ConferenceTitleError.fromValue,
         'tox_conference_set_title',
       );
     } finally {
@@ -492,48 +540,50 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Tox_Conference_Type conferenceGetType(int conferenceNumber) {
+  ConferenceType conferenceGetType(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_get_type(
         pointer,
-        conferenceNumber,
+        conferenceNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Get_Type.fromValue(err.value),
+        err.value,
+        ConferenceGetTypeError.fromValue,
         'tox_conference_get_type',
       );
-      return result;
+      return ConferenceType.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Uint8List conferenceGetId(int conferenceNumber) {
+  ConferenceId conferenceGetId(ConferenceNumber conferenceNumber) {
     final a = _Arena(lib);
     try {
       final out = a.buffer(toxConferenceIdSize);
-      lib.ffi.tox_conference_get_id(pointer, conferenceNumber, out);
-      return _read(out, toxConferenceIdSize);
+      lib.ffi.tox_conference_get_id(pointer, conferenceNumber.value, out);
+      return ConferenceId(_read(out, toxConferenceIdSize));
     } finally {
       a.free();
     }
   }
 
   @override
-  int conferenceById(Uint8List id) {
+  ConferenceNumber conferenceById(ConferenceId id) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_conference_by_id(pointer, a.bytes(id), err);
-      _check(
-        Tox_Err_Conference_By_Id.fromValue(err.value),
-        'tox_conference_by_id',
+      final result = lib.ffi.tox_conference_by_id(
+        pointer,
+        a.bytes(id.bytes),
+        err,
       );
-      return result;
+      _check(err.value, ConferenceByIdError.fromValue, 'tox_conference_by_id');
+      return ConferenceNumber(result);
     } finally {
       a.free();
     }
@@ -541,32 +591,34 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   Uint8List conferenceOfflinePeerGetName(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_conference_offline_peer_get_name_size(
         pointer,
-        conferenceNumber,
-        conferenceOfflinePeerNumber,
+        conferenceNumber.value,
+        conferenceOfflinePeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_offline_peer_get_name_size',
       );
       final out = a.buffer(size);
       lib.ffi.tox_conference_offline_peer_get_name(
         pointer,
-        conferenceNumber,
-        conferenceOfflinePeerNumber,
+        conferenceNumber.value,
+        conferenceOfflinePeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_offline_peer_get_name',
       );
       return _read(out, size);
@@ -577,8 +629,8 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   PublicKey conferenceOfflinePeerGetPublicKey(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
@@ -586,13 +638,14 @@ mixin ToxFfiApi implements ToxApi {
       final out = a.buffer(toxPublicKeySize);
       lib.ffi.tox_conference_offline_peer_get_public_key(
         pointer,
-        conferenceNumber,
-        conferenceOfflinePeerNumber,
+        conferenceNumber.value,
+        conferenceOfflinePeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_offline_peer_get_public_key',
       );
       return PublicKey(_read(out, toxPublicKeySize));
@@ -603,20 +656,21 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   int conferenceOfflinePeerGetLastActive(
-    int conferenceNumber,
-    int conferenceOfflinePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferenceOfflinePeerNumber conferenceOfflinePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_offline_peer_get_last_active(
         pointer,
-        conferenceNumber,
-        conferenceOfflinePeerNumber,
+        conferenceNumber.value,
+        conferenceOfflinePeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_offline_peer_get_last_active',
       );
       return result;
@@ -627,32 +681,34 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   Uint8List conferencePeerGetName(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_conference_peer_get_name_size(
         pointer,
-        conferenceNumber,
-        conferencePeerNumber,
+        conferenceNumber.value,
+        conferencePeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_peer_get_name_size',
       );
       final out = a.buffer(size);
       lib.ffi.tox_conference_peer_get_name(
         pointer,
-        conferenceNumber,
-        conferencePeerNumber,
+        conferenceNumber.value,
+        conferencePeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_peer_get_name',
       );
       return _read(out, size);
@@ -663,8 +719,8 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   PublicKey conferencePeerGetPublicKey(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
@@ -672,13 +728,14 @@ mixin ToxFfiApi implements ToxApi {
       final out = a.buffer(toxPublicKeySize);
       lib.ffi.tox_conference_peer_get_public_key(
         pointer,
-        conferenceNumber,
-        conferencePeerNumber,
+        conferenceNumber.value,
+        conferencePeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_peer_get_public_key',
       );
       return PublicKey(_read(out, toxPublicKeySize));
@@ -689,20 +746,21 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   bool conferencePeerNumberIsOurs(
-    int conferenceNumber,
-    int conferencePeerNumber,
+    ConferenceNumber conferenceNumber,
+    ConferencePeerNumber conferencePeerNumber,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_conference_peer_number_is_ours(
         pointer,
-        conferenceNumber,
-        conferencePeerNumber,
+        conferenceNumber.value,
+        conferencePeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Peer_Query.fromValue(err.value),
+        err.value,
+        ConferencePeerQueryError.fromValue,
         'tox_conference_peer_number_is_ours',
       );
       return result;
@@ -712,29 +770,29 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int fileById(int friendNumber, Uint8List fileId) {
+  FileNumber fileById(FriendNumber friendNumber, FileId fileId) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_file_by_id(
         pointer,
-        friendNumber,
-        a.bytes(fileId),
+        friendNumber.value,
+        a.bytes(fileId.bytes),
         err,
       );
-      _check(Tox_Err_File_By_Id.fromValue(err.value), 'tox_file_by_id');
-      return result;
+      _check(err.value, FileByIdError.fromValue, 'tox_file_by_id');
+      return FileNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  int fileSend(
-    int friendNumber,
-    int kind,
+  FileNumber fileSend(
+    FriendNumber friendNumber,
+    FileKind kind,
     int fileSize,
-    Uint8List fileId,
+    FileId? fileId,
     Uint8List filename,
   ) {
     final a = _Arena(lib);
@@ -742,23 +800,23 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_file_send(
         pointer,
-        friendNumber,
-        kind,
+        friendNumber.value,
+        kind.value,
         fileSize,
-        a.bytes(fileId),
+        fileId == null ? nullptr : a.bytes(fileId.bytes),
         a.bytes(filename),
         filename.length,
         err,
       );
-      _check(Tox_Err_File_Send.fromValue(err.value), 'tox_file_send');
-      return result;
+      _check(err.value, FileSendError.fromValue, 'tox_file_send');
+      return FileNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  int friendAdd(ToxAddress address, Uint8List message) {
+  FriendNumber friendAdd(ToxAddress address, Uint8List message) {
     final a = _Arena(lib);
     try {
       final err = a.error();
@@ -769,15 +827,15 @@ mixin ToxFfiApi implements ToxApi {
         message.length,
         err,
       );
-      _check(Tox_Err_Friend_Add.fromValue(err.value), 'tox_friend_add');
-      return result;
+      _check(err.value, FriendAddError.fromValue, 'tox_friend_add');
+      return FriendNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  int friendAddNorequest(PublicKey publicKey) {
+  FriendNumber friendAddNorequest(PublicKey publicKey) {
     final a = _Arena(lib);
     try {
       final err = a.error();
@@ -786,30 +844,27 @@ mixin ToxFfiApi implements ToxApi {
         a.bytes(publicKey.bytes),
         err,
       );
-      _check(
-        Tox_Err_Friend_Add.fromValue(err.value),
-        'tox_friend_add_norequest',
-      );
-      return result;
+      _check(err.value, FriendAddError.fromValue, 'tox_friend_add_norequest');
+      return FriendNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  void friendDelete(int friendNumber) {
+  void friendDelete(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_friend_delete(pointer, friendNumber, err);
-      _check(Tox_Err_Friend_Delete.fromValue(err.value), 'tox_friend_delete');
+      lib.ffi.tox_friend_delete(pointer, friendNumber.value, err);
+      _check(err.value, FriendDeleteError.fromValue, 'tox_friend_delete');
     } finally {
       a.free();
     }
   }
 
   @override
-  int friendByPublicKey(PublicKey publicKey) {
+  FriendNumber friendByPublicKey(PublicKey publicKey) {
     final a = _Arena(lib);
     try {
       final err = a.error();
@@ -819,29 +874,31 @@ mixin ToxFfiApi implements ToxApi {
         err,
       );
       _check(
-        Tox_Err_Friend_By_Public_Key.fromValue(err.value),
+        err.value,
+        FriendByPublicKeyError.fromValue,
         'tox_friend_by_public_key',
       );
-      return result;
+      return FriendNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  bool friendExists(int friendNumber) {
-    return lib.ffi.tox_friend_exists(pointer, friendNumber);
+  bool friendExists(FriendNumber friendNumber) {
+    return lib.ffi.tox_friend_exists(pointer, friendNumber.value);
   }
 
   @override
-  PublicKey friendGetPublicKey(int friendNumber) {
+  PublicKey friendGetPublicKey(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final out = a.buffer(toxPublicKeySize);
-      lib.ffi.tox_friend_get_public_key(pointer, friendNumber, out, err);
+      lib.ffi.tox_friend_get_public_key(pointer, friendNumber.value, out, err);
       _check(
-        Tox_Err_Friend_Get_Public_Key.fromValue(err.value),
+        err.value,
+        FriendGetPublicKeyError.fromValue,
         'tox_friend_get_public_key',
       );
       return PublicKey(_read(out, toxPublicKeySize));
@@ -851,17 +908,18 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int friendGetLastOnline(int friendNumber) {
+  int friendGetLastOnline(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_friend_get_last_online(
         pointer,
-        friendNumber,
+        friendNumber.value,
         err,
       );
       _check(
-        Tox_Err_Friend_Get_Last_Online.fromValue(err.value),
+        err.value,
+        FriendGetLastOnlineError.fromValue,
         'tox_friend_get_last_online',
       );
       return result;
@@ -871,18 +929,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List friendGetName(int friendNumber) {
+  Uint8List friendGetName(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final size = lib.ffi.tox_friend_get_name_size(pointer, friendNumber, err);
-      _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
-        'tox_friend_get_name_size',
+      final size = lib.ffi.tox_friend_get_name_size(
+        pointer,
+        friendNumber.value,
+        err,
       );
+      _check(err.value, FriendQueryError.fromValue, 'tox_friend_get_name_size');
       final out = a.buffer(size);
-      lib.ffi.tox_friend_get_name(pointer, friendNumber, out, err);
-      _check(Tox_Err_Friend_Query.fromValue(err.value), 'tox_friend_get_name');
+      lib.ffi.tox_friend_get_name(pointer, friendNumber.value, out, err);
+      _check(err.value, FriendQueryError.fromValue, 'tox_friend_get_name');
       return _read(out, size);
     } finally {
       a.free();
@@ -890,23 +949,30 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List friendGetStatusMessage(int friendNumber) {
+  Uint8List friendGetStatusMessage(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_friend_get_status_message_size(
         pointer,
-        friendNumber,
+        friendNumber.value,
         err,
       );
       _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
+        err.value,
+        FriendQueryError.fromValue,
         'tox_friend_get_status_message_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_friend_get_status_message(pointer, friendNumber, out, err);
+      lib.ffi.tox_friend_get_status_message(
+        pointer,
+        friendNumber.value,
+        out,
+        err,
+      );
       _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
+        err.value,
+        FriendQueryError.fromValue,
         'tox_friend_get_status_message',
       );
       return _read(out, size);
@@ -916,51 +982,54 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Tox_User_Status friendGetStatus(int friendNumber) {
+  UserStatus friendGetStatus(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_friend_get_status(pointer, friendNumber, err);
-      _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
-        'tox_friend_get_status',
+      final result = lib.ffi.tox_friend_get_status(
+        pointer,
+        friendNumber.value,
+        err,
       );
-      return result;
+      _check(err.value, FriendQueryError.fromValue, 'tox_friend_get_status');
+      return UserStatus.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Connection friendGetConnectionStatus(int friendNumber) {
+  Connection friendGetConnectionStatus(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_friend_get_connection_status(
         pointer,
-        friendNumber,
+        friendNumber.value,
         err,
       );
       _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
+        err.value,
+        FriendQueryError.fromValue,
         'tox_friend_get_connection_status',
       );
-      return result;
+      return Connection.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  bool friendGetTyping(int friendNumber) {
+  bool friendGetTyping(FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_friend_get_typing(pointer, friendNumber, err);
-      _check(
-        Tox_Err_Friend_Query.fromValue(err.value),
-        'tox_friend_get_typing',
+      final result = lib.ffi.tox_friend_get_typing(
+        pointer,
+        friendNumber.value,
+        err,
       );
+      _check(err.value, FriendQueryError.fromValue, 'tox_friend_get_typing');
       return result;
     } finally {
       a.free();
@@ -968,9 +1037,9 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int friendSendMessage(
-    int friendNumber,
-    Tox_Message_Type type,
+  FriendMessageId friendSendMessage(
+    FriendNumber friendNumber,
+    MessageType type,
     Uint8List message,
   ) {
     final a = _Arena(lib);
@@ -978,36 +1047,38 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_friend_send_message(
         pointer,
-        friendNumber,
-        type,
+        friendNumber.value,
+        Tox_Message_Type.fromValue(type.value),
         a.bytes(message),
         message.length,
         err,
       );
       _check(
-        Tox_Err_Friend_Send_Message.fromValue(err.value),
+        err.value,
+        FriendSendMessageError.fromValue,
         'tox_friend_send_message',
       );
-      return result;
+      return FriendMessageId(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  void friendSendLossyPacket(int friendNumber, Uint8List data) {
+  void friendSendLossyPacket(FriendNumber friendNumber, Uint8List data) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_friend_send_lossy_packet(
         pointer,
-        friendNumber,
+        friendNumber.value,
         a.bytes(data),
         data.length,
         err,
       );
       _check(
-        Tox_Err_Friend_Custom_Packet.fromValue(err.value),
+        err.value,
+        FriendCustomPacketError.fromValue,
         'tox_friend_send_lossy_packet',
       );
     } finally {
@@ -1016,19 +1087,20 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void friendSendLosslessPacket(int friendNumber, Uint8List data) {
+  void friendSendLosslessPacket(FriendNumber friendNumber, Uint8List data) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_friend_send_lossless_packet(
         pointer,
-        friendNumber,
+        friendNumber.value,
         a.bytes(data),
         data.length,
         err,
       );
       _check(
-        Tox_Err_Friend_Custom_Packet.fromValue(err.value),
+        err.value,
+        FriendCustomPacketError.fromValue,
         'tox_friend_send_lossless_packet',
       );
     } finally {
@@ -1037,8 +1109,8 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int groupNew(
-    Tox_Group_Privacy_State privacyState,
+  GroupNumber groupNew(
+    GroupPrivacyState privacyState,
     Uint8List groupName,
     Uint8List name,
   ) {
@@ -1047,49 +1119,58 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_group_new(
         pointer,
-        privacyState,
+        Tox_Group_Privacy_State.fromValue(privacyState.value),
         a.bytes(groupName),
         groupName.length,
         a.bytes(name),
         name.length,
         err,
       );
-      _check(Tox_Err_Group_New.fromValue(err.value), 'tox_group_new');
-      return result;
+      _check(err.value, GroupNewError.fromValue, 'tox_group_new');
+      return GroupNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  int groupJoin(Uint8List chatId, Uint8List name, Uint8List password) {
+  GroupNumber groupJoin(
+    GroupChatId chatId,
+    Uint8List name,
+    Uint8List password,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_join(
         pointer,
-        a.bytes(chatId),
+        a.bytes(chatId.bytes),
         a.bytes(name),
         name.length,
         a.bytes(password),
         password.length,
         err,
       );
-      _check(Tox_Err_Group_Join.fromValue(err.value), 'tox_group_join');
-      return result;
+      _check(err.value, GroupJoinError.fromValue, 'tox_group_join');
+      return GroupNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  bool groupIsConnected(int groupNumber) {
+  bool groupIsConnected(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_group_is_connected(pointer, groupNumber, err);
+      final result = lib.ffi.tox_group_is_connected(
+        pointer,
+        groupNumber.value,
+        err,
+      );
       _check(
-        Tox_Err_Group_Is_Connected.fromValue(err.value),
+        err.value,
+        GroupIsConnectedError.fromValue,
         'tox_group_is_connected',
       );
       return result;
@@ -1099,52 +1180,50 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupDisconnect(int groupNumber) {
+  void groupDisconnect(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_disconnect(pointer, groupNumber, err);
-      _check(
-        Tox_Err_Group_Disconnect.fromValue(err.value),
-        'tox_group_disconnect',
-      );
+      lib.ffi.tox_group_disconnect(pointer, groupNumber.value, err);
+      _check(err.value, GroupDisconnectError.fromValue, 'tox_group_disconnect');
     } finally {
       a.free();
     }
   }
 
   @override
-  void groupLeave(int groupNumber, Uint8List partMessage) {
+  void groupLeave(GroupNumber groupNumber, Uint8List partMessage) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_leave(
         pointer,
-        groupNumber,
+        groupNumber.value,
         a.bytes(partMessage),
         partMessage.length,
         err,
       );
-      _check(Tox_Err_Group_Leave.fromValue(err.value), 'tox_group_leave');
+      _check(err.value, GroupLeaveError.fromValue, 'tox_group_leave');
     } finally {
       a.free();
     }
   }
 
   @override
-  void groupSelfSetName(int groupNumber, Uint8List name) {
+  void groupSelfSetName(GroupNumber groupNumber, Uint8List name) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_self_set_name(
         pointer,
-        groupNumber,
+        groupNumber.value,
         a.bytes(name),
         name.length,
         err,
       );
       _check(
-        Tox_Err_Group_Self_Name_Set.fromValue(err.value),
+        err.value,
+        GroupSelfNameSetError.fromValue,
         'tox_group_self_set_name',
       );
     } finally {
@@ -1153,23 +1232,25 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List groupSelfGetName(int groupNumber) {
+  Uint8List groupSelfGetName(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_group_self_get_name_size(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_name_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_group_self_get_name(pointer, groupNumber, out, err);
+      lib.ffi.tox_group_self_get_name(pointer, groupNumber.value, out, err);
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_name',
       );
       return _read(out, size);
@@ -1179,13 +1260,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSelfSetStatus(int groupNumber, Tox_User_Status status) {
+  void groupSelfSetStatus(GroupNumber groupNumber, UserStatus status) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_self_set_status(pointer, groupNumber, status, err);
+      lib.ffi.tox_group_self_set_status(
+        pointer,
+        groupNumber.value,
+        Tox_User_Status.fromValue(status.value),
+        err,
+      );
       _check(
-        Tox_Err_Group_Self_Status_Set.fromValue(err.value),
+        err.value,
+        GroupSelfStatusSetError.fromValue,
         'tox_group_self_set_status',
       );
     } finally {
@@ -1194,70 +1281,83 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Tox_User_Status groupSelfGetStatus(int groupNumber) {
+  UserStatus groupSelfGetStatus(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_self_get_status(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_status',
       );
-      return result;
+      return UserStatus.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Group_Role groupSelfGetRole(int groupNumber) {
+  GroupRole groupSelfGetRole(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_group_self_get_role(pointer, groupNumber, err);
+      final result = lib.ffi.tox_group_self_get_role(
+        pointer,
+        groupNumber.value,
+        err,
+      );
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_role',
       );
-      return result;
+      return GroupRole.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  int groupSelfGetPeerId(int groupNumber) {
+  GroupPeerNumber groupSelfGetPeerId(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_self_get_peer_id(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_peer_id',
       );
-      return result;
+      return GroupPeerNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  PublicKey groupSelfGetPublicKey(int groupNumber) {
+  PublicKey groupSelfGetPublicKey(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final out = a.buffer(toxPublicKeySize);
-      lib.ffi.tox_group_self_get_public_key(pointer, groupNumber, out, err);
+      lib.ffi.tox_group_self_get_public_key(
+        pointer,
+        groupNumber.value,
+        out,
+        err,
+      );
       _check(
-        Tox_Err_Group_Self_Query.fromValue(err.value),
+        err.value,
+        GroupSelfQueryError.fromValue,
         'tox_group_self_get_public_key',
       );
       return PublicKey(_read(out, toxPublicKeySize));
@@ -1267,42 +1367,41 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSetTopic(int groupNumber, Uint8List topic) {
+  void groupSetTopic(GroupNumber groupNumber, Uint8List topic) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_set_topic(
         pointer,
-        groupNumber,
+        groupNumber.value,
         a.bytes(topic),
         topic.length,
         err,
       );
-      _check(
-        Tox_Err_Group_Topic_Set.fromValue(err.value),
-        'tox_group_set_topic',
-      );
+      _check(err.value, GroupTopicSetError.fromValue, 'tox_group_set_topic');
     } finally {
       a.free();
     }
   }
 
   @override
-  Uint8List groupGetTopic(int groupNumber) {
+  Uint8List groupGetTopic(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final size = lib.ffi.tox_group_get_topic_size(pointer, groupNumber, err);
+      final size = lib.ffi.tox_group_get_topic_size(
+        pointer,
+        groupNumber.value,
+        err,
+      );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_topic_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_group_get_topic(pointer, groupNumber, out, err);
-      _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
-        'tox_group_get_topic',
-      );
+      lib.ffi.tox_group_get_topic(pointer, groupNumber.value, out, err);
+      _check(err.value, GroupStateQueryError.fromValue, 'tox_group_get_topic');
       return _read(out, size);
     } finally {
       a.free();
@@ -1310,21 +1409,23 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List groupGetName(int groupNumber) {
+  Uint8List groupGetName(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final size = lib.ffi.tox_group_get_name_size(pointer, groupNumber, err);
+      final size = lib.ffi.tox_group_get_name_size(
+        pointer,
+        groupNumber.value,
+        err,
+      );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_name_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_group_get_name(pointer, groupNumber, out, err);
-      _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
-        'tox_group_get_name',
-      );
+      lib.ffi.tox_group_get_name(pointer, groupNumber.value, out, err);
+      _check(err.value, GroupStateQueryError.fromValue, 'tox_group_get_name');
       return _read(out, size);
     } finally {
       a.free();
@@ -1332,107 +1433,116 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List groupGetChatId(int groupNumber) {
+  GroupChatId groupGetChatId(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final out = a.buffer(toxGroupChatIdSize);
-      lib.ffi.tox_group_get_chat_id(pointer, groupNumber, out, err);
+      lib.ffi.tox_group_get_chat_id(pointer, groupNumber.value, out, err);
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_chat_id',
       );
-      return _read(out, toxGroupChatIdSize);
+      return GroupChatId(_read(out, toxGroupChatIdSize));
     } finally {
       a.free();
     }
   }
 
   @override
-  int groupById(Uint8List chatId) {
+  GroupNumber groupById(GroupChatId chatId) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      final result = lib.ffi.tox_group_by_id(pointer, a.bytes(chatId), err);
-      _check(Tox_Err_Group_By_Id.fromValue(err.value), 'tox_group_by_id');
-      return result;
+      final result = lib.ffi.tox_group_by_id(
+        pointer,
+        a.bytes(chatId.bytes),
+        err,
+      );
+      _check(err.value, GroupByIdError.fromValue, 'tox_group_by_id');
+      return GroupNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Group_Privacy_State groupGetPrivacyState(int groupNumber) {
+  GroupPrivacyState groupGetPrivacyState(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_get_privacy_state(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_privacy_state',
       );
-      return result;
+      return GroupPrivacyState.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Group_Voice_State groupGetVoiceState(int groupNumber) {
+  GroupVoiceState groupGetVoiceState(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_get_voice_state(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_voice_state',
       );
-      return result;
+      return GroupVoiceState.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Group_Topic_Lock groupGetTopicLock(int groupNumber) {
+  GroupTopicLock groupGetTopicLock(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_get_topic_lock(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_topic_lock',
       );
-      return result;
+      return GroupTopicLock.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  int groupGetPeerLimit(int groupNumber) {
+  int groupGetPeerLimit(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_get_peer_limit(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_peer_limit',
       );
       return result;
@@ -1442,23 +1552,25 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Uint8List groupGetPassword(int groupNumber) {
+  Uint8List groupGetPassword(GroupNumber groupNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_group_get_password_size(
         pointer,
-        groupNumber,
+        groupNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_password_size',
       );
       final out = a.buffer(size);
-      lib.ffi.tox_group_get_password(pointer, groupNumber, out, err);
+      lib.ffi.tox_group_get_password(pointer, groupNumber.value, out, err);
       _check(
-        Tox_Err_Group_State_Query.fromValue(err.value),
+        err.value,
+        GroupStateQueryError.fromValue,
         'tox_group_get_password',
       );
       return _read(out, size);
@@ -1468,9 +1580,9 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int groupSendMessage(
-    int groupNumber,
-    Tox_Message_Type messageType,
+  GroupMessageId groupSendMessage(
+    GroupNumber groupNumber,
+    MessageType messageType,
     Uint8List message,
   ) {
     final a = _Arena(lib);
@@ -1478,27 +1590,28 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_group_send_message(
         pointer,
-        groupNumber,
-        messageType,
+        groupNumber.value,
+        Tox_Message_Type.fromValue(messageType.value),
         a.bytes(message),
         message.length,
         err,
       );
       _check(
-        Tox_Err_Group_Send_Message.fromValue(err.value),
+        err.value,
+        GroupSendMessageError.fromValue,
         'tox_group_send_message',
       );
-      return result;
+      return GroupMessageId(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  int groupSendPrivateMessage(
-    int groupNumber,
-    int peerId,
-    Tox_Message_Type messageType,
+  GroupMessageId groupSendPrivateMessage(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    MessageType messageType,
     Uint8List message,
   ) {
     final a = _Arena(lib);
@@ -1506,38 +1619,44 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_group_send_private_message(
         pointer,
-        groupNumber,
-        peerId,
-        messageType,
+        groupNumber.value,
+        peerId.value,
+        Tox_Message_Type.fromValue(messageType.value),
         a.bytes(message),
         message.length,
         err,
       );
       _check(
-        Tox_Err_Group_Send_Private_Message.fromValue(err.value),
+        err.value,
+        GroupSendPrivateMessageError.fromValue,
         'tox_group_send_private_message',
       );
-      return result;
+      return GroupMessageId(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  void groupSendCustomPacket(int groupNumber, bool lossless, Uint8List data) {
+  void groupSendCustomPacket(
+    GroupNumber groupNumber,
+    bool lossless,
+    Uint8List data,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_send_custom_packet(
         pointer,
-        groupNumber,
+        groupNumber.value,
         lossless,
         a.bytes(data),
         data.length,
         err,
       );
       _check(
-        Tox_Err_Group_Send_Custom_Packet.fromValue(err.value),
+        err.value,
+        GroupSendCustomPacketError.fromValue,
         'tox_group_send_custom_packet',
       );
     } finally {
@@ -1547,8 +1666,8 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   void groupSendCustomPrivatePacket(
-    int groupNumber,
-    int peerId,
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
     bool lossless,
     Uint8List data,
   ) {
@@ -1557,15 +1676,16 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       lib.ffi.tox_group_send_custom_private_packet(
         pointer,
-        groupNumber,
-        peerId,
+        groupNumber.value,
+        peerId.value,
         lossless,
         a.bytes(data),
         data.length,
         err,
       );
       _check(
-        Tox_Err_Group_Send_Custom_Private_Packet.fromValue(err.value),
+        err.value,
+        GroupSendCustomPrivatePacketError.fromValue,
         'tox_group_send_custom_private_packet',
       );
     } finally {
@@ -1574,13 +1694,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupInviteFriend(int groupNumber, int friendNumber) {
+  void groupInviteFriend(GroupNumber groupNumber, FriendNumber friendNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_invite_friend(pointer, groupNumber, friendNumber, err);
+      lib.ffi.tox_group_invite_friend(
+        pointer,
+        groupNumber.value,
+        friendNumber.value,
+        err,
+      );
       _check(
-        Tox_Err_Group_Invite_Friend.fromValue(err.value),
+        err.value,
+        GroupInviteFriendError.fromValue,
         'tox_group_invite_friend',
       );
     } finally {
@@ -1589,8 +1715,8 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int groupInviteAccept(
-    int friendNumber,
+  GroupNumber groupInviteAccept(
+    FriendNumber friendNumber,
     Uint8List inviteData,
     Uint8List name,
     Uint8List password,
@@ -1600,7 +1726,7 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       final result = lib.ffi.tox_group_invite_accept(
         pointer,
-        friendNumber,
+        friendNumber.value,
         a.bytes(inviteData),
         inviteData.length,
         a.bytes(name),
@@ -1610,29 +1736,31 @@ mixin ToxFfiApi implements ToxApi {
         err,
       );
       _check(
-        Tox_Err_Group_Invite_Accept.fromValue(err.value),
+        err.value,
+        GroupInviteAcceptError.fromValue,
         'tox_group_invite_accept',
       );
-      return result;
+      return GroupNumber(result);
     } finally {
       a.free();
     }
   }
 
   @override
-  void groupSetPassword(int groupNumber, Uint8List password) {
+  void groupSetPassword(GroupNumber groupNumber, Uint8List password) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_set_password(
         pointer,
-        groupNumber,
+        groupNumber.value,
         a.bytes(password),
         password.length,
         err,
       );
       _check(
-        Tox_Err_Group_Set_Password.fromValue(err.value),
+        err.value,
+        GroupSetPasswordError.fromValue,
         'tox_group_set_password',
       );
     } finally {
@@ -1641,13 +1769,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSetTopicLock(int groupNumber, Tox_Group_Topic_Lock topicLock) {
+  void groupSetTopicLock(GroupNumber groupNumber, GroupTopicLock topicLock) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_set_topic_lock(pointer, groupNumber, topicLock, err);
+      lib.ffi.tox_group_set_topic_lock(
+        pointer,
+        groupNumber.value,
+        Tox_Group_Topic_Lock.fromValue(topicLock.value),
+        err,
+      );
       _check(
-        Tox_Err_Group_Set_Topic_Lock.fromValue(err.value),
+        err.value,
+        GroupSetTopicLockError.fromValue,
         'tox_group_set_topic_lock',
       );
     } finally {
@@ -1656,13 +1790,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSetVoiceState(int groupNumber, Tox_Group_Voice_State voiceState) {
+  void groupSetVoiceState(GroupNumber groupNumber, GroupVoiceState voiceState) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_set_voice_state(pointer, groupNumber, voiceState, err);
+      lib.ffi.tox_group_set_voice_state(
+        pointer,
+        groupNumber.value,
+        Tox_Group_Voice_State.fromValue(voiceState.value),
+        err,
+      );
       _check(
-        Tox_Err_Group_Set_Voice_State.fromValue(err.value),
+        err.value,
+        GroupSetVoiceStateError.fromValue,
         'tox_group_set_voice_state',
       );
     } finally {
@@ -1672,20 +1812,21 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   void groupSetPrivacyState(
-    int groupNumber,
-    Tox_Group_Privacy_State privacyState,
+    GroupNumber groupNumber,
+    GroupPrivacyState privacyState,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_group_set_privacy_state(
         pointer,
-        groupNumber,
-        privacyState,
+        groupNumber.value,
+        Tox_Group_Privacy_State.fromValue(privacyState.value),
         err,
       );
       _check(
-        Tox_Err_Group_Set_Privacy_State.fromValue(err.value),
+        err.value,
+        GroupSetPrivacyStateError.fromValue,
         'tox_group_set_privacy_state',
       );
     } finally {
@@ -1694,13 +1835,19 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSetPeerLimit(int groupNumber, int peerLimit) {
+  void groupSetPeerLimit(GroupNumber groupNumber, int peerLimit) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_set_peer_limit(pointer, groupNumber, peerLimit, err);
+      lib.ffi.tox_group_set_peer_limit(
+        pointer,
+        groupNumber.value,
+        peerLimit,
+        err,
+      );
       _check(
-        Tox_Err_Group_Set_Peer_Limit.fromValue(err.value),
+        err.value,
+        GroupSetPeerLimitError.fromValue,
         'tox_group_set_peer_limit',
       );
     } finally {
@@ -1709,72 +1856,96 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void groupSetIgnore(int groupNumber, int peerId, bool ignore) {
+  void groupSetIgnore(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    bool ignore,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_set_ignore(pointer, groupNumber, peerId, ignore, err);
-      _check(
-        Tox_Err_Group_Set_Ignore.fromValue(err.value),
-        'tox_group_set_ignore',
+      lib.ffi.tox_group_set_ignore(
+        pointer,
+        groupNumber.value,
+        peerId.value,
+        ignore,
+        err,
       );
+      _check(err.value, GroupSetIgnoreError.fromValue, 'tox_group_set_ignore');
     } finally {
       a.free();
     }
   }
 
   @override
-  void groupSetRole(int groupNumber, int peerId, Tox_Group_Role role) {
+  void groupSetRole(
+    GroupNumber groupNumber,
+    GroupPeerNumber peerId,
+    GroupRole role,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_group_set_role(pointer, groupNumber, peerId, role, err);
-      _check(Tox_Err_Group_Set_Role.fromValue(err.value), 'tox_group_set_role');
-    } finally {
-      a.free();
-    }
-  }
-
-  @override
-  void groupKickPeer(int groupNumber, int peerId) {
-    final a = _Arena(lib);
-    try {
-      final err = a.error();
-      lib.ffi.tox_group_kick_peer(pointer, groupNumber, peerId, err);
-      _check(
-        Tox_Err_Group_Kick_Peer.fromValue(err.value),
-        'tox_group_kick_peer',
+      lib.ffi.tox_group_set_role(
+        pointer,
+        groupNumber.value,
+        peerId.value,
+        Tox_Group_Role.fromValue(role.value),
+        err,
       );
+      _check(err.value, GroupSetRoleError.fromValue, 'tox_group_set_role');
     } finally {
       a.free();
     }
   }
 
   @override
-  Uint8List groupPeerGetName(int groupNumber, int groupPeerNumber) {
+  void groupKickPeer(GroupNumber groupNumber, GroupPeerNumber peerId) {
+    final a = _Arena(lib);
+    try {
+      final err = a.error();
+      lib.ffi.tox_group_kick_peer(
+        pointer,
+        groupNumber.value,
+        peerId.value,
+        err,
+      );
+      _check(err.value, GroupKickPeerError.fromValue, 'tox_group_kick_peer');
+    } finally {
+      a.free();
+    }
+  }
+
+  @override
+  Uint8List groupPeerGetName(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final size = lib.ffi.tox_group_peer_get_name_size(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_name_size',
       );
       final out = a.buffer(size);
       lib.ffi.tox_group_peer_get_name(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_name',
       );
       return _read(out, size);
@@ -1784,86 +1955,99 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  Tox_User_Status groupPeerGetStatus(int groupNumber, int groupPeerNumber) {
+  UserStatus groupPeerGetStatus(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_peer_get_status(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_status',
       );
-      return result;
+      return UserStatus.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Group_Role groupPeerGetRole(int groupNumber, int groupPeerNumber) {
+  GroupRole groupPeerGetRole(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_peer_get_role(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_role',
       );
-      return result;
+      return GroupRole.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Connection groupPeerGetConnectionStatus(
-    int groupNumber,
-    int groupPeerNumber,
+  Connection groupPeerGetConnectionStatus(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
   ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final result = lib.ffi.tox_group_peer_get_connection_status(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_connection_status',
       );
-      return result;
+      return Connection.fromValue(result.value);
     } finally {
       a.free();
     }
   }
 
   @override
-  PublicKey groupPeerGetPublicKey(int groupNumber, int groupPeerNumber) {
+  PublicKey groupPeerGetPublicKey(
+    GroupNumber groupNumber,
+    GroupPeerNumber groupPeerNumber,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final out = a.buffer(toxPublicKeySize);
       lib.ffi.tox_group_peer_get_public_key(
         pointer,
-        groupNumber,
-        groupPeerNumber,
+        groupNumber.value,
+        groupPeerNumber.value,
         out,
         err,
       );
       _check(
-        Tox_Err_Group_Peer_Query.fromValue(err.value),
+        err.value,
+        GroupPeerQueryError.fromValue,
         'tox_group_peer_get_public_key',
       );
       return PublicKey(_read(out, toxPublicKeySize));
@@ -1873,13 +2057,8 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  int groupchatDisableAv(int conferenceNumber) {
-    return lib.ffi.toxav_groupchat_disable_av(pointer, conferenceNumber);
-  }
-
-  @override
-  bool groupchatAvEnabled(int conferenceNumber) {
-    return lib.ffi.toxav_groupchat_av_enabled(pointer, conferenceNumber);
+  bool groupchatAvEnabled(ConferenceNumber conferenceNumber) {
+    return lib.ffi.toxav_groupchat_av_enabled(pointer, conferenceNumber.value);
   }
 
   @override
@@ -1907,7 +2086,7 @@ mixin ToxFfiApi implements ToxApi {
         a.bytes(publicKey.bytes),
         err,
       );
-      _check(Tox_Err_Bootstrap.fromValue(err.value), 'tox_bootstrap');
+      _check(err.value, BootstrapError.fromValue, 'tox_bootstrap');
     } finally {
       a.free();
     }
@@ -1925,15 +2104,16 @@ mixin ToxFfiApi implements ToxApi {
         a.bytes(publicKey.bytes),
         err,
       );
-      _check(Tox_Err_Bootstrap.fromValue(err.value), 'tox_add_tcp_relay');
+      _check(err.value, BootstrapError.fromValue, 'tox_add_tcp_relay');
     } finally {
       a.free();
     }
   }
 
   @override
-  Tox_Connection selfGetConnectionStatus() {
-    return lib.ffi.tox_self_get_connection_status(pointer);
+  Connection selfGetConnectionStatus() {
+    final result = lib.ffi.tox_self_get_connection_status(pointer);
+    return Connection.fromValue(result.value);
   }
 
   @override
@@ -1993,7 +2173,7 @@ mixin ToxFfiApi implements ToxApi {
     try {
       final err = a.error();
       lib.ffi.tox_self_set_name(pointer, a.bytes(name), name.length, err);
-      _check(Tox_Err_Set_Info.fromValue(err.value), 'tox_self_set_name');
+      _check(err.value, SetInfoError.fromValue, 'tox_self_set_name');
     } finally {
       a.free();
     }
@@ -2023,10 +2203,7 @@ mixin ToxFfiApi implements ToxApi {
         statusMessage.length,
         err,
       );
-      _check(
-        Tox_Err_Set_Info.fromValue(err.value),
-        'tox_self_set_status_message',
-      );
+      _check(err.value, SetInfoError.fromValue, 'tox_self_set_status_message');
     } finally {
       a.free();
     }
@@ -2046,73 +2223,103 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  void selfSetStatus(Tox_User_Status status) {
-    lib.ffi.tox_self_set_status(pointer, status);
+  void selfSetStatus(UserStatus status) {
+    lib.ffi.tox_self_set_status(
+      pointer,
+      Tox_User_Status.fromValue(status.value),
+    );
   }
 
   @override
-  Tox_User_Status selfGetStatus() {
-    return lib.ffi.tox_self_get_status(pointer);
+  UserStatus selfGetStatus() {
+    final result = lib.ffi.tox_self_get_status(pointer);
+    return UserStatus.fromValue(result.value);
   }
 
   @override
-  List<int> selfGetFriendList() {
+  List<FriendNumber> selfGetFriendList() {
     final a = _Arena(lib);
     try {
       final size = lib.ffi.tox_self_get_friend_list_size(pointer);
       final out = a.ids(size);
       lib.ffi.tox_self_get_friend_list(pointer, out);
-      return out.asTypedList(size).toList();
+      return out.asTypedList(size).map(FriendNumber.new).toList();
     } finally {
       a.free();
     }
   }
 
   @override
-  void selfSetTyping(int friendNumber, bool typing) {
+  void selfSetTyping(FriendNumber friendNumber, bool typing) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_self_set_typing(pointer, friendNumber, typing, err);
-      _check(Tox_Err_Set_Typing.fromValue(err.value), 'tox_self_set_typing');
+      lib.ffi.tox_self_set_typing(pointer, friendNumber.value, typing, err);
+      _check(err.value, SetTypingError.fromValue, 'tox_self_set_typing');
     } finally {
       a.free();
     }
   }
 
   @override
-  void fileControl(int friendNumber, int fileNumber, Tox_File_Control control) {
+  void fileControl(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_file_control(pointer, friendNumber, fileNumber, control, err);
-      _check(Tox_Err_File_Control.fromValue(err.value), 'tox_file_control');
+      lib.ffi.tox_file_control(
+        pointer,
+        friendNumber.value,
+        fileNumber.value,
+        Tox_File_Control.fromValue(control.value),
+        err,
+      );
+      _check(err.value, FileControlError.fromValue, 'tox_file_control');
     } finally {
       a.free();
     }
   }
 
   @override
-  void fileSeek(int friendNumber, int fileNumber, int position) {
+  void fileSeek(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.tox_file_seek(pointer, friendNumber, fileNumber, position, err);
-      _check(Tox_Err_File_Seek.fromValue(err.value), 'tox_file_seek');
+      lib.ffi.tox_file_seek(
+        pointer,
+        friendNumber.value,
+        fileNumber.value,
+        position,
+        err,
+      );
+      _check(err.value, FileSeekError.fromValue, 'tox_file_seek');
     } finally {
       a.free();
     }
   }
 
   @override
-  Uint8List fileGetFileId(int friendNumber, int fileNumber) {
+  FileId fileGetFileId(FriendNumber friendNumber, FileNumber fileNumber) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       final out = a.buffer(toxFileIdLength);
-      lib.ffi.tox_file_get_file_id(pointer, friendNumber, fileNumber, out, err);
-      _check(Tox_Err_File_Get.fromValue(err.value), 'tox_file_get_file_id');
-      return _read(out, toxFileIdLength);
+      lib.ffi.tox_file_get_file_id(
+        pointer,
+        friendNumber.value,
+        fileNumber.value,
+        out,
+        err,
+      );
+      _check(err.value, FileGetError.fromValue, 'tox_file_get_file_id');
+      return FileId(_read(out, toxFileIdLength));
     } finally {
       a.free();
     }
@@ -2120,8 +2327,8 @@ mixin ToxFfiApi implements ToxApi {
 
   @override
   void fileSendChunk(
-    int friendNumber,
-    int fileNumber,
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
     int position,
     Uint8List data,
   ) {
@@ -2130,35 +2337,36 @@ mixin ToxFfiApi implements ToxApi {
       final err = a.error();
       lib.ffi.tox_file_send_chunk(
         pointer,
-        friendNumber,
-        fileNumber,
+        friendNumber.value,
+        fileNumber.value,
         position,
         a.bytes(data),
         data.length,
         err,
       );
-      _check(
-        Tox_Err_File_Send_Chunk.fromValue(err.value),
-        'tox_file_send_chunk',
-      );
+      _check(err.value, FileSendChunkError.fromValue, 'tox_file_send_chunk');
     } finally {
       a.free();
     }
   }
 
   @override
-  void conferenceInvite(int friendNumber, int conferenceNumber) {
+  void conferenceInvite(
+    FriendNumber friendNumber,
+    ConferenceNumber conferenceNumber,
+  ) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.tox_conference_invite(
         pointer,
-        friendNumber,
-        conferenceNumber,
+        friendNumber.value,
+        conferenceNumber.value,
         err,
       );
       _check(
-        Tox_Err_Conference_Invite.fromValue(err.value),
+        err.value,
+        ConferenceInviteError.fromValue,
         'tox_conference_invite',
       );
     } finally {
@@ -2167,13 +2375,13 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  List<int> conferenceGetChatlist() {
+  List<ConferenceNumber> conferenceGetChatlist() {
     final a = _Arena(lib);
     try {
       final size = lib.ffi.tox_conference_get_chatlist_size(pointer);
       final out = a.ids(size);
       lib.ffi.tox_conference_get_chatlist(pointer, out);
-      return out.asTypedList(size).toList();
+      return out.asTypedList(size).map(ConferenceNumber.new).toList();
     } finally {
       a.free();
     }
@@ -2197,7 +2405,7 @@ mixin ToxFfiApi implements ToxApi {
     try {
       final err = a.error();
       final result = lib.ffi.tox_self_get_udp_port(pointer, err);
-      _check(Tox_Err_Get_Port.fromValue(err.value), 'tox_self_get_udp_port');
+      _check(err.value, GetPortError.fromValue, 'tox_self_get_udp_port');
       return result;
     } finally {
       a.free();
@@ -2210,7 +2418,7 @@ mixin ToxFfiApi implements ToxApi {
     try {
       final err = a.error();
       final result = lib.ffi.tox_self_get_tcp_port(pointer, err);
-      _check(Tox_Err_Get_Port.fromValue(err.value), 'tox_self_get_tcp_port');
+      _check(err.value, GetPortError.fromValue, 'tox_self_get_tcp_port');
       return result;
     } finally {
       a.free();
@@ -2218,13 +2426,13 @@ mixin ToxFfiApi implements ToxApi {
   }
 
   @override
-  List<int> groupGetGroupList() {
+  List<GroupNumber> groupGetGroupList() {
     final a = _Arena(lib);
     try {
       final size = lib.ffi.tox_group_get_group_list_size(pointer);
       final out = a.ids(size);
       lib.ffi.tox_group_get_group_list(pointer, out);
-      return out.asTypedList(size).toList();
+      return out.asTypedList(size).map(GroupNumber.new).toList();
     } finally {
       a.free();
     }
@@ -2248,24 +2456,24 @@ abstract interface class ToxAvApi {
 
   void videoIterate();
 
-  void call(int friendNumber, int audioBitRate, int videoBitRate);
+  void call(FriendNumber friendNumber, int audioBitRate, int videoBitRate);
 
-  void answer(int friendNumber, int audioBitRate, int videoBitRate);
+  void answer(FriendNumber friendNumber, int audioBitRate, int videoBitRate);
 
-  void callControl(int friendNumber, Toxav_Call_Control control);
+  void callControl(FriendNumber friendNumber, CallControl control);
 
   void audioSendFrame(
-    int friendNumber,
+    FriendNumber friendNumber,
     Int16List pcm,
     int sampleCount,
     int channels,
     int samplingRate,
   );
 
-  void audioSetBitRate(int friendNumber, int bitRate);
+  void audioSetBitRate(FriendNumber friendNumber, int bitRate);
 
   void videoSendFrame(
-    int friendNumber,
+    FriendNumber friendNumber,
     int width,
     int height,
     Uint8List y,
@@ -2273,7 +2481,7 @@ abstract interface class ToxAvApi {
     Uint8List v,
   );
 
-  void videoSetBitRate(int friendNumber, int bitRate);
+  void videoSetBitRate(FriendNumber friendNumber, int bitRate);
 }
 
 /// [ToxAvApi] through toxav's C functions.
@@ -2308,48 +2516,53 @@ mixin ToxAvFfiApi implements ToxAvApi {
   }
 
   @override
-  void call(int friendNumber, int audioBitRate, int videoBitRate) {
+  void call(FriendNumber friendNumber, int audioBitRate, int videoBitRate) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.toxav_call(
         pointer,
-        friendNumber,
+        friendNumber.value,
         audioBitRate,
         videoBitRate,
         err,
       );
-      _check(Toxav_Err_Call.fromValue(err.value), 'toxav_call');
+      _check(err.value, CallError.fromValue, 'toxav_call');
     } finally {
       a.free();
     }
   }
 
   @override
-  void answer(int friendNumber, int audioBitRate, int videoBitRate) {
+  void answer(FriendNumber friendNumber, int audioBitRate, int videoBitRate) {
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.toxav_answer(
         pointer,
-        friendNumber,
+        friendNumber.value,
         audioBitRate,
         videoBitRate,
         err,
       );
-      _check(Toxav_Err_Answer.fromValue(err.value), 'toxav_answer');
+      _check(err.value, AnswerError.fromValue, 'toxav_answer');
     } finally {
       a.free();
     }
   }
 
   @override
-  void callControl(int friendNumber, Toxav_Call_Control control) {
+  void callControl(FriendNumber friendNumber, CallControl control) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.toxav_call_control(pointer, friendNumber, control, err);
-      _check(Toxav_Err_Call_Control.fromValue(err.value), 'toxav_call_control');
+      lib.ffi.toxav_call_control(
+        pointer,
+        friendNumber.value,
+        Toxav_Call_Control.fromValue(control.value),
+        err,
+      );
+      _check(err.value, CallControlError.fromValue, 'toxav_call_control');
     } finally {
       a.free();
     }
@@ -2357,43 +2570,45 @@ mixin ToxAvFfiApi implements ToxAvApi {
 
   @override
   void audioSendFrame(
-    int friendNumber,
+    FriendNumber friendNumber,
     Int16List pcm,
     int sampleCount,
     int channels,
     int samplingRate,
   ) {
+    if (pcm.length < sampleCount * channels) {
+      throw ArgumentError.value(pcm.length, 'pcm', 'too short');
+    }
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.toxav_audio_send_frame(
         pointer,
-        friendNumber,
+        friendNumber.value,
         a.int16s(pcm),
         sampleCount,
         channels,
         samplingRate,
         err,
       );
-      _check(
-        Toxav_Err_Send_Frame.fromValue(err.value),
-        'toxav_audio_send_frame',
-      );
+      _check(err.value, SendFrameError.fromValue, 'toxav_audio_send_frame');
     } finally {
       a.free();
     }
   }
 
   @override
-  void audioSetBitRate(int friendNumber, int bitRate) {
+  void audioSetBitRate(FriendNumber friendNumber, int bitRate) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.toxav_audio_set_bit_rate(pointer, friendNumber, bitRate, err);
-      _check(
-        Toxav_Err_Bit_Rate_Set.fromValue(err.value),
-        'toxav_audio_set_bit_rate',
+      lib.ffi.toxav_audio_set_bit_rate(
+        pointer,
+        friendNumber.value,
+        bitRate,
+        err,
       );
+      _check(err.value, BitRateSetError.fromValue, 'toxav_audio_set_bit_rate');
     } finally {
       a.free();
     }
@@ -2401,19 +2616,28 @@ mixin ToxAvFfiApi implements ToxAvApi {
 
   @override
   void videoSendFrame(
-    int friendNumber,
+    FriendNumber friendNumber,
     int width,
     int height,
     Uint8List y,
     Uint8List u,
     Uint8List v,
   ) {
+    if (y.length < width * height) {
+      throw ArgumentError.value(y.length, 'y', 'too short');
+    }
+    if (u.length < ((width ~/ 2) * height) ~/ 2) {
+      throw ArgumentError.value(u.length, 'u', 'too short');
+    }
+    if (v.length < ((width ~/ 2) * height) ~/ 2) {
+      throw ArgumentError.value(v.length, 'v', 'too short');
+    }
     final a = _Arena(lib);
     try {
       final err = a.error();
       lib.ffi.toxav_video_send_frame(
         pointer,
-        friendNumber,
+        friendNumber.value,
         width,
         height,
         a.bytes(y),
@@ -2421,34 +2645,37 @@ mixin ToxAvFfiApi implements ToxAvApi {
         a.bytes(v),
         err,
       );
-      _check(
-        Toxav_Err_Send_Frame.fromValue(err.value),
-        'toxav_video_send_frame',
-      );
+      _check(err.value, SendFrameError.fromValue, 'toxav_video_send_frame');
     } finally {
       a.free();
     }
   }
 
   @override
-  void videoSetBitRate(int friendNumber, int bitRate) {
+  void videoSetBitRate(FriendNumber friendNumber, int bitRate) {
     final a = _Arena(lib);
     try {
       final err = a.error();
-      lib.ffi.toxav_video_set_bit_rate(pointer, friendNumber, bitRate, err);
-      _check(
-        Toxav_Err_Bit_Rate_Set.fromValue(err.value),
-        'toxav_video_set_bit_rate',
+      lib.ffi.toxav_video_set_bit_rate(
+        pointer,
+        friendNumber.value,
+        bitRate,
+        err,
       );
+      _check(err.value, BitRateSetError.fromValue, 'toxav_video_set_bit_rate');
     } finally {
       a.free();
     }
   }
 }
 
-void _check<T extends Enum>(T error, String function) {
-  if (error.index != 0) {
-    throw ApiException(error, function);
+void _check<T extends Enum>(
+  int error,
+  T Function(int) toError,
+  String function,
+) {
+  if (error != 0) {
+    throw ApiException(toError(error), function);
   }
 }
 

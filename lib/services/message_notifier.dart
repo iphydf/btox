@@ -81,11 +81,13 @@ final class MessageNotifier {
   )?
   _invite;
   final Future<void> Function(EventId id)? _uninvite;
+  final Future<void> Function(PublicKey from)? _unrequest;
 
   MessageNotifier(
     this._show,
     this._cancel, {
     this.request,
+    Future<void> Function(PublicKey from)? unrequest,
     this.calls,
     Future<void> Function(
       Id<Profiles> profile,
@@ -97,7 +99,8 @@ final class MessageNotifier {
     invite,
     Future<void> Function(EventId id)? uninvite,
   }) : _invite = invite,
-       _uninvite = uninvite;
+       _uninvite = uninvite,
+       _unrequest = unrequest;
 
   static Future<MessageNotifier> android() async {
     final plugin = FlutterLocalNotificationsPlugin();
@@ -176,6 +179,7 @@ final class MessageNotifier {
         notificationDetails: alert(_requestTag, account: account),
         payload: '${profile.value}',
       ),
+      unrequest: (from) => plugin.cancel(id: _idOfKey(from), tag: _requestTag),
       invite: (profile, id, invite, from, account) => plugin.show(
         id: _idOfKey(id),
         title: l10n.inviteNotification,
@@ -228,6 +232,13 @@ final class MessageNotifier {
   void uninvited(EventId id) {
     if (_uninvite case final cancel?) {
       _update(() => cancel(id));
+    }
+  }
+
+  /// Called once the friend request is answered.
+  void unrequested(PublicKey from) {
+    if (_unrequest case final cancel?) {
+      _update(() => cancel(from));
     }
   }
 

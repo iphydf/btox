@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/api/toxcore/tox_av.dart';
 import 'package:btox/calls/call_protocol.dart';
 import 'package:btox/calls/toxav_protocol.dart';
@@ -15,7 +16,7 @@ const _connectTimeout = Duration(seconds: 30);
 /// home device connects it with a toxav call of its own, which carries the
 /// friend's audio and video.
 final class RelayProtocol implements CallProtocol {
-  final int? Function() _homeNumber;
+  final FriendNumber? Function() _homeNumber;
   final void Function(SessionMessage message) _toHome;
   late final ToxavProtocol _home;
   // The friend whose call goes through the home device's call, if any.
@@ -28,7 +29,7 @@ final class RelayProtocol implements CallProtocol {
 
   RelayProtocol(
     ToxAv av, {
-    required int? Function() homeNumber,
+    required FriendNumber? Function() homeNumber,
     required void Function(SessionMessage message) toHome,
   }) : _homeNumber = homeNumber,
        _toHome = toHome {

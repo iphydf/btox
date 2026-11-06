@@ -309,7 +309,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Автоматически принимать файлы до",
+    "autoAcceptFiles": "Автоматически принимать файлы",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -332,6 +332,10 @@
     "fileCancelled": "Отменено",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Отправить снова",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "Приостановлено, пока собеседник не в сети",
     "@filePaused": {
@@ -620,13 +624,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Пока недоступно",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Нет приложения, которое может открыть эту ссылку",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Нет приложения, которое может открыть этот файл",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} печатает",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Индикаторы набора",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Вы видите, когда друзья печатают, а они видят, когда печатаете вы",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Ответить",
     "@reply": {
@@ -1077,5 +1098,145 @@
     "noChatsHint": "Добавьте контакт кнопкой +, чтобы начать общение",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Написать лично",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "лично",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "Лично для {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Написать всем",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} покинул(а) группу, поэтому ничего не отправлено",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Новая группа",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Войти в публичную группу",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Частная",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Публичная",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Конференция",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Название",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "У группы должно быть название",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Это название слишком длинное",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "ID чата",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "ID чата — это 64 шестнадцатеричные цифры",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Пароль",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Этот пароль слишком длинный",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Пригласить друзей",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Нет друзей в сети",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} приглашён(а)",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Покинуть чат",
+    "leaveChatMessage": "Покинуть \"{name}\"? Вы больше не будете получать его сообщения.",
+    "leave": "Покинуть",
+    "chatLeft": "Вы покинули \"{name}\"",
+    "memberJoined": "{name} присоединился(ась) к чату",
+    "memberLeft": "{name} покинул(а) чат",
+    "memberRenamed": "{old} теперь {name}",
+    "topicSet": "{name} изменил(а) тему на \"{topic}\"",
+    "topicSetBySomeone": "Новая тема: \"{topic}\"",
+    "titleSet": "{name} переименовал(а) чат в \"{title}\"",
+    "titleSetBySomeone": "Чат теперь называется \"{title}\"",
+    "memberKicked": "{name} удалил(а) {member}",
+    "memberKickedBySomeone": "{member} удалён(а) из чата",
+    "memberRole": "{name} назначил(а) {member} {role, select, founder{основателем} moderator{модератором} observer{наблюдателем} other{участником}}",
+    "memberRoleBySomeone": "{member} теперь {role, select, founder{основатель} moderator{модератор} observer{наблюдатель} other{участник}}",
+    "membersJoined": "{people, select, one{{names} присоединился(ась) к чату} other{{names} присоединились к чату}}",
+    "membersLeft": "{people, select, one{{names} покинул(а) чат} other{{names} покинули чат}}",
+    "namesTwo": "{first} и {second}",
+    "namesThree": "{first}, {second} и {third}",
+    "namesMore": "{first}, {second} и ещё {count}",
+    "changeTopic": "Изменить тему",
+    "groupTopic": "Тема",
+    "topicTooLong": "Эта тема слишком длинная",
+    "groupSettings": "Настройки группы",
+    "privateGroupHint": "Вступить могут только приглашённые вами друзья",
+    "publicGroupHint": "Вступить может любой, у кого есть ID чата",
+    "topicLock": "Заблокировать тему",
+    "topicLockHint": "Менять её могут только модераторы",
+    "whoCanSpeak": "Кто может писать",
+    "voiceEveryone": "Все, кроме наблюдателей",
+    "voiceModerators": "Модераторы и вы",
+    "voiceFounder": "Только вы",
+    "peerLimit": "Лимит участников",
+    "peerLimitInvalid": "Введите число от 1 до {max}",
+    "groupPasswordOn": "Нужен для вступления",
+    "groupPasswordOff": "Нет",
+    "groupPasswordEmptyForNone": "Оставьте пустым, чтобы пароля не было",
+    "makeModerator": "Сделать модератором",
+    "makeUser": "Сделать обычным участником",
+    "makeObserver": "Сделать наблюдателем (только чтение)",
+    "removeMember": "Удалить из группы",
+    "removeMemberMessage": "Удалить \"{name}\" из группы?",
+    "remove": "Удалить",
+    "chatIdCopied": "ID чата скопирован",
+    "autoAcceptUpTo": "До {size}"
 }

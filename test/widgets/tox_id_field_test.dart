@@ -30,4 +30,9 @@ void main() {
       'Not a valid Tox ID, please check it for typos',
     );
   });
+
+  testWidgets('takes the tox: link that our QR codes hold', (tester) async {
+    expect(await validate(tester, 'tox:${'1' * 72}0000'), isNull);
+    expect(toxIdOf(' TOX:${'1' * 72}0000 '), '${'1' * 72}0000');
+  });
 }

@@ -477,6 +477,94 @@
       ],
       "type": "table",
       "data": {
+        "name": "chat_saves",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "profile_id",
+            "getter_name": "profileId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES profiles (id)",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES profiles (id)"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "profiles",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ],
+            "type_converter": {
+              "dart_expr": "const IdConverter<Profiles>()",
+              "dart_type_name": "Id<Profiles>"
+            }
+          },
+          {
+            "name": "graph",
+            "getter_name": "graph",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const HexConverter(GraphId.fromJson)",
+              "dart_type_name": "GraphId"
+            }
+          },
+          {
+            "name": "kind",
+            "getter_name": "kind",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<ChatKind>(ChatKind.values)",
+              "dart_type_name": "ChatKind"
+            }
+          },
+          {
+            "name": "state",
+            "getter_name": "state",
+            "moor_type": "blob",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "profile_id",
+          "graph"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "references": [
+        1
+      ],
+      "type": "table",
+      "data": {
         "name": "deleted_chats",
         "was_declared_in_moor": false,
         "columns": [
@@ -545,7 +633,81 @@
       }
     },
     {
-      "id": 6,
+      "id": 7,
+      "references": [
+        1
+      ],
+      "type": "table",
+      "data": {
+        "name": "delivered_parts",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "profile_id",
+            "getter_name": "profileId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES profiles (id)",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES profiles (id)"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "profiles",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ],
+            "type_converter": {
+              "dart_expr": "const IdConverter<Profiles>()",
+              "dart_type_name": "Id<Profiles>"
+            }
+          },
+          {
+            "name": "event",
+            "getter_name": "event",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const HexConverter(EventId.fromJson)",
+              "dart_type_name": "EventId"
+            }
+          },
+          {
+            "name": "parts",
+            "getter_name": "parts",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "profile_id",
+          "event"
+        ]
+      }
+    },
+    {
+      "id": 8,
       "references": [
         1
       ],
@@ -653,7 +815,7 @@
       }
     },
     {
-      "id": 7,
+      "id": 9,
       "references": [
         1
       ],
@@ -727,7 +889,7 @@
       }
     },
     {
-      "id": 8,
+      "id": 10,
       "references": [
         1
       ],
@@ -808,7 +970,7 @@
       }
     },
     {
-      "id": 9,
+      "id": 11,
       "references": [
         1
       ],
@@ -896,7 +1058,7 @@
       }
     },
     {
-      "id": 10,
+      "id": 12,
       "references": [
         1
       ],
@@ -1022,7 +1184,7 @@
       }
     },
     {
-      "id": 11,
+      "id": 13,
       "references": [
         1
       ],
@@ -1212,13 +1374,13 @@
       }
     },
     {
-      "id": 12,
+      "id": 14,
       "references": [
-        10
+        12
       ],
       "type": "index",
       "data": {
-        "on": 10,
+        "on": 12,
         "name": "sync_events_graph",
         "sql": null,
         "unique": false,
@@ -1235,13 +1397,13 @@
       }
     },
     {
-      "id": 13,
+      "id": 15,
       "references": [
-        10
+        12
       ],
       "type": "index",
       "data": {
-        "on": 10,
+        "on": 12,
         "name": "sync_events_shown",
         "sql": null,
         "unique": false,
@@ -1313,11 +1475,29 @@
       ]
     },
     {
+      "name": "chat_saves",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"chat_saves\" (\"profile_id\" INTEGER NOT NULL REFERENCES profiles (id), \"graph\" TEXT NOT NULL, \"kind\" TEXT NOT NULL, \"state\" BLOB NOT NULL, PRIMARY KEY (\"profile_id\", \"graph\"));"
+        }
+      ]
+    },
+    {
       "name": "deleted_chats",
       "sql": [
         {
           "dialect": "sqlite",
           "sql": "CREATE TABLE IF NOT EXISTS \"deleted_chats\" (\"profile_id\" INTEGER NOT NULL REFERENCES profiles (id), \"graph\" TEXT NOT NULL, \"rank\" INTEGER NOT NULL, PRIMARY KEY (\"profile_id\", \"graph\"));"
+        }
+      ]
+    },
+    {
+      "name": "delivered_parts",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"delivered_parts\" (\"profile_id\" INTEGER NOT NULL REFERENCES profiles (id), \"event\" TEXT NOT NULL, \"parts\" INTEGER NOT NULL, PRIMARY KEY (\"profile_id\", \"event\"));"
         }
       ]
     },

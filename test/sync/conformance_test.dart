@@ -8,7 +8,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart'
+    hide CallControl, Connection, UserStatus;
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/crypto.dart';
@@ -41,9 +42,9 @@ void main() {
 typedef _Case = void Function(_Check check);
 
 void _cases(String file, Map<String, _Case> Function(Map<String, Object?>) of) {
-  final json = jsonDecode(
-    File('test/sync/conformance/$file.json').readAsStringSync(),
-  ) as Map<String, Object?>;
+  final json =
+      jsonDecode(File('test/sync/conformance/$file.json').readAsStringSync())
+          as Map<String, Object?>;
   group(file, () {
     for (final MapEntry(key: name, value: run) in of(json).entries) {
       test(name, () {
@@ -239,14 +240,14 @@ Object? _settingJson(Setting setting) => switch (setting) {
   UnknownSetting(:final kind) => {'unknown': kind},
 };
 
-Tox_Message_Type _messageKind(Object? j) => switch (j) {
-  'normal' => Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
-  'action' => Tox_Message_Type.TOX_MESSAGE_TYPE_ACTION,
+MessageType _messageKind(Object? j) => switch (j) {
+  'normal' => MessageType.normal,
+  'action' => MessageType.action,
   _ => throw ArgumentError('Not a message kind: $j'),
 };
 
-String _messageKindJson(Tox_Message_Type kind) =>
-    kind == Tox_Message_Type.TOX_MESSAGE_TYPE_ACTION ? 'action' : 'normal';
+String _messageKindJson(MessageType kind) =>
+    kind == MessageType.action ? 'action' : 'normal';
 
 EventContent _content(Object? j) {
   final (tag, payload) = _variant(j);
@@ -341,6 +342,64 @@ EventContent _content(Object? j) {
       invite: _id(c['invite']),
       chat: _opt(c['chat'], _chat),
       needsPassword: c['needs_password']! as bool,
+    ),
+    'received_privately' => ReceivedPrivately(
+      from: _pk(c['from']),
+      sender: c['sender']! as String,
+      message: _bytes(c['message']),
+      kind: _messageKind(c['kind']),
+    ),
+    'send_privately' => SendPrivately(
+      to: _pk(c['to']),
+      sender: c['sender']! as String,
+      message: _bytes(c['message']),
+      kind: _messageKind(c['kind']),
+    ),
+    'peer_joined' => PeerJoined(
+      peer: _pk(c['peer']),
+      name: c['name']! as String,
+    ),
+    'peer_left' => PeerLeft(peer: _pk(c['peer']), name: c['name']! as String),
+    'peer_renamed' => PeerRenamed(
+      peer: _pk(c['peer']),
+      old: c['old']! as String,
+      name: c['name']! as String,
+    ),
+    'topic_set' => TopicSet(
+      by: _opt(c['by'], _pk),
+      name: c['name']! as String,
+      topic: c['topic']! as String,
+    ),
+    'title_set' => TitleSet(
+      by: _opt(c['by'], _pk),
+      name: c['name']! as String,
+      title: c['title']! as String,
+    ),
+    'moderated' => Moderated(
+      by: _opt(c['by'], _pk),
+      name: c['name']! as String,
+      peer: _opt(c['peer'], _pk),
+      peerName: c['peer_name']! as String,
+      role: _opt(c['role'], (r) => Role.values.byName(r as String)),
+    ),
+    'device' => DeviceContent(pk: _pk(c['pk']), name: c['name']! as String),
+    'device_gone' => DeviceGone(pk: _pk(c['pk'])),
+    'new_chat' => NewChat(
+      kind: ChatKind.values.byName(c['kind']! as String),
+      name: c['name']! as String,
+      privacy: Privacy.values.byName(c['privacy']! as String),
+    ),
+    'join_chat' => JoinChat(
+      chatId: GroupChatId(_bytes(c['chat_id'])),
+      password: c['password'] as String?,
+    ),
+    'invite_to_chat' => InviteToChat(
+      chat: _chat(c['chat']),
+      friend: _pk(c['friend']),
+    ),
+    'chat_joined' => ChatJoined(
+      intent: _id(c['intent']),
+      chat: _opt(c['chat'], _chat),
     ),
     'setting' => SettingContent(
       scope: _scope(c['scope']),
@@ -496,6 +555,83 @@ Object? _contentJson(EventContent content) => switch (content) {
   },
   ClearSetting(:final scope, :final kind) => {
     'clear_setting': {'scope': _scopeJson(scope), 'kind': kind},
+  },
+  ReceivedPrivately(:final from, :final sender, :final message, :final kind) =>
+    {
+      'received_privately': {
+        'from': _hex(from.bytes),
+        'sender': sender,
+        'message': _hex(message),
+        'kind': _messageKindJson(kind),
+      },
+    },
+  SendPrivately(:final to, :final sender, :final message, :final kind) => {
+    'send_privately': {
+      'to': _hex(to.bytes),
+      'sender': sender,
+      'message': _hex(message),
+      'kind': _messageKindJson(kind),
+    },
+  },
+  PeerJoined(:final peer, :final name) => {
+    'peer_joined': {'peer': _hex(peer.bytes), 'name': name},
+  },
+  PeerLeft(:final peer, :final name) => {
+    'peer_left': {'peer': _hex(peer.bytes), 'name': name},
+  },
+  PeerRenamed(:final peer, :final old, :final name) => {
+    'peer_renamed': {'peer': _hex(peer.bytes), 'old': old, 'name': name},
+  },
+  TopicSet(:final by, :final name, :final topic) => {
+    'topic_set': {
+      'by': by == null ? null : _hex(by.bytes),
+      'name': name,
+      'topic': topic,
+    },
+  },
+  TitleSet(:final by, :final name, :final title) => {
+    'title_set': {
+      'by': by == null ? null : _hex(by.bytes),
+      'name': name,
+      'title': title,
+    },
+  },
+  Moderated(
+    :final by,
+    :final name,
+    :final peer,
+    :final peerName,
+    :final role,
+  ) =>
+    {
+      'moderated': {
+        'by': by == null ? null : _hex(by.bytes),
+        'name': name,
+        'peer': peer == null ? null : _hex(peer.bytes),
+        'peer_name': peerName,
+        'role': role?.name,
+      },
+    },
+  DeviceContent(:final pk, :final name) => {
+    'device': {'pk': _hex(pk.bytes), 'name': name},
+  },
+  DeviceGone(:final pk) => {
+    'device_gone': {'pk': _hex(pk.bytes)},
+  },
+  NewChat(:final kind, :final name, :final privacy) => {
+    'new_chat': {'kind': kind.name, 'name': name, 'privacy': privacy.name},
+  },
+  JoinChat(:final chatId, :final password) => {
+    'join_chat': {'chat_id': _hex(chatId.bytes), 'password': password},
+  },
+  InviteToChat(:final chat, :final friend) => {
+    'invite_to_chat': {'chat': _chatJson(chat), 'friend': _hex(friend.bytes)},
+  },
+  ChatJoined(:final intent, :final chat) => {
+    'chat_joined': {
+      'intent': _hex(intent.bytes),
+      'chat': _opt(chat, _chatJson),
+    },
   },
   UnknownContent(:final tag) => {'unknown': tag},
 };
@@ -686,6 +822,14 @@ Object? _stateJson(AccountState state) => {
         'needs_password':
             invite.status == InviteStatus.failed && invite.needsPassword,
       },
+  ]),
+  'devices': _sorted([
+    for (final MapEntry(key: pk, value: name) in state.devices.entries)
+      {'pk': _hex(pk.bytes), 'name': name},
+  ]),
+  'chats_joined': _sorted([
+    for (final MapEntry(key: intent, value: chat) in state.chatsJoined.entries)
+      {'intent': _hex(intent.bytes), 'chat': _opt(chat, _chatJson)},
   ]),
 };
 
@@ -1010,9 +1154,9 @@ Map<String, _Case> _store(Map<String, Object?> file) {
           check('display_order', labels.resolve(c['display_order']), [
             for (final graph in labels.resolve(graphs)! as List)
               _idsJson(
-                ChatLog(MessageFormats.none)
-                    .update(store.eventsIn(_graph(graph)))
-                    .map((e) => e.event),
+                ChatLog(
+                  MessageFormats.none,
+                ).update(store.eventsIn(_graph(graph))).map((e) => e.event),
               ),
           ]);
         }

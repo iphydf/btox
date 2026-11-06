@@ -2,6 +2,8 @@
 // coverage:ignore-file
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox_enums.dart';
+import 'package:btox/api/toxcore/tox_ids.dart';
 import 'package:btox/ffi/tox_library.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/packets/messagepack.dart';
@@ -12,7 +14,7 @@ part 'tox_events.freezed.dart';
 @freezed
 sealed class Event with _$Event {
   const factory Event.selfConnectionStatus({
-    required Tox_Connection connectionStatus,
+    required Connection connectionStatus,
   }) = ToxEventSelfConnectionStatus;
 
   const factory Event.friendRequest({
@@ -21,214 +23,215 @@ sealed class Event with _$Event {
   }) = ToxEventFriendRequest;
 
   const factory Event.friendConnectionStatus({
-    required int friendNumber,
-    required Tox_Connection connectionStatus,
+    required FriendNumber friendNumber,
+    required Connection connectionStatus,
   }) = ToxEventFriendConnectionStatus;
 
   const factory Event.friendLossyPacket({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Uint8List data,
   }) = ToxEventFriendLossyPacket;
 
   const factory Event.friendLosslessPacket({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Uint8List data,
   }) = ToxEventFriendLosslessPacket;
 
   const factory Event.friendName({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Uint8List name,
   }) = ToxEventFriendName;
 
   const factory Event.friendStatus({
-    required int friendNumber,
-    required Tox_User_Status status,
+    required FriendNumber friendNumber,
+    required UserStatus status,
   }) = ToxEventFriendStatus;
 
   const factory Event.friendStatusMessage({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Uint8List message,
   }) = ToxEventFriendStatusMessage;
 
   const factory Event.friendMessage({
-    required int friendNumber,
-    required Tox_Message_Type type,
+    required FriendNumber friendNumber,
+    required MessageType type,
     required Uint8List message,
   }) = ToxEventFriendMessage;
 
   const factory Event.friendReadReceipt({
-    required int friendNumber,
-    required int messageId,
+    required FriendNumber friendNumber,
+    required FriendMessageId messageId,
   }) = ToxEventFriendReadReceipt;
 
   const factory Event.friendTyping({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required bool typing,
   }) = ToxEventFriendTyping;
 
   const factory Event.fileChunkRequest({
-    required int friendNumber,
-    required int fileNumber,
+    required FriendNumber friendNumber,
+    required FileNumber fileNumber,
     required int position,
     required int length,
   }) = ToxEventFileChunkRequest;
 
   const factory Event.fileRecv({
-    required int friendNumber,
-    required int fileNumber,
-    required int kind,
+    required FriendNumber friendNumber,
+    required FileNumber fileNumber,
+    required FileKind kind,
     required int fileSize,
     required Uint8List filename,
   }) = ToxEventFileRecv;
 
   const factory Event.fileRecvChunk({
-    required int friendNumber,
-    required int fileNumber,
+    required FriendNumber friendNumber,
+    required FileNumber fileNumber,
     required int position,
     required Uint8List data,
   }) = ToxEventFileRecvChunk;
 
   const factory Event.fileRecvControl({
-    required int friendNumber,
-    required int fileNumber,
-    required Tox_File_Control control,
+    required FriendNumber friendNumber,
+    required FileNumber fileNumber,
+    required FileControl control,
   }) = ToxEventFileRecvControl;
 
   const factory Event.conferenceInvite({
-    required int friendNumber,
-    required Tox_Conference_Type type,
+    required FriendNumber friendNumber,
+    required ConferenceType type,
     required Uint8List cookie,
   }) = ToxEventConferenceInvite;
 
-  const factory Event.conferenceConnected({required int conferenceNumber}) =
-      ToxEventConferenceConnected;
+  const factory Event.conferenceConnected({
+    required ConferenceNumber conferenceNumber,
+  }) = ToxEventConferenceConnected;
 
   const factory Event.conferencePeerListChanged({
-    required int conferenceNumber,
+    required ConferenceNumber conferenceNumber,
   }) = ToxEventConferencePeerListChanged;
 
   const factory Event.conferencePeerName({
-    required int conferenceNumber,
-    required int peerNumber,
+    required ConferenceNumber conferenceNumber,
+    required ConferencePeerNumber peerNumber,
     required Uint8List name,
   }) = ToxEventConferencePeerName;
 
   const factory Event.conferenceTitle({
-    required int conferenceNumber,
-    required int peerNumber,
+    required ConferenceNumber conferenceNumber,
+    required ConferencePeerNumber peerNumber,
     required Uint8List title,
   }) = ToxEventConferenceTitle;
 
   const factory Event.conferenceMessage({
-    required int conferenceNumber,
-    required int peerNumber,
-    required Tox_Message_Type type,
+    required ConferenceNumber conferenceNumber,
+    required ConferencePeerNumber peerNumber,
+    required MessageType type,
     required Uint8List message,
   }) = ToxEventConferenceMessage;
 
   const factory Event.groupPeerName({
-    required int groupNumber,
-    required int peerId,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
     required Uint8List name,
   }) = ToxEventGroupPeerName;
 
   const factory Event.groupPeerStatus({
-    required int groupNumber,
-    required int peerId,
-    required Tox_User_Status status,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
+    required UserStatus status,
   }) = ToxEventGroupPeerStatus;
 
   const factory Event.groupTopic({
-    required int groupNumber,
-    required int peerId,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
     required Uint8List topic,
   }) = ToxEventGroupTopic;
 
   const factory Event.groupPrivacyState({
-    required int groupNumber,
-    required Tox_Group_Privacy_State privacyState,
+    required GroupNumber groupNumber,
+    required GroupPrivacyState privacyState,
   }) = ToxEventGroupPrivacyState;
 
   const factory Event.groupVoiceState({
-    required int groupNumber,
-    required Tox_Group_Voice_State voiceState,
+    required GroupNumber groupNumber,
+    required GroupVoiceState voiceState,
   }) = ToxEventGroupVoiceState;
 
   const factory Event.groupTopicLock({
-    required int groupNumber,
-    required Tox_Group_Topic_Lock topicLock,
+    required GroupNumber groupNumber,
+    required GroupTopicLock topicLock,
   }) = ToxEventGroupTopicLock;
 
   const factory Event.groupPeerLimit({
-    required int groupNumber,
+    required GroupNumber groupNumber,
     required int peerLimit,
   }) = ToxEventGroupPeerLimit;
 
   const factory Event.groupPassword({
-    required int groupNumber,
+    required GroupNumber groupNumber,
     required Uint8List password,
   }) = ToxEventGroupPassword;
 
   const factory Event.groupMessage({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Message_Type messageType,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
+    required MessageType messageType,
     required Uint8List message,
-    required int messageId,
+    required GroupMessageId messageId,
   }) = ToxEventGroupMessage;
 
   const factory Event.groupPrivateMessage({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Message_Type messageType,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
+    required MessageType messageType,
     required Uint8List message,
-    required int messageId,
+    required GroupMessageId messageId,
   }) = ToxEventGroupPrivateMessage;
 
   const factory Event.groupCustomPacket({
-    required int groupNumber,
-    required int peerId,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
     required Uint8List data,
   }) = ToxEventGroupCustomPacket;
 
   const factory Event.groupCustomPrivatePacket({
-    required int groupNumber,
-    required int peerId,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
     required Uint8List data,
   }) = ToxEventGroupCustomPrivatePacket;
 
   const factory Event.groupInvite({
-    required int friendNumber,
+    required FriendNumber friendNumber,
     required Uint8List inviteData,
     required Uint8List groupName,
   }) = ToxEventGroupInvite;
 
   const factory Event.groupPeerJoin({
-    required int groupNumber,
-    required int peerId,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
   }) = ToxEventGroupPeerJoin;
 
   const factory Event.groupPeerExit({
-    required int groupNumber,
-    required int peerId,
-    required Tox_Group_Exit_Type exitType,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber peerId,
+    required GroupExitType exitType,
     required Uint8List name,
     required Uint8List partMessage,
   }) = ToxEventGroupPeerExit;
 
-  const factory Event.groupSelfJoin({required int groupNumber}) =
+  const factory Event.groupSelfJoin({required GroupNumber groupNumber}) =
       ToxEventGroupSelfJoin;
 
   const factory Event.groupJoinFail({
-    required int groupNumber,
-    required Tox_Group_Join_Fail failType,
+    required GroupNumber groupNumber,
+    required GroupJoinFail failType,
   }) = ToxEventGroupJoinFail;
 
   const factory Event.groupModeration({
-    required int groupNumber,
-    required int sourcePeerId,
-    required int targetPeerId,
-    required Tox_Group_Mod_Event modType,
+    required GroupNumber groupNumber,
+    required GroupPeerNumber sourcePeerId,
+    required GroupPeerNumber targetPeerId,
+    required GroupModEvent modType,
   }) = ToxEventGroupModeration;
 
   const factory Event.dhtNodesResponse({
@@ -305,7 +308,7 @@ Event _unpackEvent(Unpacker u) {
 
 Event _selfConnectionStatus(Unpacker u) {
   return Event.selfConnectionStatus(
-    connectionStatus: Tox_Connection.fromValue(u.unpackInt()!),
+    connectionStatus: Connection.fromValue(u.unpackInt()!),
   );
 }
 
@@ -320,15 +323,15 @@ Event _friendRequest(Unpacker u) {
 Event _friendConnectionStatus(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendConnectionStatus(
-    friendNumber: u.unpackInt()!,
-    connectionStatus: Tox_Connection.fromValue(u.unpackInt()!),
+    friendNumber: FriendNumber(u.unpackInt()!),
+    connectionStatus: Connection.fromValue(u.unpackInt()!),
   );
 }
 
 Event _friendLossyPacket(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendLossyPacket(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     data: u.unpackBinary()!,
   );
 }
@@ -336,7 +339,7 @@ Event _friendLossyPacket(Unpacker u) {
 Event _friendLosslessPacket(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendLosslessPacket(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     data: u.unpackBinary()!,
   );
 }
@@ -344,7 +347,7 @@ Event _friendLosslessPacket(Unpacker u) {
 Event _friendName(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendName(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     name: u.unpackBinary()!,
   );
 }
@@ -352,15 +355,15 @@ Event _friendName(Unpacker u) {
 Event _friendStatus(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendStatus(
-    friendNumber: u.unpackInt()!,
-    status: Tox_User_Status.fromValue(u.unpackInt()!),
+    friendNumber: FriendNumber(u.unpackInt()!),
+    status: UserStatus.fromValue(u.unpackInt()!),
   );
 }
 
 Event _friendStatusMessage(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendStatusMessage(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     message: u.unpackBinary()!,
   );
 }
@@ -368,8 +371,8 @@ Event _friendStatusMessage(Unpacker u) {
 Event _friendMessage(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.friendMessage(
-    friendNumber: u.unpackInt()!,
-    type: Tox_Message_Type.fromValue(u.unpackInt()!),
+    friendNumber: FriendNumber(u.unpackInt()!),
+    type: MessageType.fromValue(u.unpackInt()!),
     message: u.unpackBinary()!,
   );
 }
@@ -377,15 +380,15 @@ Event _friendMessage(Unpacker u) {
 Event _friendReadReceipt(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendReadReceipt(
-    friendNumber: u.unpackInt()!,
-    messageId: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
+    messageId: FriendMessageId(u.unpackInt()!),
   );
 }
 
 Event _friendTyping(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.friendTyping(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     typing: u.unpackBool()!,
   );
 }
@@ -393,8 +396,8 @@ Event _friendTyping(Unpacker u) {
 Event _fileChunkRequest(Unpacker u) {
   _expect(u.unpackListLength(), 4);
   return Event.fileChunkRequest(
-    friendNumber: u.unpackInt()!,
-    fileNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
+    fileNumber: FileNumber(u.unpackInt()!),
     position: u.unpackInt()!,
     length: u.unpackInt()!,
   );
@@ -403,9 +406,9 @@ Event _fileChunkRequest(Unpacker u) {
 Event _fileRecv(Unpacker u) {
   _expect(u.unpackListLength(), 5);
   return Event.fileRecv(
-    friendNumber: u.unpackInt()!,
-    fileNumber: u.unpackInt()!,
-    kind: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
+    fileNumber: FileNumber(u.unpackInt()!),
+    kind: FileKind(u.unpackInt()!),
     fileSize: u.unpackInt()!,
     filename: u.unpackBinary()!,
   );
@@ -414,8 +417,8 @@ Event _fileRecv(Unpacker u) {
 Event _fileRecvChunk(Unpacker u) {
   _expect(u.unpackListLength(), 4);
   return Event.fileRecvChunk(
-    friendNumber: u.unpackInt()!,
-    fileNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
+    fileNumber: FileNumber(u.unpackInt()!),
     position: u.unpackInt()!,
     data: u.unpackBinary()!,
   );
@@ -424,34 +427,38 @@ Event _fileRecvChunk(Unpacker u) {
 Event _fileRecvControl(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.fileRecvControl(
-    friendNumber: u.unpackInt()!,
-    fileNumber: u.unpackInt()!,
-    control: Tox_File_Control.fromValue(u.unpackInt()!),
+    friendNumber: FriendNumber(u.unpackInt()!),
+    fileNumber: FileNumber(u.unpackInt()!),
+    control: FileControl.fromValue(u.unpackInt()!),
   );
 }
 
 Event _conferenceInvite(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.conferenceInvite(
-    friendNumber: u.unpackInt()!,
-    type: Tox_Conference_Type.fromValue(u.unpackInt()!),
+    friendNumber: FriendNumber(u.unpackInt()!),
+    type: ConferenceType.fromValue(u.unpackInt()!),
     cookie: u.unpackBinary()!,
   );
 }
 
 Event _conferenceConnected(Unpacker u) {
-  return Event.conferenceConnected(conferenceNumber: u.unpackInt()!);
+  return Event.conferenceConnected(
+    conferenceNumber: ConferenceNumber(u.unpackInt()!),
+  );
 }
 
 Event _conferencePeerListChanged(Unpacker u) {
-  return Event.conferencePeerListChanged(conferenceNumber: u.unpackInt()!);
+  return Event.conferencePeerListChanged(
+    conferenceNumber: ConferenceNumber(u.unpackInt()!),
+  );
 }
 
 Event _conferencePeerName(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.conferencePeerName(
-    conferenceNumber: u.unpackInt()!,
-    peerNumber: u.unpackInt()!,
+    conferenceNumber: ConferenceNumber(u.unpackInt()!),
+    peerNumber: ConferencePeerNumber(u.unpackInt()!),
     name: u.unpackBinary()!,
   );
 }
@@ -459,8 +466,8 @@ Event _conferencePeerName(Unpacker u) {
 Event _conferenceTitle(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.conferenceTitle(
-    conferenceNumber: u.unpackInt()!,
-    peerNumber: u.unpackInt()!,
+    conferenceNumber: ConferenceNumber(u.unpackInt()!),
+    peerNumber: ConferencePeerNumber(u.unpackInt()!),
     title: u.unpackBinary()!,
   );
 }
@@ -468,9 +475,9 @@ Event _conferenceTitle(Unpacker u) {
 Event _conferenceMessage(Unpacker u) {
   _expect(u.unpackListLength(), 4);
   return Event.conferenceMessage(
-    conferenceNumber: u.unpackInt()!,
-    peerNumber: u.unpackInt()!,
-    type: Tox_Message_Type.fromValue(u.unpackInt()!),
+    conferenceNumber: ConferenceNumber(u.unpackInt()!),
+    peerNumber: ConferencePeerNumber(u.unpackInt()!),
+    type: MessageType.fromValue(u.unpackInt()!),
     message: u.unpackBinary()!,
   );
 }
@@ -478,8 +485,8 @@ Event _conferenceMessage(Unpacker u) {
 Event _groupPeerName(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupPeerName(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
     name: u.unpackBinary()!,
   );
 }
@@ -487,17 +494,17 @@ Event _groupPeerName(Unpacker u) {
 Event _groupPeerStatus(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupPeerStatus(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
-    status: Tox_User_Status.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
+    status: UserStatus.fromValue(u.unpackInt()!),
   );
 }
 
 Event _groupTopic(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupTopic(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
     topic: u.unpackBinary()!,
   );
 }
@@ -505,31 +512,31 @@ Event _groupTopic(Unpacker u) {
 Event _groupPrivacyState(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupPrivacyState(
-    groupNumber: u.unpackInt()!,
-    privacyState: Tox_Group_Privacy_State.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    privacyState: GroupPrivacyState.fromValue(u.unpackInt()!),
   );
 }
 
 Event _groupVoiceState(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupVoiceState(
-    groupNumber: u.unpackInt()!,
-    voiceState: Tox_Group_Voice_State.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    voiceState: GroupVoiceState.fromValue(u.unpackInt()!),
   );
 }
 
 Event _groupTopicLock(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupTopicLock(
-    groupNumber: u.unpackInt()!,
-    topicLock: Tox_Group_Topic_Lock.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    topicLock: GroupTopicLock.fromValue(u.unpackInt()!),
   );
 }
 
 Event _groupPeerLimit(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupPeerLimit(
-    groupNumber: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
     peerLimit: u.unpackInt()!,
   );
 }
@@ -537,7 +544,7 @@ Event _groupPeerLimit(Unpacker u) {
 Event _groupPassword(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupPassword(
-    groupNumber: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
     password: u.unpackBinary()!,
   );
 }
@@ -545,30 +552,30 @@ Event _groupPassword(Unpacker u) {
 Event _groupMessage(Unpacker u) {
   _expect(u.unpackListLength(), 5);
   return Event.groupMessage(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
-    messageType: Tox_Message_Type.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
+    messageType: MessageType.fromValue(u.unpackInt()!),
     message: u.unpackBinary()!,
-    messageId: u.unpackInt()!,
+    messageId: GroupMessageId(u.unpackInt()!),
   );
 }
 
 Event _groupPrivateMessage(Unpacker u) {
   _expect(u.unpackListLength(), 5);
   return Event.groupPrivateMessage(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
-    messageType: Tox_Message_Type.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
+    messageType: MessageType.fromValue(u.unpackInt()!),
     message: u.unpackBinary()!,
-    messageId: u.unpackInt()!,
+    messageId: GroupMessageId(u.unpackInt()!),
   );
 }
 
 Event _groupCustomPacket(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupCustomPacket(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
     data: u.unpackBinary()!,
   );
 }
@@ -576,8 +583,8 @@ Event _groupCustomPacket(Unpacker u) {
 Event _groupCustomPrivatePacket(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupCustomPrivatePacket(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
     data: u.unpackBinary()!,
   );
 }
@@ -585,7 +592,7 @@ Event _groupCustomPrivatePacket(Unpacker u) {
 Event _groupInvite(Unpacker u) {
   _expect(u.unpackListLength(), 3);
   return Event.groupInvite(
-    friendNumber: u.unpackInt()!,
+    friendNumber: FriendNumber(u.unpackInt()!),
     inviteData: u.unpackBinary()!,
     groupName: u.unpackBinary()!,
   );
@@ -594,41 +601,41 @@ Event _groupInvite(Unpacker u) {
 Event _groupPeerJoin(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupPeerJoin(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
   );
 }
 
 Event _groupPeerExit(Unpacker u) {
   _expect(u.unpackListLength(), 5);
   return Event.groupPeerExit(
-    groupNumber: u.unpackInt()!,
-    peerId: u.unpackInt()!,
-    exitType: Tox_Group_Exit_Type.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    peerId: GroupPeerNumber(u.unpackInt()!),
+    exitType: GroupExitType.fromValue(u.unpackInt()!),
     name: u.unpackBinary()!,
     partMessage: u.unpackBinary()!,
   );
 }
 
 Event _groupSelfJoin(Unpacker u) {
-  return Event.groupSelfJoin(groupNumber: u.unpackInt()!);
+  return Event.groupSelfJoin(groupNumber: GroupNumber(u.unpackInt()!));
 }
 
 Event _groupJoinFail(Unpacker u) {
   _expect(u.unpackListLength(), 2);
   return Event.groupJoinFail(
-    groupNumber: u.unpackInt()!,
-    failType: Tox_Group_Join_Fail.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    failType: GroupJoinFail.fromValue(u.unpackInt()!),
   );
 }
 
 Event _groupModeration(Unpacker u) {
   _expect(u.unpackListLength(), 4);
   return Event.groupModeration(
-    groupNumber: u.unpackInt()!,
-    sourcePeerId: u.unpackInt()!,
-    targetPeerId: u.unpackInt()!,
-    modType: Tox_Group_Mod_Event.fromValue(u.unpackInt()!),
+    groupNumber: GroupNumber(u.unpackInt()!),
+    sourcePeerId: GroupPeerNumber(u.unpackInt()!),
+    targetPeerId: GroupPeerNumber(u.unpackInt()!),
+    modType: GroupModEvent.fromValue(u.unpackInt()!),
   );
 }
 

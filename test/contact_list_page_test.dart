@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
 import 'package:btox/l10n/generated/app_localizations.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
@@ -165,7 +165,7 @@ void main() {
     await tester.runAsync(db.close);
   });
 
-  testWidgets('group chats merge, show apart, and show relayed names', (
+  testWidgets('group chats merge, show apart, show relayed names, and leave', (
     tester,
   ) async {
     final db = Database(NativeDatabase.memory());
@@ -203,7 +203,7 @@ void main() {
             from: bot,
             sender: 'bot',
             message: utf8.encode('<Bob> hi'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
         );
       }
@@ -271,6 +271,27 @@ void main() {
     ]);
     home.record(home.account, relayBot(relays: false));
     await settle(tester, until: () => relayed.evaluate().isEmpty);
+
+    await pick('Conference', 'Leave chat');
+    await tester.tap(find.text('Leave'));
+    await tester.pumpAndSettle();
+    final leave = Wish(
+      subject: Subject.chat(conference),
+      value: const FactValue.joined(false),
+    );
+    await settle(tester, until: () async => (await intents()).length > 2);
+    expect(await tester.runAsync(intents), [
+      merge(merged: false),
+      relayBot(relays: false),
+      leave,
+    ]);
+    expect(find.text('Left "Conference"'), findsOneWidget);
+    // As the home device records it, once it left.
+    home.record(
+      home.account,
+      FactContent(subject: leave.subject, value: leave.value),
+    );
+    await settle(tester, until: () => chat('Conference').evaluate().isEmpty);
 
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

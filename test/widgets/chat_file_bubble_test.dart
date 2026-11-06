@@ -20,7 +20,9 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
+import '../mocks/fake_launcher.dart';
 import '../mocks/test_app.dart';
 
 final _event = EventId(Uint8List(32));
@@ -96,12 +98,110 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(find.text('Accept'), findsNothing);
 
-    await tester.runAsync(() => db.setTransferState(id, FileState.cancelled));
+    await tester.tap(find.byTooltip('Cancel'));
+    await tester.runAsync(pumpEventQueue);
     await show();
     expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('Send again'), findsNothing);
 
     await tester.pumpWidget(const SizedBox());
     await tester.runAsync(db.close);
+  });
+
+  testWidgets('a file of ours that was cancelled can be sent again', (
+    tester,
+  ) async {
+    final db = Database(NativeDatabase.memory());
+    final id = (await tester.runAsync(() async {
+      final profile = await db.addProfile(
+        ProfilesCompanion.insert(
+          settings: ProfileSettings(nickname: 'Me', statusMessage: ''),
+          secretKey: SecretKey(Uint8List(32)),
+          publicKey: PublicKey(Uint8List(32)),
+          nospam: ToxAddressNospam(0),
+        ),
+      );
+      return db.addTransfer(
+        TransfersCompanion.insert(
+          profileId: profile,
+          graph: _chat.graph,
+          event: Value(_event),
+          incoming: false,
+          name: 'notes.txt',
+          size: 2048,
+          path: '/attachments/notes.txt',
+          state: FileState.cancelled,
+          transferred: const Value(1024),
+        ),
+      );
+    }))!;
+    await tester.pumpWidget(
+      testApp(
+        ChatFileBubble(
+          corners: bubbleCorners(mine: true),
+          chat: _chat,
+          entry: ChatEntry(
+            event: _event,
+            mine: true,
+            content: const FileContent(
+              name: 'notes.txt',
+              size: 2048,
+              path: '/attachments/notes.txt',
+            ),
+            timestamp: DateTime(2026),
+            file: FileProgress(state: FileState.cancelled, transfer: id),
+          ),
+          color: Colors.white,
+          textStyle: const TextStyle(),
+        ),
+        overrides: [databaseProvider.overrideWith((ref) => db)],
+      ),
+    );
+
+    await tester.tap(find.text('Send again'));
+    await tester.runAsync(pumpEventQueue);
+    final transfer = await tester.runAsync(
+      () => (db.select(
+        db.transfers,
+      )..where((t) => t.id.equals(id.value))).getSingle(),
+    );
+    expect((transfer!.state, transfer.transferred), (FileState.active, 0));
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.runAsync(db.close);
+  });
+
+  testWidgets('a file that came opens in an app for it', (tester) async {
+    final launcher = UrlLauncherPlatform.instance = FakeLauncher()
+      ..opens = false;
+    await tester.pumpWidget(
+      testApp(
+        Scaffold(
+          body: ChatFileBubble(
+            corners: bubbleCorners(mine: false),
+            chat: _chat,
+            entry: ChatEntry(
+              event: _event,
+              mine: false,
+              content: const FileContent(
+                name: 'notes.pdf',
+                size: 2048,
+                path: '/attachments/notes.pdf',
+              ),
+              timestamp: DateTime(2026),
+              file: const FileProgress(state: FileState.done),
+            ),
+            color: Colors.white,
+            textStyle: const TextStyle(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('notes.pdf'));
+    await tester.pump();
+    expect(launcher.opened, ['file:///attachments/notes.pdf']);
+    expect(find.text('No app can open this file'), findsOneWidget);
   });
 
   testWidgets('a photo is decoded no bigger than it is shown', (tester) async {

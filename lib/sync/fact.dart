@@ -271,14 +271,20 @@ Subject readSubject(Fields f) => f.variant<Subject>(
       : throw const FormatException('Unknown subject'),
 );
 
+FactValue? _known<T>(List<T> values, Fields v, FactValue Function(T) make) =>
+    switch (knownEnum(values, v)) {
+      final value? => make(value),
+      null => null,
+    };
+
 /// Tox's value of [values] that [v] holds, or null for one this version
 /// doesn't know, as one a newer version gave a payload.
-FactValue? _known<T>(List<T> values, Fields v, FactValue Function(T) make) {
+T? knownEnum<T>(List<T> values, Fields v) {
   final index = v.variant<int>((_, payload) {
     payload.end();
     return -1;
   }, (tag) => tag);
-  return index >= 0 && index < values.length ? make(values[index]) : null;
+  return index >= 0 && index < values.length ? values[index] : null;
 }
 
 FactValue readValue(Fields f) => f.variant<FactValue>(

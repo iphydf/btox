@@ -1,10 +1,8 @@
 import 'package:btox/api/toxcore/tox_api.dart' as api;
 import 'package:btox/api/toxcore/tox_av.dart' as api;
-
-import 'dart:ffi' as native;
+import 'package:btox/api/toxcore/tox_errors.dart' as api;
 
 import 'package:btox/api/toxcore/tox_av_callbacks.dart';
-import 'package:btox/ffi/generated/toxcore.ffi.dart' as native;
 import 'package:btox/ffi/tox_library.dart';
 
 final class ToxAvFfi extends api.ToxAv with api.ToxAvFfiApi {
@@ -25,7 +23,10 @@ final class ToxAvFfi extends api.ToxAv with api.ToxAvFfiApi {
     try {
       final av = lib.ffi.toxav_new(tox, err);
       if (err.value != 0) {
-        throw api.ApiException(Toxav_Err_New.fromValue(err.value), 'toxav_new');
+        throw api.ApiException(
+          api.AvNewError.fromValue(err.value),
+          'toxav_new',
+        );
       }
       return ToxAvFfi._(lib, av);
     } finally {
@@ -33,13 +34,8 @@ final class ToxAvFfi extends api.ToxAv with api.ToxAvFfiApi {
     }
   }
 
-  // The analyzer sees tox_library's web version. Natively, its types are
-  // dart:ffi's, as the collector's are.
   ToxAvFfi._(this.lib, this._pointer)
-    : _events = AvEventCollector(
-        lib.ffi as native.ToxFfi,
-        _pointer as native.Pointer<native.ToxAV>,
-      );
+    : _events = AvEventCollector(lib.ffi, _pointer);
 
   @override
   List<api.AvEvent> iterate() {

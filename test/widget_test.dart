@@ -45,8 +45,8 @@ void main() {
             overrides: [
               bootstrapNodesProvider.overrideWith(fakeBootstrapNodesProvider),
               databaseProvider.overrideWith((ref) => db),
-              newKeyPairProvider.overrideWith(
-                (ref) => (mySecretKey, myPublicKey),
+              newIdentityProvider.overrideWith(
+                (ref) => (mySecretKey, myPublicKey, myToxId.nospam),
               ),
               toxProvider(
                 mySecretKey,
@@ -76,6 +76,8 @@ void main() {
         );
 
         await tester.tap(find.byKey(const Key('addContactButton')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.person_add_outlined));
         await tester.pumpAndSettle();
 
         await expectLater(

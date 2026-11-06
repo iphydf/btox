@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:btox/l10n/generated/app_localizations.dart';
+import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/providers/map_tile.dart';
+import 'package:btox/sync/event.dart';
 import 'package:btox/widgets/chat_item.dart';
 import 'package:btox/widgets/chat_location_bubble.dart';
 import 'package:btox/widgets/chat_text_bubble.dart';
@@ -33,7 +35,55 @@ ChatEntry _entry(
   notice: notice,
 );
 
+ChatEntry _happened(int minute, EventContent happened, {int day = 20}) =>
+    ChatEntry(
+      event: EventId(Uint8List(32)..[0] = minute),
+      mine: false,
+      notice: true,
+      content: const TextContent(text: ''),
+      happened: happened,
+      timestamp: DateTime(2026, 10, day, 12, minute),
+    );
+
+PublicKey _key(int n) => PublicKey(Uint8List(32)..fillRange(0, 32, n));
+
 void main() {
+  test('three or more joins and leaves on a day show as one line', () {
+    final entries = [
+      _happened(0, PeerJoined(peer: _key(1), name: 'Ann')),
+      _happened(1, PeerJoined(peer: _key(2), name: 'Bob')),
+      _entry(2),
+      _happened(3, PeerJoined(peer: _key(1), name: 'Ann')),
+      _happened(4, PeerLeft(peer: _key(2), name: 'Bob')),
+      _happened(5, PeerJoined(peer: _key(3), name: 'Cid')),
+      _happened(6, PeerJoined(peer: _key(1), name: 'Ann')),
+      _happened(7, PeerLeft(peer: _key(3), name: 'Cid'), day: 21),
+    ];
+    expect(comingRuns(entries, entries.length), [1, 1, 1, 4, 0, 0, 0, 1]);
+    // Those waiting below the reader don't join a run above them.
+    expect(comingRuns(entries, 5), [1, 1, 1, 1, 1, 1, 1, 1]);
+    expect(comingRuns(entries, 6), [1, 1, 1, 3, 0, 0, 1, 1]);
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    expect(
+      comingsText(l10n, entries.sublist(3, 7)),
+      'Ann and Cid joined \u00b7 Bob left',
+    );
+    expect(
+      comingsText(
+        lookupAppLocalizations(const Locale('de')),
+        entries.sublist(3, 7),
+      ),
+      'Ann und Cid sind beigetreten \u00b7 Bob hat den Chat verlassen',
+    );
+    expect(
+      comingsText(l10n, [
+        for (var i = 1; i <= 5; i++)
+          _happened(i, PeerJoined(peer: _key(i), name: 'P$i')),
+      ]),
+      'P1, P2 and 3 others joined',
+    );
+  });
+
   test('messages an author sends one after another make a run', () {
     expect(inRun(_entry(0), _entry(1)), isTrue);
     expect(inRun(_entry(0, sender: 'Bob'), _entry(1, sender: 'Bob')), isTrue);
@@ -101,8 +151,8 @@ void main() {
   ) async {
     final bob = PublicKey(Uint8List(32)..[0] = 2);
     await tester.pumpWidget(
-      MaterialApp(
-        home: Column(
+      testApp(
+        Column(
           children: [
             SenderName('Bob', author: bob),
             SenderName('Robert', author: bob),
@@ -113,6 +163,14 @@ void main() {
     Color? colour(String name) =>
         tester.widget<Text>(find.text(name)).style?.color;
     expect(colour('Robert'), colour('Bob'));
+  });
+
+  testWidgets('a friend typing shows as dots, read out by name', (
+    tester,
+  ) async {
+    await tester.pumpWidget(testApp(const ChatTyping(name: 'Bob')));
+    await tester.pump();
+    expect(find.bySemanticsLabel('Bob is typing'), findsOneWidget);
   });
 
   testWidgets('a location shows as a map', (tester) async {

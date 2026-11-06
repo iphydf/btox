@@ -44,6 +44,7 @@ abstract class ChatSummary with _$ChatSummary {
     BlobId? avatar,
     // Null where online doesn't apply, as for groups.
     bool? online,
+    @Default(false) bool typing,
     @Default(0) int unread,
     // Where it's muted now.
     Mute? mute,
@@ -93,6 +94,12 @@ abstract class ChatEntry with _$ChatEntry {
     FileProgress? file,
     // Joins, leaves and the like, not anyone's message.
     @Default(false) bool notice,
+    // What a notice says happened, worded for the reader by [noticeText].
+    EventContent? happened,
+    // The other member of a private message in a group.
+    PublicKey? privately,
+    // Sent with `/me`.
+    @Default(false) bool action,
   }) = _ChatEntry;
 
   const ChatEntry._();

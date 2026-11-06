@@ -52,9 +52,10 @@ final class ChatFileBubble extends ConsumerWidget {
     final content = entry.content as FileContent;
     final progress = entry.file;
     // Ours is here from the start, theirs once it has all come.
-    final preview =
+    final here =
         content.path.isNotEmpty &&
-            (isSender || progress?.state == FileState.done)
+        (isSender || progress?.state == FileState.done);
+    final preview = here
         ? imagePreview(
             content.path,
             size: (_previewSize * MediaQuery.devicePixelRatioOf(context))
@@ -75,6 +76,27 @@ final class ChatFileBubble extends ConsumerWidget {
               graph: chat.graph,
             ),
     );
+
+    // The user can cancel a transfer that this device runs.
+    final cancel = transfer == null
+        ? null
+        : IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: MaterialLocalizations.of(context).cancelButtonLabel,
+            visualDensity: VisualDensity.compact,
+            onPressed: () => answer(accept: false),
+          );
+
+    // Pictures open in our own viewer instead.
+    Future<void> open() async {
+      final messenger = ScaffoldMessenger.of(context);
+      final failed = l10n.openFileFailed;
+      if (!await openAttachment(content.path)) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(failed)));
+      }
+    }
 
     // A linked account's file, from its home device to here.
     Future<void> download(BlobId blob) async {
@@ -124,13 +146,18 @@ final class ChatFileBubble extends ConsumerWidget {
               ),
             )
           else ...[
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.insert_drive_file),
-                const SizedBox(width: 8),
-                Flexible(child: Text(content.name, style: textStyle)),
-              ],
+            GestureDetector(
+              onTap: here
+                  ? () => _logger.unawaited('open a file', open())
+                  : null,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.insert_drive_file),
+                  const SizedBox(width: 8),
+                  Flexible(child: Text(content.name, style: textStyle)),
+                ],
+              ),
             ),
             Text(
               fileSizeText(content.size),
@@ -155,19 +182,50 @@ final class ChatFileBubble extends ConsumerWidget {
             FileProgress(state: FileState.active, :final transferred) =>
               SizedBox(
                 width: preview == null ? 160 : _previewSize,
-                child: LinearProgressIndicator(
-                  value: content.size == 0 || transferred == null
-                      ? null
-                      : transferred / content.size,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: content.size == 0 || transferred == null
+                            ? null
+                            : transferred / content.size,
+                      ),
+                    ),
+                    ?cancel,
+                  ],
                 ),
+              ),
+            FileProgress(state: FileState.cancelled)
+                when isSender && transfer != null && here =>
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.fileCancelled,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  TextButton(
+                    onPressed: () => ref.write(
+                      context,
+                      (db) => db.sendTransferAgain(transfer),
+                    ),
+                    child: Text(l10n.sendAgain),
+                  ),
+                ],
               ),
             FileProgress(state: FileState.cancelled) => Text(
               l10n.fileCancelled,
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            FileProgress(state: FileState.paused) => Text(
-              l10n.filePaused,
-              style: Theme.of(context).textTheme.bodySmall,
+            FileProgress(state: FileState.paused) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.filePaused,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                ?cancel,
+              ],
             ),
             FileProgress(state: FileState.done, :final blob?)
                 when content.path.isEmpty =>

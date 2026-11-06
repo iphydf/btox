@@ -15,6 +15,7 @@ MessageNotifier fakeNotifier(
   Future<void> Function(Id<Profiles>, PublicKey, String, String?)? request,
   List<(EventId, String?)>? invited,
   List<EventId>? uninvited,
+  List<PublicKey>? unrequested,
   List<ChatRef>? cancelled,
 }) => MessageNotifier(
   (chat, title, messages, account) async {
@@ -23,6 +24,7 @@ MessageNotifier fakeNotifier(
   },
   (chat) async => cancelled?.add(chat),
   request: request,
+  unrequest: (from) async => unrequested?.add(from),
   invite: (_, id, _, from, _) async => invited?.add((id, from)),
   uninvite: (id) async => uninvited?.add(id),
 )..signedInAccounts = 2;

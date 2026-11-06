@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:btox/api/toxcore/tox.dart';
+import 'package:btox/api/toxcore/tox.dart' hide ProxyType;
+import 'package:btox/api/toxcore/tox.dart' as toxcore show ProxyType;
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/api/toxcore/tox_options.dart';
 import 'package:btox/ffi/tox_library.dart' as ffi;
@@ -12,7 +13,7 @@ import 'package:btox/models/crypto.dart';
 import 'package:btox/models/profile_settings.dart';
 import 'package:btox/providers/bootstrap_nodes.dart';
 import 'package:btox/providers/profiles.dart';
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'tox.g.dart';
@@ -37,14 +38,14 @@ Future<Tox> tox(Ref ref, SecretKey secretKey, ToxAddressNospam nospam) async {
     udpEnabled: network.udpEnabled && !network.usesProxy,
     localDiscoveryEnabled: network.localDiscoveryEnabled && !network.usesProxy,
     proxyType: switch (network.proxyType) {
-      ProxyType.none => ffi.Tox_Proxy_Type.TOX_PROXY_TYPE_NONE,
-      ProxyType.http => ffi.Tox_Proxy_Type.TOX_PROXY_TYPE_HTTP,
-      ProxyType.socks5 => ffi.Tox_Proxy_Type.TOX_PROXY_TYPE_SOCKS5,
+      ProxyType.none => toxcore.ProxyType.none,
+      ProxyType.http => toxcore.ProxyType.http,
+      ProxyType.socks5 => toxcore.ProxyType.socks5,
     },
     proxyHost: network.proxyHost,
     proxyPort: network.proxyPort,
     savedata: secretKey.bytes,
-    savedataType: ffi.Tox_Savedata_Type.TOX_SAVEDATA_TYPE_SECRET_KEY,
+    savedataType: SavedataType.secretKey,
   );
 
   final tox = ffi.Toxcore(await ref.read(ffi.toxFfiProvider.future), options);
@@ -54,13 +55,19 @@ Future<Tox> tox(Ref ref, SecretKey secretKey, ToxAddressNospam nospam) async {
   return tox;
 }
 
+/// Tox picks a random nospam, so a public key alone can't send a friend
+/// request.
 @riverpod
-Future<(SecretKey, PublicKey)> newKeyPair(Ref ref) async {
-  // Offline, since only the key is needed.
+Future<(SecretKey, PublicKey, ToxAddressNospam)> newIdentity(Ref ref) async {
+  // Offline, since only the identity is needed.
   const options = ToxOptions(udpEnabled: false, localDiscoveryEnabled: false);
   final tox = ffi.Toxcore(await ref.read(ffi.toxFfiProvider.future), options);
   try {
-    return (tox.selfGetSecretKey(), tox.selfGetPublicKey());
+    return (
+      tox.selfGetSecretKey(),
+      tox.selfGetPublicKey(),
+      ToxAddressNospam(tox.selfGetNospam()),
+    );
   } finally {
     tox.kill();
   }
@@ -83,23 +90,16 @@ void runTox(
   var disposed = false;
   ref.onDispose(() => disposed = true);
 
-  List<BootstrapNode>? nodes;
+  final nodes = ref.read(bootstrapNodesProvider).nodes;
   final sinceBootstrap = Stopwatch();
   void bootstrap() {
-    if (nodes case final nodes?) {
-      _bootstrap(tox, nodes, network);
-      sinceBootstrap
-        ..reset()
-        ..start();
-    }
+    _bootstrap(tox, nodes, network);
+    sinceBootstrap
+      ..reset()
+      ..start();
   }
 
-  ref.listen(bootstrapNodesProvider(network), (_, next) {
-    if (next.value case final list?) {
-      nodes = list.nodes;
-      bootstrap();
-    }
-  }, fireImmediately: true);
+  bootstrap();
 
   Future<void> iterate() async {
     while (!disposed && tox.isAlive) {
@@ -116,16 +116,17 @@ void runTox(
         if (event is ToxEventDhtNodesResponse) {
           continue;
         }
-        _logger.d('Tox event: $event');
+        // Release builds don't log message contents.
+        final described = kDebugMode ? '$event' : '${event.runtimeType}';
+        _logger.d('Tox event: $described');
         try {
           handle(event);
         } on Object catch (e, stackTrace) {
-          _logger.e('Failed to handle $event: $e', stackTrace);
+          _logger.e('Failed to handle $described: $e', stackTrace);
         }
       }
       if (tox.isAlive &&
-          tox.selfGetConnectionStatus() ==
-              ffi.Tox_Connection.TOX_CONNECTION_NONE &&
+          tox.selfGetConnectionStatus() == Connection.none &&
           sinceBootstrap.elapsed >= rebootstrapInterval) {
         bootstrap();
       }

@@ -5,8 +5,6 @@ import 'dart:convert';
 import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/attachments/attachments.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart'
-    show Tox_Err_File_Send_Chunk, Tox_File_Control, Tox_File_Kind;
 import 'package:btox/logger.dart';
 import 'package:btox/models/app_defaults.dart';
 import 'package:btox/models/crypto.dart';
@@ -19,7 +17,7 @@ import 'package:flutter/foundation.dart';
 const _logger = Logger(['FileTransfers']);
 
 /// A friend's file, by friend number and file number.
-typedef _Key = (int, int);
+typedef _Key = (FriendNumber, FileNumber);
 
 /// An offered file being recorded, and how it ended meanwhile, if it did.
 final class _Arrival {
@@ -84,13 +82,13 @@ final class FileTransfers implements ToxFiles {
   Future<void> offered(
     GraphId chat,
     String sender,
-    int friendNumber,
-    int fileNumber,
-    int kind,
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileKind kind,
     int size,
     String name,
   ) async {
-    if (kind != Tox_File_Kind.TOX_FILE_KIND_DATA.value || !filesSupported) {
+    if (kind != FileKind.data || !filesSupported) {
       decline(friendNumber, fileNumber);
       return;
     }
@@ -162,38 +160,54 @@ final class FileTransfers implements ToxFiles {
 
   FileId? _fileIdOf(_Key key) {
     try {
-      return FileId(_tox.fileGetFileId(key.$1, key.$2));
+      return _tox.fileGetFileId(key.$1, key.$2);
     } on ApiException catch (e) {
       _logger.w('No ID for file ${key.$2}: $e');
       return null;
     }
   }
 
-  void decline(int friendNumber, int fileNumber) => _control(
-    friendNumber,
-    fileNumber,
-    Tox_File_Control.TOX_FILE_CONTROL_CANCEL,
-  );
+  void decline(FriendNumber friendNumber, FileNumber fileNumber) =>
+      _control(friendNumber, fileNumber, FileControl.cancel);
 
-  /// Follows the user accepting or declining offered files.
-  void incomingChanged(List<Transfer> transfers) {
+  /// Called when the user accepts, declines or cancels files.
+  void transfersChanged(List<Transfer> transfers) {
     final states = {for (final t in transfers) t.id: t.state};
     for (final MapEntry(:key, value: transfer) in [..._incoming.entries]) {
       switch (states[transfer.id]) {
         case FileState.active when transfer.file == null:
           _accept(key);
         case FileState.cancelled:
-          _control(key.$1, key.$2, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+          _control(key.$1, key.$2, FileControl.cancel);
           _incoming.remove(key);
           _cancel(transfer);
         default:
           break;
       }
     }
+    for (final MapEntry(:key, value: transfer) in [..._outgoing.entries]) {
+      if (states[transfer.id] == FileState.cancelled) {
+        _control(key.$1, key.$2, FileControl.cancel);
+        _outgoing.remove(key);
+        _cancel(transfer);
+      }
+    }
+    // The sender offers a cancelled file again as a new one, so drop what
+    // arrived.
+    for (final Transfer(:incoming, :state, :path) in transfers) {
+      if (incoming && state == FileState.cancelled && attachmentExists(path)) {
+        _logger.unawaited('delete $path', deleteAttachment(path));
+      }
+    }
   }
 
   @override
-  void chunk(int friendNumber, int fileNumber, int position, Uint8List data) {
+  void chunk(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    Uint8List data,
+  ) {
     final key = (friendNumber, fileNumber);
     final transfer = _incoming[key];
     if (transfer == null) {
@@ -209,7 +223,12 @@ final class FileTransfers implements ToxFiles {
   }
 
   @override
-  void requested(int friendNumber, int fileNumber, int position, int length) {
+  void requested(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    int position,
+    int length,
+  ) {
     final key = (friendNumber, fileNumber);
     final transfer = _outgoing[key];
     if (transfer == null) {
@@ -239,7 +258,7 @@ final class FileTransfers implements ToxFiles {
         _tox.fileSendChunk(friendNumber, fileNumber, position, data);
         _progress(transfer, position + length);
       } on ApiException catch (e) {
-        if (e.error == Tox_Err_File_Send_Chunk.TOX_ERR_FILE_SEND_CHUNK_SENDQ) {
+        if (e.error == FileSendChunkError.sendQueueFull) {
           transfer.retry = Timer(
             chunkRetryDelay,
             () => _sendChunks(key, transfer),
@@ -259,8 +278,12 @@ final class FileTransfers implements ToxFiles {
   }
 
   @override
-  void controlled(int friendNumber, int fileNumber, Tox_File_Control control) {
-    if (control != Tox_File_Control.TOX_FILE_CONTROL_CANCEL) {
+  void controlled(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  ) {
+    if (control != FileControl.cancel) {
       return;
     }
     final key = (friendNumber, fileNumber);
@@ -273,7 +296,7 @@ final class FileTransfers implements ToxFiles {
   }
 
   /// Sends [transfer], one of ours that started, unless it's on its way.
-  void send(Transfer transfer, int friendNumber) {
+  void send(Transfer transfer, FriendNumber friendNumber) {
     final event = transfer.event;
     if (event == null ||
         transfer.incoming ||
@@ -299,10 +322,10 @@ final class FileTransfers implements ToxFiles {
     try {
       final fileNumber = _tox.fileSend(
         friendNumber,
-        Tox_File_Kind.TOX_FILE_KIND_DATA.value,
+        FileKind.data,
         transfer.size,
         // The same each time, so the friend can go on from where it stopped.
-        event.bytes,
+        FileId(event.bytes),
         utf8.encode(transfer.name),
       );
       _outgoing[(friendNumber, fileNumber)] = outgoing;
@@ -313,7 +336,7 @@ final class FileTransfers implements ToxFiles {
   }
 
   /// Toxcore drops a friend's transfers when they go offline.
-  void friendOffline(int friendNumber) {
+  void friendOffline(FriendNumber friendNumber) {
     for (final MapEntry(:key, value: arrival) in _arriving.entries) {
       if (key.$1 == friendNumber) {
         arrival.ended = FileState.paused;
@@ -340,11 +363,11 @@ final class FileTransfers implements ToxFiles {
       }
     } catch (e) {
       _logger.e('Cannot write ${transfer.path}: $e');
-      _control(key.$1, key.$2, Tox_File_Control.TOX_FILE_CONTROL_CANCEL);
+      _control(key.$1, key.$2, FileControl.cancel);
       _cancel(_incoming.remove(key)!);
       return;
     }
-    _control(key.$1, key.$2, Tox_File_Control.TOX_FILE_CONTROL_RESUME);
+    _control(key.$1, key.$2, FileControl.resume);
   }
 
   void _finish(_Transfer transfer) {
@@ -378,7 +401,11 @@ final class FileTransfers implements ToxFiles {
   void _ended(_Transfer transfer, {required bool ok}) =>
       _record(transfer.chat, FileEnded(file: transfer.event, ok: ok));
 
-  void _control(int friendNumber, int fileNumber, Tox_File_Control control) {
+  void _control(
+    FriendNumber friendNumber,
+    FileNumber fileNumber,
+    FileControl control,
+  ) {
     try {
       _tox.fileControl(friendNumber, fileNumber, control);
     } on ApiException catch (e) {

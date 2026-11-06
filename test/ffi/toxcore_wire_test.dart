@@ -27,7 +27,6 @@ void main() {
     f.tox_options_free(options);
     addTearDown(() => f.tox_kill(friend));
 
-    // ignore: argument_type_not_assignable
     final tox = Toxcore(lib, const ToxOptions(localDiscoveryEnabled: false));
     addTearDown(tox.kill);
     expect(

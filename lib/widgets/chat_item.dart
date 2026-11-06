@@ -1,9 +1,13 @@
 import 'dart:math';
 
 import 'package:btox/l10n/generated/app_localizations.dart';
+import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
+import 'package:btox/models/crypto.dart';
 import 'package:btox/pages/message_info_page.dart';
+import 'package:btox/providers/chats.dart';
+import 'package:btox/sync/event.dart';
 import 'package:btox/widgets/bubble_footer.dart';
 import 'package:btox/widgets/call_entry.dart';
 import 'package:btox/widgets/chat_context_menu.dart';
@@ -13,9 +17,11 @@ import 'package:btox/widgets/chat_text.dart';
 import 'package:btox/widgets/chat_text_bubble.dart';
 import 'package:btox/widgets/dates.dart';
 import 'package:btox/widgets/sender_name.dart';
+import 'package:btox/widgets/typing_dots.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// When the bubble is dragged past this fraction of the max bubble drag, the
 /// reply icon will grow, indicating that the message will be replied to.
@@ -40,11 +46,42 @@ bool inRun(ChatEntry above, ChatEntry below) =>
     !above.notice &&
     !below.notice &&
     above.mine == below.mine &&
+    above.privately == below.privately &&
     (above.from != null || below.from != null
         ? above.from == below.from
         : above.sender == below.sender) &&
     localDay(above.timestamp) == localDay(below.timestamp) &&
     below.timestamp.difference(above.timestamp).abs() < _kRunGap;
+
+/// How many joins and leaves in a row show as one line: in busy groups,
+/// members on phones come and go all day.
+const _kManyComings = 3;
+
+bool _comingOrGoing(ChatEntry entry) =>
+    entry.happened is PeerJoined || entry.happened is PeerLeft;
+
+/// For each of [entries], how many it shows: all of a run of joins and
+/// leaves on one day for the run's first, none for the rest of it, and itself
+/// for any other. No run reaches from before [waiting], where the entries
+/// waiting below the reader start, into them.
+List<int> comingRuns(List<ChatEntry> entries, int waiting) {
+  final shown = List.filled(entries.length, 1);
+  for (var i = 0; i < entries.length;) {
+    final limit = i < waiting ? waiting : entries.length;
+    var end = i;
+    while (end < limit &&
+        _comingOrGoing(entries[end]) &&
+        localDay(entries[end].timestamp) == localDay(entries[i].timestamp)) {
+      end++;
+    }
+    if (end - i >= _kManyComings) {
+      shown.fillRange(i, end, 0);
+      shown[i] = end - i;
+    }
+    i = end > i ? end : i + 1;
+  }
+  return shown;
+}
 
 Color _bubbleColor(bool isSender, ThemeData theme) {
   return isSender
@@ -107,9 +144,26 @@ final class ChatItem extends HookWidget {
       joinsAbove: joinsAbove,
       joinsBelow: joinsBelow,
     );
-    final header = sender != null && !isSender && !joinsAbove
-        ? SenderName(sender, author: entry.from)
-        : null;
+    final privately = entry.privately;
+    final header = switch ((joinsAbove, privately)) {
+      (true, _) => null,
+      (false, final to?) when isSender => _PrivatelyTo(chat: chat, member: to),
+      (false, _?) when sender != null => Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          SenderName(sender, author: entry.from),
+          Text(
+            ' \u00b7 ${AppLocalizations.of(context)!.privately}',
+            style: theme.textTheme.labelLarge,
+          ),
+        ],
+      ),
+      _ when sender != null && !isSender => SenderName(
+        sender,
+        author: entry.from,
+      ),
+      _ => null,
+    };
     // The last bubble of a run says when it was sent, and how far ours got,
     // as does one tapped. Others say it only while ours is on its way.
     final saysWhen = !joinsBelow || showTime.value;
@@ -145,9 +199,11 @@ final class ChatItem extends HookWidget {
         onTap: (_, _) => toggleTime(),
       ),
       final content => ChatText(
-        text: content.plainText,
+        text: entry.action ? '* ${content.plainText}' : content.plainText,
         color: color,
-        textStyle: textStyle,
+        textStyle: entry.action
+            ? textStyle.copyWith(fontStyle: FontStyle.italic)
+            : textStyle,
         corners: corners,
         header: header,
         footer: footer,
@@ -253,12 +309,6 @@ final class ChatItem extends HookWidget {
               onHorizontalDragCancel: () => bubbleDrag.value = 0,
               onTap: toggleTime,
               onLongPressStart: (details) async {
-                final messenger = ScaffoldMessenger.of(context);
-                final notImplemented = AppLocalizations.of(context)!
-                    .notImplemented;
-                void notYet() => messenger
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(SnackBar(content: Text(notImplemented)));
                 await ChatContextMenu.show(
                   context,
                   details.globalPosition,
@@ -270,7 +320,6 @@ final class ChatItem extends HookWidget {
                     context,
                     MessageInfoPage.route(chat, entry),
                   ),
-                  onDelete: notYet,
                 );
               },
               child: placed,
@@ -292,12 +341,59 @@ final class ChatNotice extends StatelessWidget {
     if (entry.content case final CallContent call) {
       return ChatCallNotice(call: call);
     }
+    return _NoticeLine(noticeText(AppLocalizations.of(context)!, entry));
+  }
+}
+
+/// Joins and leaves in a row, as one line.
+final class ChatComings extends StatelessWidget {
+  final List<ChatEntry> run;
+
+  const ChatComings({super.key, required this.run});
+
+  @override
+  Widget build(BuildContext context) =>
+      _NoticeLine(comingsText(AppLocalizations.of(context)!, run));
+}
+
+final class _NoticeLine extends StatelessWidget {
+  final String text;
+
+  const _NoticeLine(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+    child: Center(
+      child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+    ),
+  );
+}
+
+final class ChatTyping extends StatelessWidget {
+  final String name;
+
+  const ChatTyping({super.key, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-      child: Center(
-        child: Text(
-          entry.content.plainText,
-          style: Theme.of(context).textTheme.bodySmall,
+      padding: _kBubbleMargin.add(const EdgeInsets.only(top: 4)),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: _bubbleColor(false, theme),
+            borderRadius: bubbleCorners(mine: false),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: TypingDots(
+              label: AppLocalizations.of(context)!.isTyping(name),
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       ),
     );
@@ -320,4 +416,28 @@ final class ChatDay extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Shows who a private message of ours in a group was sent to.
+final class _PrivatelyTo extends ConsumerWidget {
+  final ChatRef chat;
+  final PublicKey member;
+
+  const _PrivatelyTo({required this.chat, required this.member});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final name = ref
+        .watch(chatDetailsProvider(chat))
+        .value
+        ?.members
+        ?.where((m) => m.pk == member)
+        .firstOrNull
+        ?.name;
+    return Text(
+      l10n.privatelyTo(name ?? l10n.defaultContactName),
+      style: Theme.of(context).textTheme.labelLarge,
+    );
+  }
 }

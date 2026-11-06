@@ -5,7 +5,7 @@ import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart' show Profiles;
 import 'package:btox/models/profile_settings.dart';
-import 'package:btox/providers/bootstrap_nodes.dart';
+import 'package:btox/providers/http_client.dart';
 import 'package:btox/providers/map_tile.dart';
 import 'package:btox/providers/profiles.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,6 +1,6 @@
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart' show Profiles;
-import 'package:btox/providers/bootstrap_nodes.dart';
+import 'package:btox/providers/http_client.dart';
 import 'package:btox/providers/profiles.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:riverpod/riverpod.dart';

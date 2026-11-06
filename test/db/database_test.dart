@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/messages/split_message.dart';
 import 'package:btox/models/content.dart';
@@ -224,7 +224,7 @@ void main() {
           Received(
             sender: sender,
             message: utf8.encode('hi'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
         ))!;
         await pumpEventQueue();
@@ -277,7 +277,7 @@ void main() {
           content: Received(
             sender: 'Bob',
             message: FakeMessageFormat.encode(text, '1'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
         );
         final bytes = event.encode();
@@ -314,7 +314,7 @@ void main() {
       final home = await Home.load(db, await db.watchProfile(id).first);
       final alice = home.chatWith(PublicKey(Uint8List(32)..[0] = 1));
       final bob = home.chatWith(PublicKey(Uint8List(32)..[0] = 2));
-      const kind = Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL;
+      const kind = MessageType.normal;
       await home.record(
         alice,
         Received(sender: 'Alice', message: utf8.encode('first'), kind: kind),
@@ -358,7 +358,7 @@ void main() {
           content: Received(
             sender: 'Bob',
             message: utf8.encode(text),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
         );
         final bytes = event.encode();

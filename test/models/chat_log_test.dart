@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart';
+import 'package:btox/l10n/generated/app_localizations.dart';
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/persistence.dart' show FileState;
 import 'package:btox/sync/event.dart';
+import 'package:btox/sync/fact.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/fake_message_format.dart';
@@ -37,7 +40,7 @@ Received _received(Uint8List message, {PublicKey? from}) => Received(
   from: from,
   sender: 'Bob',
   message: message,
-  kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+  kind: MessageType.normal,
 );
 
 List<String> _texts(ChatLog log, List<(EventId, SyncEvent)> events) => [
@@ -49,14 +52,11 @@ void main() {
     final send = _event(
       0,
       50,
-      Send(
-        sender: 'Me',
-        message: utf8.encode('hi'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
-      ),
+      Send(sender: 'Me', message: utf8.encode('hi'), kind: MessageType.normal),
     );
-    final [entry] = ChatLog(MessageFormats.none)
-        .update([send, _event(1, 70, Delivered(intent: send.$1))]);
+    final [entry] = ChatLog(
+      MessageFormats.none,
+    ).update([send, _event(1, 70, Delivered(intent: send.$1))]);
     expect(
       entry.delivered,
       DateTime.fromMillisecondsSinceEpoch(70, isUtc: true),
@@ -67,11 +67,7 @@ void main() {
     final send = _event(
       0,
       50,
-      Send(
-        sender: 'Me',
-        message: utf8.encode('hi'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
-      ),
+      Send(sender: 'Me', message: utf8.encode('hi'), kind: MessageType.normal),
     );
     final events = [
       send,
@@ -118,6 +114,25 @@ void main() {
     ]);
   });
 
+  test('shows what /me sends as an action', () {
+    final [entry] = ChatLog(MessageFormats.none).update([
+      _event(
+        0,
+        50,
+        Received(
+          from: null,
+          sender: 'Bob',
+          message: utf8.encode('waves'),
+          kind: MessageType.action,
+        ),
+      ),
+    ]);
+    expect(
+      (entry.action, entry.content),
+      (true, const TextContent(text: 'waves')),
+    );
+  });
+
   test('shows geo text as a location', () {
     final events = [_event(0, 0, _received(utf8.encode('geo:-33.9,18.4')))];
     expect(
@@ -150,7 +165,7 @@ void main() {
       Send(
         sender: 'Me',
         message: FakeMessageFormat.encode('mine', '9'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     );
     expect(_texts(ChatLog(withFakeFormat), [ours]), ['mine#9']);
@@ -209,5 +224,37 @@ void main() {
       call.$1,
     ]);
     expect(shown([call, declined]).missed, isFalse);
+  });
+
+  test('words what happened in a chat in the reader\'s language', () {
+    final events = [
+      _event(0, 10, PeerJoined(peer: _carol, name: 'Carol')),
+      _event(1, 20, Moderated(name: 'Bob', peer: _carol, peerName: 'Carol')),
+      _event(
+        2,
+        30,
+        Moderated(name: '', peerName: 'Carol', role: Role.moderator),
+      ),
+      // Nameless, by the start of their key.
+      _event(3, 40, PeerLeft(peer: _carol, name: '')),
+    ];
+    final entries = ChatLog(MessageFormats.none).update(events);
+    expect(entries.every((e) => e.notice), isTrue);
+    expect(
+      [
+        for (final e in entries)
+          noticeText(lookupAppLocalizations(const Locale('en')), e),
+      ],
+      [
+        'Carol joined',
+        'Bob removed Carol',
+        'Carol is now a moderator',
+        '${_carol.toJson().substring(0, 8)} left',
+      ],
+    );
+    expect(
+      noticeText(lookupAppLocalizations(const Locale('de')), entries[1]),
+      'Bob hat Carol entfernt',
+    );
   });
 }

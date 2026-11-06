@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:btox/api/toxcore/tox.dart';
-import 'package:btox/ffi/toxcore.dart' as ffi;
 import 'package:btox/models/connection_status.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
@@ -37,17 +36,17 @@ Map<Id<Profiles>, ConnectionStatus> toxSessions(Ref ref) => {
 Duration proxyCheckDelay(Ref ref) => const Duration(seconds: 20);
 
 const _proxyErrors = {
-  ffi.Tox_Err_New.TOX_ERR_NEW_PROXY_BAD_TYPE,
-  ffi.Tox_Err_New.TOX_ERR_NEW_PROXY_BAD_HOST,
-  ffi.Tox_Err_New.TOX_ERR_NEW_PROXY_BAD_PORT,
-  ffi.Tox_Err_New.TOX_ERR_NEW_PROXY_NOT_FOUND,
+  NewError.proxyBadType,
+  NewError.proxyBadHost,
+  NewError.proxyBadPort,
+  NewError.proxyNotFound,
 };
 
 @riverpod
 class SelfConnectionStatus extends _$SelfConnectionStatus {
   Timer? _proxyCheck;
   ToxSync? _sync;
-  StreamSubscription<ffi.Tox_Connection>? _changes;
+  StreamSubscription<Connection>? _changes;
 
   @override
   ConnectionStatus build(
@@ -79,7 +78,7 @@ class SelfConnectionStatus extends _$SelfConnectionStatus {
       }
     }
 
-    void connected(ffi.Tox_Connection connection) {
+    void connected(Connection connection) {
       state = state.copyWith(connection: connection, proxyProblem: null);
       if (!state.online) {
         checkProxyLater();
@@ -87,7 +86,7 @@ class SelfConnectionStatus extends _$SelfConnectionStatus {
     }
 
     // The connection of the Tox that [sync] runs, from now on.
-    ffi.Tox_Connection follow(ToxSync sync) {
+    Connection follow(ToxSync sync) {
       _sync = sync;
       _changes?.cancel();
       _changes = sync.connectionChanges.listen(connected);
@@ -114,7 +113,7 @@ class SelfConnectionStatus extends _$SelfConnectionStatus {
     return ConnectionStatus(
       connection: switch (sync.read()) {
         AsyncData(value: final sync) => follow(sync),
-        _ => ffi.Tox_Connection.TOX_CONNECTION_NONE,
+        _ => Connection.none,
       },
       proxy: usesProxy ? '${network.proxyHost}:${network.proxyPort}' : '',
     );

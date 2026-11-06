@@ -73,6 +73,8 @@ void main() {
     // Navigate to the 'add contact' screen.
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.person_add_outlined));
+    await tester.pumpAndSettle();
 
     // Fill in the contact data.
     await tester.enterText(

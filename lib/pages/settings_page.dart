@@ -127,6 +127,15 @@ final class SettingsPage extends ConsumerWidget {
                 ),
               ),
             ),
+          // Only profiles this device runs can show typing.
+          if (profile.home == null)
+            SwitchListTile(
+              title: Text(l10n.typingIndicators),
+              subtitle: Text(l10n.typingIndicatorsHint),
+              value: settings.typingIndicators,
+              onChanged: (on) =>
+                  updateSettings((s) => s.copyWith(typingIndicators: on)),
+            ),
           SwitchListTile(
             title: Text(l10n.udpEnabled),
             subtitle: Text(
@@ -291,7 +300,7 @@ final class _ExportTile extends HookConsumerWidget {
 }
 
 String _autoAcceptText(AppLocalizations l10n, int size) =>
-    size == 0 ? l10n.never : fileSizeText(size);
+    size == 0 ? l10n.never : l10n.autoAcceptUpTo(fileSizeText(size));
 
 final class _SectionHeader extends StatelessWidget {
   final String title;

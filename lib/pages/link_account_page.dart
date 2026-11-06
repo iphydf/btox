@@ -33,8 +33,8 @@ final class LinkAccountPage extends HookConsumerWidget {
       }
       linking.value = true;
       try {
-        final (secretKey, publicKey) = await ref.read(
-          newKeyPairProvider.future,
+        final (secretKey, publicKey, _) = await ref.read(
+          newIdentityProvider.future,
         );
         final database = await ref.read(databaseProvider.future);
         await database.transaction(() async {

@@ -1,4 +1,4 @@
-import 'package:btox/ffi/toxcore.dart';
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -12,7 +12,7 @@ typedef ConnectionStatuses = Map<Id<Profiles>, ConnectionStatus>;
 @freezed
 abstract class ConnectionStatus with _$ConnectionStatus {
   const factory ConnectionStatus({
-    required Tox_Connection connection,
+    required Connection connection,
     ProxyProblem? proxyProblem,
     @Default('') String proxy,
   }) = _ConnectionStatus;
@@ -22,7 +22,7 @@ abstract class ConnectionStatus with _$ConnectionStatus {
   factory ConnectionStatus.fromMessage(List<Object?> message) {
     final [connection as String, problem as String?, proxy as String] = message;
     return ConnectionStatus(
-      connection: Tox_Connection.values.byName(connection),
+      connection: Connection.values.byName(connection),
       proxyProblem: problem == null
           ? null
           : ProxyProblem.values.byName(problem),
@@ -30,7 +30,7 @@ abstract class ConnectionStatus with _$ConnectionStatus {
     );
   }
 
-  bool get online => connection != Tox_Connection.TOX_CONNECTION_NONE;
+  bool get online => connection != Connection.none;
 
   List<Object?> toMessage() => [connection.name, proxyProblem?.name, proxy];
 }
@@ -42,8 +42,7 @@ String connectionStatusText(ConnectionStatus? status) => switch (status) {
   ConnectionStatus(proxyProblem: ProxyProblem.unreachable, :final proxy) =>
     "Can't reach proxy at $proxy",
   ConnectionStatus(online: false) => 'Connecting…',
-  ConnectionStatus(connection: Tox_Connection.TOX_CONNECTION_TCP) =>
-    'Online via TCP relay',
+  ConnectionStatus(connection: Connection.tcp) => 'Online via TCP relay',
   ConnectionStatus() => 'Online',
 };
 

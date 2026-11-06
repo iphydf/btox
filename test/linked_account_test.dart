@@ -4,11 +4,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart' hide Connection;
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/profile_settings.dart';
+import 'package:btox/pages/chat_details_page.dart';
 import 'package:btox/pages/chat_page.dart';
 import 'package:btox/pages/contact_list_page.dart';
 import 'package:btox/pages/link_account_page.dart';
@@ -39,6 +40,7 @@ final _home = ToxAddress.of(
 final _bob = PublicKey(Uint8List(32)..fillRange(0, 32, 2));
 final _carol = PublicKey(Uint8List(32)..fillRange(0, 32, 3));
 final _group = GroupChatId(Uint8List(32)..fillRange(0, 32, 4));
+final _tablet = PublicKey(Uint8List(32)..fillRange(0, 32, 5));
 
 /// Events of one graph, each after the one before.
 List<(EventId, SyncEvent, Uint8List)> _chain(
@@ -82,8 +84,12 @@ void main() {
         const LinkAccountPage(),
         overrides: [
           databaseProvider.overrideWith((ref) => db),
-          newKeyPairProvider.overrideWith(
-            (ref) => (SecretKey(Uint8List(32)), PublicKey(Uint8List(32))),
+          newIdentityProvider.overrideWith(
+            (ref) => (
+              SecretKey(Uint8List(32)),
+              PublicKey(Uint8List(32)),
+              ToxAddressNospam(0),
+            ),
           ),
         ],
       ),
@@ -157,6 +163,13 @@ void main() {
             subject: Subject.friend(_bob),
             value: FactValue.name('Bob'),
           ),
+          // Another device of the account, so a friend of the home.
+          (_) => WantFriend(pk: _tablet),
+          (_) => FactContent(
+            subject: Subject.friend(_tablet),
+            value: FactValue.name('Tablet'),
+          ),
+          (_) => DeviceContent(pk: _tablet, name: 'Tablet'),
           (_) => FactContent(
             subject: Subject.chat(GroupChat(_group)),
             value: FactValue.name('Tox'),
@@ -177,12 +190,12 @@ void main() {
             sender: 'Bob',
             // Read by a message format that's on.
             message: FakeMessageFormat.encode('hi', '1'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
           (_) => Send(
             sender: 'Me',
             message: utf8.encode('hello'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
           (ids) => Delivered(intent: ids.first),
         ]),
@@ -192,7 +205,7 @@ void main() {
             from: _carol,
             sender: 'Carol',
             message: utf8.encode('hey all'),
-            kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+            kind: MessageType.normal,
           ),
         ]),
       ]);
@@ -207,11 +220,12 @@ void main() {
     expect(find.text('Bob'), findsOneWidget);
     expect(find.text('Tox'), findsOneWidget);
     expect(find.text('This phone'), findsNothing);
+    expect(find.text('Tablet'), findsNothing);
     expect(
       find.byWidgetPredicate((w) => w is ChatAvatar && w.online == true),
       findsOneWidget,
     );
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
     // Bob's and the group's messages are unread.
     expect(find.text('1'), findsNWidgets(2));
 
@@ -346,6 +360,186 @@ void main() {
       matching: find.byType(CircleIdenticon),
     );
     expect(tester.widget<CircleIdenticon>(you).bytes, _home.publicKey);
+
+    await tester.pumpWidget(const SizedBox());
+    await settle(tester);
+    await tester.runAsync(db.close);
+  });
+
+  testWidgets('a linked group shows and sends private messages', (
+    tester,
+  ) async {
+    final db = Database(NativeDatabase.memory());
+    final chat = GroupChat(_group);
+    final profile = (await tester.runAsync(() async {
+      final id = await db.addProfile(
+        ProfilesCompanion.insert(
+          signedIn: const Value(true),
+          settings: ProfileSettings(nickname: 'bTox', statusMessage: ''),
+          secretKey: SecretKey(Uint8List(32)),
+          publicKey: PublicKey(Uint8List(32)),
+          nospam: ToxAddressNospam(0),
+          home: Value(_home),
+        ),
+      );
+      await db.addSyncEvents(id, [
+        ..._chain(GraphId.account(_home.publicKey), [
+          for (final value in const [
+            FactValue.name('Tox'),
+            FactValue.joined(true),
+          ])
+            (_) => FactContent(subject: Subject.chat(chat), value: value),
+        ]),
+        ..._chain(chat.graph, [
+          (_) => ReceivedPrivately(
+            from: _carol,
+            sender: 'Carol',
+            message: utf8.encode('psst'),
+            kind: MessageType.normal,
+          ),
+        ]),
+      ]);
+      await db.updateLiveFacts(id, [
+        (const Subject.account(), const FactValue.connection(Connection.udp)),
+        (Subject.peer(chat, _carol), const FactValue.name('Carol')),
+      ], all: true);
+      return db.select(db.profiles).getSingle();
+    }))!;
+
+    await tester.pumpWidget(
+      _app(db, profile, ChatPage(chat: ChatRef(profile.id, chat.graph))),
+    );
+    await settle(
+      tester,
+      until: () => findMessage('psst').evaluate().isNotEmpty,
+    );
+    expect(find.text(' \u00b7 privately'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Chat details'));
+    await settle(
+      tester,
+      until: () => find.byTooltip('Message privately').evaluate().isNotEmpty,
+    );
+    // Wait for the page to slide in.
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Message privately'));
+    await settle(
+      tester,
+      until: () => find.text('Privately to Carol').evaluate().isNotEmpty,
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(MessageInput),
+        matching: find.byType(TextField),
+      ),
+      'just you',
+    );
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.send));
+    await settle(
+      tester,
+      until: () async => (await db.select(db.intents).get()).isNotEmpty,
+    );
+    final [send] = (await tester.runAsync(() => db.select(db.intents).get()))!;
+    expect(
+      send.content,
+      isA<SendPrivately>()
+          .having((s) => s.to, 'to', _carol)
+          .having((s) => s.message, 'message', utf8.encode('just you')),
+    );
+
+    await tester.pumpWidget(const SizedBox());
+    await settle(tester);
+    await tester.runAsync(db.close);
+  });
+
+  testWidgets('a linked account asks its home to found, join and invite', (
+    tester,
+  ) async {
+    final db = Database(NativeDatabase.memory());
+    final chat = GroupChat(_group);
+    final profile = (await tester.runAsync(() async {
+      final id = await db.addProfile(
+        ProfilesCompanion.insert(
+          signedIn: const Value(true),
+          settings: ProfileSettings(nickname: 'bTox', statusMessage: ''),
+          secretKey: SecretKey(Uint8List(32)),
+          publicKey: PublicKey(Uint8List(32)),
+          nospam: ToxAddressNospam(0),
+          home: Value(_home),
+        ),
+      );
+      await db.addSyncEvents(id, [
+        ..._chain(GraphId.account(_home.publicKey), [
+          (_) => WantFriend(pk: _bob),
+          (_) => FactContent(
+            subject: Subject.friend(_bob),
+            value: FactValue.name('Bob'),
+          ),
+          for (final value in const [
+            FactValue.name('Tox'),
+            FactValue.joined(true),
+          ])
+            (_) => FactContent(subject: Subject.chat(chat), value: value),
+        ]),
+      ]);
+      await db.updateLiveFacts(id, [
+        (Subject.friend(_bob), const FactValue.connection(Connection.udp)),
+      ]);
+      return db.select(db.profiles).getSingle();
+    }))!;
+    Future<List<EventContent>> asked() async => [
+      for (final intent in (await tester.runAsync(
+        () => db.select(db.intents).get(),
+      ))!)
+        intent.content,
+    ];
+
+    await tester.pumpWidget(_app(db, profile, const ContactListPage()));
+    await settle(tester, until: () => find.text('Tox').evaluate().isNotEmpty);
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('New group'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Public'));
+    await tester.enterText(find.byType(TextFormField), ' Lab ');
+    await tester.tap(find.text('Create'));
+    await settle(
+      tester,
+      until: () async => (await db.select(db.intents).get()).isNotEmpty,
+    );
+    expect(await asked(), [
+      const NewChat(kind: ChatKind.group, name: 'Lab', privacy: Privacy.public),
+    ]);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Join a public group'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, '04' * 32);
+    await tester.enterText(find.byType(TextFormField).last, 'sesame');
+    await tester.tap(find.widgetWithText(FilledButton, 'Join'));
+    await settle(
+      tester,
+      until: () async => (await db.select(db.intents).get()).length > 1,
+    );
+    expect((await asked()).last, JoinChat(chatId: _group, password: 'sesame'));
+
+    await tester.pumpWidget(
+      _app(db, profile, ChatDetailsPage(chat: ChatRef(profile.id, chat.graph))),
+    );
+    await settle(
+      tester,
+      until: () => find.text('Invite friends').evaluate().isNotEmpty,
+    );
+    await tester.tap(find.text('Invite friends'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bob'));
+    await settle(
+      tester,
+      until: () async => (await db.select(db.intents).get()).length > 2,
+    );
+    expect((await asked()).last, InviteToChat(chat: chat, friend: _bob));
 
     await tester.pumpWidget(const SizedBox());
     await settle(tester);

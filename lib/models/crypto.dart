@@ -75,6 +75,9 @@ final class SecretKey extends CryptoBytes {
 final class GroupChatId extends CryptoBytes {
   GroupChatId(super.bytes);
 
+  factory GroupChatId.fromJson(String value) =>
+      GroupChatId(Uint8List.fromList(hex.decode(value)));
+
   @override
   int get length => toxGroupChatIdSize;
 }

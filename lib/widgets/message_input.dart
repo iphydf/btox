@@ -45,6 +45,8 @@ final class MessageInput extends HookWidget {
   /// Whether [Content] was sent. What wasn't comes back to the draft.
   final Future<bool> Function(Content) onSend;
 
+  final void Function({required bool typing})? onTyping;
+
   const MessageInput({
     super.key,
     required this.profile,
@@ -54,6 +56,7 @@ final class MessageInput extends HookWidget {
     this.files = true,
     this.picturesAsQoi = false,
     required this.onSend,
+    this.onTyping,
   });
 
   @override
@@ -106,8 +109,12 @@ final class MessageInput extends HookWidget {
       SystemChannels.textInput.invokeMethod<void>('TextInput.show');
     }
 
+    void typed() =>
+        onTyping?.call(typing: messageInputController.text.isNotEmpty);
+
     void reset() {
       messageInputController.text = '';
+      typed();
       if (AnyPlatform.instance.isAndroid) {
         _logger.unawaited(
           'restart the keyboard',
@@ -133,6 +140,7 @@ final class MessageInput extends HookWidget {
       final text = messageInputController.text.trim();
       final attachments = drafts.value;
       final reply = replyingTo;
+      final privateReply = draft.privateReply;
       if (text.isEmpty && attachments.isEmpty) {
         return;
       }
@@ -161,7 +169,7 @@ final class MessageInput extends HookWidget {
                 : '$text\n$since';
           }
           if (unsent.contains(quoteContent)) {
-            draft.replyingTo.value = reply;
+            draft.reply(reply!, privately: privateReply);
           }
           drafts.value = [
             ...attachments.where(unsent.contains),
@@ -198,6 +206,8 @@ final class MessageInput extends HookWidget {
       _EditMode.emoji => EmojiPicker(
         key: const Key('emojiPicker'),
         textEditingController: messageInputController,
+        onEmojiSelected: (_, _) => typed(),
+        onBackspacePressed: typed,
         config: Config(
           height: null,
           categoryViewConfig: CategoryViewConfig(
@@ -332,6 +342,7 @@ final class MessageInput extends HookWidget {
                                       showKeyboard();
                                     }
                                   },
+                                  onChanged: (_) => typed(),
                                   onSubmitted: (_) => send(),
                                   contentInsertionConfiguration:
                                       ContentInsertionConfiguration(

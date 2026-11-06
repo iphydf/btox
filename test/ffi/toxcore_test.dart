@@ -53,7 +53,6 @@ void main() {
       when(mockFfi.tox_options_new(any)).thenReturn(optionsPtr);
       when(mockFfi.tox_new(optionsPtr, any)).thenReturn(toxPtr);
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
 
       expect(toxcore, isNotNull);
@@ -68,7 +67,6 @@ void main() {
       final toxPtr = safePtr<ffi_gen.Tox>();
       when(mockFfi.tox_new(any, any)).thenReturn(toxPtr);
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
       toxcore.kill();
 
@@ -87,10 +85,12 @@ void main() {
             return true;
           });
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
 
-      expect(toxcore.friendGetPublicKey(7).bytes, List.generate(32, (i) => i));
+      expect(
+        toxcore.friendGetPublicKey(const api.FriendNumber(7)).bytes,
+        List.generate(32, (i) => i),
+      );
     });
 
     test('turns toxcore errors into ApiException', () {
@@ -107,11 +107,10 @@ void main() {
             return false;
           });
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
 
       expect(
-        () => toxcore.friendGetPublicKey(3),
+        () => toxcore.friendGetPublicKey(const api.FriendNumber(3)),
         throwsA(isA<api.ApiException>()),
       );
     });
@@ -130,14 +129,12 @@ void main() {
         ),
       ).thenReturn(9);
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
 
       expect(
         toxcore.friendSendMessage(
-          5,
-          // ignore: argument_type_not_assignable
-          ffi_gen.Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+          const api.FriendNumber(5),
+          api.MessageType.normal,
           utf8.encode('Grüße'),
         ),
         9,
@@ -157,10 +154,9 @@ void main() {
         udpEnabled: false,
         localDiscoveryEnabled: true,
         savedata: Uint8List.fromList(List.filled(3, 0)),
-        savedataType: Tox_Savedata_Type.TOX_SAVEDATA_TYPE_SECRET_KEY,
+        savedataType: api.SavedataType.secretKey,
       );
 
-      // ignore: argument_type_not_assignable
       Toxcore(lib, toxOptions);
 
       verify(mockFfi.tox_options_set_experimental_owned_data(optionsPtr, true))
@@ -209,14 +205,13 @@ void main() {
         return true;
       });
 
-      // ignore: argument_type_not_assignable
       final toxcore = Toxcore(lib, const api_opts.ToxOptions());
       final events = toxcore.iterate();
 
       expect(events.length, 1);
       expect(events, [
         const ToxEventSelfConnectionStatus(
-          connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+          connectionStatus: api.Connection.udp,
         ),
       ]);
 

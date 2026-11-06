@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart';
+import 'package:btox/db/database.steps.dart';
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/messages/split_message.dart';
 import 'package:btox/models/app_defaults.dart';
-import 'package:btox/models/bootstrap_nodes.dart';
 import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
@@ -30,9 +30,10 @@ const _idsPerStatement = 500;
   tables: [
     AppSettings,
     Avatars,
-    CachedBootstrapNodes,
     ChatDrafts,
+    ChatSaves,
     DeletedChats,
+    DeliveredParts,
     Intents,
     LinkedNotified,
     LiveFacts,
@@ -45,9 +46,20 @@ const _idsPerStatement = 500;
 final class Database extends _$Database {
   Database(super.e);
 
-  // Bump with every schema change, then run `tools/prepare`.
+  // Bump with every schema change, then run `tools/prepare` and add the
+  // step from the last version to [migration].
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: stepByStep(
+      // The node list is built in.
+      from1To2: (m, schema) async {
+        await m.deleteTable('cached_bootstrap_nodes');
+      },
+    ),
+  );
 
   // Events never change, so each is decoded once.
   final _decoded = <EventId, SyncEvent?>{};
@@ -57,15 +69,6 @@ final class Database extends _$Database {
 
   Future<Id<Profiles>> addProfile(ProfilesCompanion entry) async =>
       Id(await into(profiles).insert(entry));
-
-  Future<void> cacheBootstrapNodes(BootstrapNodeList nodes) async {
-    await into(cachedBootstrapNodes).insertOnConflictUpdate(
-      CachedBootstrapNodesCompanion.insert(
-        id: const Value(0),
-        json: jsonEncode(nodes.toJson()),
-      ),
-    );
-  }
 
   /// Returns the paths of the profile's files, for the caller to delete.
   Future<List<String>> deleteProfile(Id<Profiles> id) => transaction(() async {
@@ -224,13 +227,6 @@ final class Database extends _$Database {
     return entry;
   }
 
-  Future<BootstrapNodeList?> getCachedBootstrapNodes() async {
-    final row = await select(cachedBootstrapNodes).getSingleOrNull();
-    return row == null
-        ? null
-        : BootstrapNodeList.fromJson(jsonDecode(row.json));
-  }
-
   /// Signs the profile in and shows it.
   Future<void> signIn(Id<Profiles> id) => transaction(() async {
     await (update(profiles)..where((p) => p.id.equals(id.value))).write(
@@ -292,23 +288,32 @@ final class Database extends _$Database {
     }
   });
 
-  /// Sends [message], as several where it's longer than an event takes.
-  Future<void> addSend(Id<Profiles> profileId, GraphId graph, String message) =>
-      batch(
-        (batch) => batch.insertAll(intents, [
-          for (final part in splitMessage(utf8.encode(message), maxSendBytes))
-            IntentsCompanion.insert(
-              profileId: profileId,
-              graph: Value(graph),
-              // The background service knows our name in the chat.
-              content: Send(
-                sender: '',
-                message: part,
-                kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
-              ),
+  /// Long messages are split over several events.
+  Future<void> addSend(
+    Id<Profiles> profileId,
+    GraphId graph,
+    String message, {
+    PublicKey? privately,
+    MessageType kind = MessageType.normal,
+  }) => batch(
+    (batch) => batch.insertAll(intents, [
+      for (final part in splitMessage(utf8.encode(message), maxSendBytes))
+        IntentsCompanion.insert(
+          profileId: profileId,
+          graph: Value(graph),
+          // The service fills in our name.
+          content: switch (privately) {
+            final to? => SendPrivately(
+              to: to,
+              sender: '',
+              message: part,
+              kind: kind,
             ),
-        ]),
-      );
+            null => Send(sender: '', message: part, kind: kind),
+          },
+        ),
+    ]),
+  );
 
   Future<void> addFileSend(
     Id<Profiles> profileId,
@@ -540,6 +545,72 @@ final class Database extends _$Database {
       row.graph: row.rank,
   };
 
+  Future<List<Uint8List>> getChatSaves(
+    Id<Profiles> profileId,
+    ChatKind kind,
+  ) async => [
+    for (final row
+        in await (select(chatSaves)..where(
+              (c) =>
+                  c.profileId.equals(profileId.value) &
+                  c.kind.equalsValue(kind),
+            ))
+            .get())
+      row.state,
+  ];
+
+  Future<void> saveChat(Id<Profiles> profileId, ChatId chat, Uint8List state) =>
+      into(chatSaves).insertOnConflictUpdate(
+        ChatSavesCompanion.insert(
+          profileId: profileId,
+          graph: chat.graph,
+          kind: switch (chat) {
+            GroupChat() => ChatKind.group,
+            ConferenceChat() => ChatKind.conference,
+          },
+          state: state,
+        ),
+      );
+
+  Future<void> forgetChat(Id<Profiles> profileId, ChatId chat) =>
+      (delete(chatSaves)..where(
+            (c) =>
+                c.profileId.equals(profileId.value) &
+                c.graph.equals(
+                  const HexConverter(GraphId.fromJson).toSql(chat.graph),
+                ),
+          ))
+          .go();
+
+  Future<Map<EventId, int>> getDeliveredParts(Id<Profiles> profileId) async => {
+    for (final row in await (select(
+      deliveredParts,
+    )..where((d) => d.profileId.equals(profileId.value))).get())
+      row.event: row.parts,
+  };
+
+  Future<void> setDeliveredParts(
+    Id<Profiles> profileId,
+    EventId event,
+    int parts,
+  ) => into(deliveredParts).insertOnConflictUpdate(
+    DeliveredPartsCompanion.insert(
+      profileId: profileId,
+      event: event,
+      parts: parts,
+    ),
+  );
+
+  Future<void> forgetDeliveredParts(Id<Profiles> profileId, EventId event) =>
+      (delete(deliveredParts)..where(
+            (d) =>
+                d.profileId.equals(profileId.value) &
+                d.event.equals(
+                  const HexConverter(EventId.fromJson).toSql(event),
+                ),
+          ))
+          .go();
+
   Future<Id<Transfers>> addTransfer(TransfersCompanion entry) async =>
       Id(await into(transfers).insert(entry));
 
@@ -653,6 +724,22 @@ final class Database extends _$Database {
         .write(
           TransfersCompanion(
             state: Value(accept ? FileState.active : FileState.cancelled),
+          ),
+        );
+  }
+
+  /// From the start, as cancelled files can't resume.
+  Future<void> sendTransferAgain(Id<Transfers> id) async {
+    await (update(transfers)..where(
+          (t) =>
+              t.id.equals(id.value) &
+              t.incoming.not() &
+              t.state.equalsValue(FileState.cancelled),
+        ))
+        .write(
+          const TransfersCompanion(
+            state: Value(FileState.active),
+            transferred: Value(0),
           ),
         );
   }

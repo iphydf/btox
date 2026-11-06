@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart' hide Connection;
+import 'package:btox/api/toxcore/tox.dart' as toxcore show Connection;
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/models/crypto.dart';
@@ -75,7 +76,7 @@ void main() {
     for (final frame in frames(message.encode())) {
       sync.handleEvent(
         ToxEventFriendLosslessPacket(
-          friendNumber: numberOf(publicKey),
+          friendNumber: FriendNumber(numberOf(publicKey)),
           data: frame,
         ),
       );
@@ -108,8 +109,8 @@ void main() {
   test('keeps the linked account from its home device', () async {
     sync.handleEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: numberOf(_home),
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+        friendNumber: FriendNumber(numberOf(_home)),
+        connectionStatus: toxcore.Connection.udp,
       ),
     );
     expect(tox.friends, [_home]);
@@ -169,7 +170,7 @@ void main() {
             Send(
               sender: 'Me',
               message: utf8.encode('hello'),
-              kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+              kind: MessageType.normal,
             ),
           ),
     );
@@ -236,7 +237,7 @@ void main() {
       content: Received(
         sender: 'Bob',
         message: utf8.encode('hi'),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     ).encode();
     final paired = SyncEvent(
@@ -255,8 +256,8 @@ void main() {
     // Without the home device, nobody's online state is known.
     sync.handleEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: numberOf(_home),
-        connectionStatus: Tox_Connection.TOX_CONNECTION_NONE,
+        friendNumber: FriendNumber(numberOf(_home)),
+        connectionStatus: toxcore.Connection.none,
       ),
     );
     await _settle();
@@ -273,8 +274,8 @@ void main() {
     tox.unconnectedFriends.clear();
     sync.handleEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: home,
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+        friendNumber: FriendNumber(home),
+        connectionStatus: toxcore.Connection.udp,
       ),
     );
     // Ours first, or the home device drops the Summary.
@@ -302,8 +303,8 @@ void main() {
     final home = numberOf(_home);
     sync.handleEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: home,
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+        friendNumber: FriendNumber(home),
+        connectionStatus: toxcore.Connection.udp,
       ),
     );
     from(_home, const Hello(features: Features.accountSync));
@@ -354,12 +355,12 @@ void main() {
     from(_home, WantBlob(catBlob));
     expect(tox.fileSends, [(home, 3, '')]);
     expect(tox.fileSendKinds.single.$1, blobFileKind);
-    expect(BlobId(tox.fileSendKinds.single.$2), catBlob);
+    expect(BlobId(tox.fileSendKinds.single.$2!.bytes), catBlob);
     for (final (position, length) in [(0, 3), (3, 0)]) {
       sync.handleEvent(
         ToxEventFileChunkRequest(
-          friendNumber: home,
-          fileNumber: 0,
+          friendNumber: FriendNumber(home),
+          fileNumber: FileNumber(0),
           position: position,
           length: length,
         ),
@@ -407,8 +408,8 @@ void main() {
     for (final fileNumber in [1, 2]) {
       sync.handleEvent(
         ToxEventFileRecv(
-          friendNumber: home,
-          fileNumber: fileNumber,
+          friendNumber: FriendNumber(home),
+          fileNumber: FileNumber(fileNumber),
           kind: blobFileKind,
           fileSize: 3,
           filename: Uint8List(0),
@@ -416,14 +417,14 @@ void main() {
       );
     }
     expect(tox.fileControls, [
-      (home, 1, Tox_File_Control.TOX_FILE_CONTROL_CANCEL),
-      (home, 2, Tox_File_Control.TOX_FILE_CONTROL_RESUME),
+      (home, 1, FileControl.cancel),
+      (home, 2, FileControl.resume),
     ]);
     for (final (position, data) in [(0, dog), (3, Uint8List(0))]) {
       sync.handleEvent(
         ToxEventFileRecvChunk(
-          friendNumber: home,
-          fileNumber: 2,
+          friendNumber: FriendNumber(home),
+          fileNumber: FileNumber(2),
           position: position,
           data: data,
         ),
@@ -476,8 +477,8 @@ void main() {
     final home = numberOf(_home);
     sync.handleEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: home,
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+        friendNumber: FriendNumber(home),
+        connectionStatus: toxcore.Connection.udp,
       ),
     );
     from(_home, const Hello(features: Features.accountSync));
@@ -501,8 +502,8 @@ void main() {
     tox.fileIds[(home, 0)] = blob.bytes;
     sync.handleEvent(
       ToxEventFileRecv(
-        friendNumber: home,
-        fileNumber: 0,
+        friendNumber: FriendNumber(home),
+        fileNumber: FileNumber(0),
         kind: blobFileKind,
         fileSize: bytes.length,
         filename: Uint8List(0),
@@ -511,8 +512,8 @@ void main() {
     for (final (position, data) in [(0, bytes), (bytes.length, Uint8List(0))]) {
       sync.handleEvent(
         ToxEventFileRecvChunk(
-          friendNumber: home,
-          fileNumber: 0,
+          friendNumber: FriendNumber(home),
+          fileNumber: FileNumber(0),
           position: position,
           data: data,
         ),
@@ -594,7 +595,7 @@ void main() {
     Received said(String text) => Received(
       sender: 'Bob',
       message: utf8.encode(text),
-      kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+      kind: MessageType.normal,
     );
     add(
       account,
@@ -627,7 +628,7 @@ void main() {
       for (final frame in frames(message.encode())) {
         sync.handleEvent(
           ToxEventFriendLosslessPacket(
-            friendNumber: phoneTox.friends.indexOf(_home),
+            friendNumber: FriendNumber(phoneTox.friends.indexOf(_home)),
             data: frame,
           ),
         );
@@ -681,7 +682,7 @@ void main() {
     final again = Received(
       sender: 'Bob',
       message: FakeMessageFormat.encode('again', '1'),
-      kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+      kind: MessageType.normal,
     );
     for (final time in [300, 400]) {
       send(phone, Events([add(chat, time, again)]));
@@ -734,7 +735,7 @@ void main() {
         from: from,
         sender: sender,
         message: utf8.encode(text),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       );
 
       from(_home, const Hello(features: Features.accountSync));
@@ -840,7 +841,7 @@ void main() {
               from: bot,
               sender: '!',
               message: utf8.encode('<Carol> yo'),
-              kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+              kind: MessageType.normal,
             ),
           ),
         ]),
@@ -885,7 +886,7 @@ void main() {
         from: PublicKey(Uint8List(32)..fillRange(0, 32, 6)),
         sender: 'Carol',
         message: utf8.encode(text),
-        kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+        kind: MessageType.normal,
       ),
     );
     final scope = Scope.conversation(group.graph);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:btox/api/toxcore/tox.dart' hide Connection, UserStatus;
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
@@ -23,7 +23,10 @@ import 'mocks/test_app.dart';
 final _self = PublicKey(Uint8List(32)..fillRange(0, 32, 1));
 final _bob = PublicKey(Uint8List(32)..fillRange(0, 32, 2));
 final _carol = PublicKey(Uint8List(32)..fillRange(0, 32, 3));
+final _ann = PublicKey(Uint8List(32)..fillRange(0, 32, 7));
+final _abe = PublicKey(Uint8List(32)..fillRange(0, 32, 8));
 final _selfInGroup = PublicKey(Uint8List(32)..fillRange(0, 32, 5));
+final _homeDevice = PublicKey(Uint8List(32)..fillRange(0, 32, 6));
 final _group = GroupChat(GroupChatId(Uint8List(32)..fillRange(0, 32, 4)));
 
 /// [contents] in [graph], each after the one before, at its time.
@@ -47,11 +50,15 @@ List<(EventId, SyncEvent, Uint8List)> _events(
   return events;
 }
 
-/// A profile whose account has [contents], each after the one before.
-Future<Id<Profiles>> _account(Database db, List<EventContent> contents) async {
+Future<Id<Profiles>> _account(
+  Database db,
+  List<EventContent> contents, {
+  ToxAddress? home,
+}) async {
   final id = await db.addProfile(
     ProfilesCompanion.insert(
       signedIn: const Value(true),
+      home: Value(home),
       settings: ProfileSettings(nickname: 'iphy', statusMessage: ''),
       secretKey: SecretKey(Uint8List(32)),
       publicKey: _self,
@@ -60,7 +67,7 @@ Future<Id<Profiles>> _account(Database db, List<EventContent> contents) async {
   );
   await db.addSyncEvents(
     id,
-    _events(GraphId.account(_self), [
+    _events(GraphId.account(home?.publicKey ?? _self), [
       for (final (i, content) in contents.indexed) (1700000000000 + i, content),
     ]),
   );
@@ -97,7 +104,7 @@ void main() {
           FactValue.selfKey(_selfInGroup),
         ])
           FactContent(subject: Subject.chat(_group), value: value),
-      ]);
+      ], home: ToxAddress.of(_homeDevice, ToxAddressNospam(0)));
       await db.updateLiveFacts(id, [
         (const Subject.account(), const FactValue.connection(Connection.udp)),
         member(_bob, const FactValue.name('Bob')),
@@ -105,6 +112,10 @@ void main() {
         member(_bob, const FactValue.status(UserStatus.away)),
         member(_carol, const FactValue.name('Carol')),
         member(_carol, const FactValue.role(Role.founder)),
+        // Tox hasn't said Ann's role yet.
+        member(_ann, const FactValue.name('Ann')),
+        member(_abe, const FactValue.name('Abe')),
+        member(_abe, const FactValue.role(Role.observer)),
       ], all: true);
       return id;
     }))!;
@@ -112,7 +123,7 @@ void main() {
     await _show(tester, db, ChatRef(profile, _group.graph));
     await settle(
       tester,
-      until: () => find.text('3 members').evaluate().isNotEmpty,
+      until: () => find.text('5 members').evaluate().isNotEmpty,
     );
     expect(find.text('Tox'), findsOneWidget);
     expect(find.text('Talk about Tox'), findsOneWidget);
@@ -123,14 +134,32 @@ void main() {
       ),
       findsOneWidget,
     );
-    // The founder first.
-    expect(
-      tester.getTopLeft(find.text('Carol')).dy,
-      lessThan(tester.getTopLeft(find.text('Bob')).dy),
-    );
+    expect(find.text('Mute notifications'), findsOneWidget);
+    // A moderator may change the topic while it isn't locked, but not the
+    // group's settings, and only users and observers.
+    expect(find.text('Change topic'), findsOneWidget);
+    expect(find.text('Group settings'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Abe'), 100);
+    // By role, then name.
+    final order = [
+      for (final name in ['Carol', 'Ann', 'Bob', 'Abe'])
+        tester.getTopLeft(find.text(name)).dy,
+    ];
+    expect(order, [...order]..sort());
     expect(find.text('Founder'), findsOneWidget);
     expect(find.text('Away'), findsOneWidget);
-    expect(find.text('Mute notifications'), findsOneWidget);
+    await tester.tap(find.text('Carol'));
+    await settle(tester);
+    expect(find.text('Remove from group'), findsNothing);
+    await tester.tap(find.text('Bob'));
+    await settle(tester);
+    expect(find.text('Make observer (can only read)'), findsOneWidget);
+    expect(find.text('Make moderator'), findsNothing);
+    expect(find.text('Remove from group'), findsOneWidget);
+    await tester.tapAt(Offset.zero);
+    await settle(tester);
+    await tester.scrollUntilVisible(find.text('Leave chat'), 100);
+    expect(find.text('Leave chat'), findsOneWidget);
 
     // Only Tox can say, while it runs.
     await tester.runAsync(() => db.clearLiveFacts(profile));
@@ -139,6 +168,101 @@ void main() {
       find.text("Who is here shows while the account's home device is online"),
       findsOneWidget,
     );
+
+    await _close(tester, db);
+  });
+
+  testWidgets("a group's founder changes its settings and members", (
+    tester,
+  ) async {
+    final db = Database(NativeDatabase.memory());
+    final profile = (await tester.runAsync(() async {
+      final id = await _account(db, [
+        for (final value in [
+          const FactValue.name('Tox'),
+          const FactValue.joined(true),
+          const FactValue.role(Role.founder),
+          const FactValue.privacy(Privacy.public),
+        ])
+          FactContent(subject: Subject.chat(_group), value: value),
+      ]);
+      await db.updateLiveFacts(id, [
+        (Subject.peer(_group, _bob), const FactValue.name('Bob')),
+        (Subject.peer(_group, _bob), const FactValue.role(Role.moderator)),
+      ]);
+      return id;
+    }))!;
+    Future<List<EventContent>> wanted() async => [
+      for (final intent in (await tester.runAsync(
+        () => db.select(db.intents).get(),
+      ))!)
+        intent.content,
+    ];
+
+    await _show(tester, db, ChatRef(profile, _group.graph));
+    await settle(
+      tester,
+      until: () => find.text('Group settings').evaluate().isNotEmpty,
+    );
+    await settle(tester);
+    await tester.scrollUntilVisible(find.text('Bob'), 100);
+    await tester.tap(find.text('Bob'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make moderator'), findsNothing);
+    await tester.tap(find.text('Remove from group'));
+    await settle(tester);
+    await tester.tap(find.text('Remove'));
+    await settle(tester);
+    expect(await wanted(), [
+      Wish(
+        subject: Subject.peer(_group, _bob),
+        value: const FactValue.present(false),
+      ),
+    ]);
+
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Group settings'), -100);
+    await tester.tap(find.text('Group settings'));
+    await settle(tester);
+    expect(find.text('Anyone with its chat ID can join'), findsOneWidget);
+    await tester.tap(find.text('Private'));
+    await settle(tester);
+    expect(
+      (await wanted()).last,
+      Wish(
+        subject: Subject.chat(_group),
+        value: const FactValue.privacy(Privacy.private),
+      ),
+    );
+
+    await _close(tester, db);
+  });
+
+  testWidgets('a group on this Tox says who is in it', (tester) async {
+    final db = Database(NativeDatabase.memory());
+    final profile = (await tester.runAsync(() async {
+      final id = await _account(db, [
+        for (final value in [
+          const FactValue.name('Tox'),
+          const FactValue.joined(true),
+        ])
+          FactContent(subject: Subject.chat(_group), value: value),
+      ]);
+      await db.updateLiveFacts(id, [
+        (Subject.peer(_group, _bob), const FactValue.name('Bob')),
+      ]);
+      return id;
+    }))!;
+
+    await _show(tester, db, ChatRef(profile, _group.graph));
+    await settle(tester, until: () => find.text('Bob').evaluate().isNotEmpty);
+    expect(
+      find.text("Who is here shows while the account's home device is online"),
+      findsNothing,
+    );
+    // Others join a public group by it.
+    expect(find.text('Chat ID'), findsOneWidget);
+    expect(find.text(_group.id.toJson()), findsOneWidget);
 
     await _close(tester, db);
   });
@@ -168,7 +292,7 @@ void main() {
                 from: _bob,
                 sender: 'relay',
                 message: utf8.encode(text),
-                kind: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+                kind: MessageType.normal,
               ),
             ),
         ]),
@@ -187,6 +311,9 @@ void main() {
     );
     expect(find.text('Dan'), findsOneWidget);
     expect(find.text('Eve'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Show 1 more'), 100);
+    await tester.ensureVisible(find.text('Show 1 more'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Show 1 more'));
     await tester.pump();
     expect(find.text('Eve'), findsOneWidget);
@@ -240,6 +367,8 @@ void main() {
     await tester.pump();
     expect(copied, [_bob.toJson()]);
     expect(find.text('Public key copied'), findsOneWidget);
+    expect(find.text('Delete contact'), findsOneWidget);
+    expect(find.text('Leave chat'), findsNothing);
 
     await _close(tester, db);
   });

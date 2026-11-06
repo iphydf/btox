@@ -309,9 +309,9 @@
       }
     }
   },
-  "autoAcceptFiles": "Accept files automatically up to",
+  "autoAcceptFiles": "Auto-accept files",
   "@autoAcceptFiles": {
-    "description": "The setting for the largest incoming file accepted without asking"
+    "description": "The setting for the largest incoming file accepted without asking, over autoAcceptUpTo or never"
   },
   "never": "Never",
   "@never": {
@@ -332,6 +332,10 @@
   "fileCancelled": "Cancelled",
   "@fileCancelled": {
     "description": "A file transfer that was declined or stopped"
+  },
+  "sendAgain": "Send again",
+  "@sendAgain": {
+    "description": "Button by a file of ours that was cancelled, to send it from the start"
   },
   "filePaused": "Paused until they're back online",
   "@filePaused": {
@@ -616,13 +620,28 @@
   "@callsNotAvailable": {
     "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
   },
-  "notImplemented": "Not available yet",
-  "@notImplemented": {
-    "description": "Shown for a menu item that doesn't work yet"
-  },
   "openLinkFailed": "No app can open this link",
   "@openLinkFailed": {
     "description": "Shown when tapping a link in a message opens nothing"
+  },
+  "openFileFailed": "No app can open this file",
+  "@openFileFailed": {
+    "description": "Shown when tapping a file in a chat opens nothing"
+  },
+  "isTyping": "{name} is typing",
+  "@isTyping": {
+    "description": "Read out for the dots that show while a friend is typing",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "typingIndicators": "Typing indicators",
+  "@typingIndicators": {
+    "description": "Setting that shows friends typing, and shows them when you type"
+  },
+  "typingIndicatorsHint": "You see when friends are writing, and they see when you are",
+  "@typingIndicatorsHint": {
+    "description": "Under the typing indicators setting"
   },
   "reply": "Reply",
   "@reply": {
@@ -1063,5 +1082,357 @@
   "noChatsHint": "Add a contact with the + button to start chatting",
   "@noChatsHint": {
     "description": "How to start a first chat, under noChats"
+  },
+  "messagePrivately": "Message privately",
+  "@messagePrivately": {
+    "description": "Tooltip of the button by a group member that writes to them alone"
+  },
+  "privately": "privately",
+  "@privately": {
+    "description": "After a group member's name, over a message they sent to you alone"
+  },
+  "privatelyTo": "Privately to {name}",
+  "@privatelyTo": {
+    "description": "Over a message of yours to one group member alone, and over the input while writing one",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "messageEveryone": "Message everyone",
+  "@messageEveryone": {
+    "description": "Tooltip of the button that ends writing to one group member alone"
+  },
+  "privateRecipientLeft": "{name} has left the group, so nothing was sent",
+  "@privateRecipientLeft": {
+    "description": "When a message to one group member alone can't go, as they left",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "newGroup": "New group",
+  "@newGroup": {
+    "description": "Title of the page that founds a group or conference, and its entry under the + button"
+  },
+  "joinGroup": "Join a public group",
+  "@joinGroup": {
+    "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+  },
+  "privateGroup": "Private",
+  "@privateGroup": {
+    "description": "A group only those invited can join"
+  },
+  "publicGroup": "Public",
+  "@publicGroup": {
+    "description": "A group anyone with its chat ID can join"
+  },
+  "conference": "Conference",
+  "@conference": {
+    "description": "The older kind of Tox group chat"
+  },
+  "groupName": "Name",
+  "@groupName": {
+    "description": "Label of a new group's name field"
+  },
+  "groupNameEmpty": "A group needs a name",
+  "@groupNameEmpty": {
+    "description": "Under an empty group name field"
+  },
+  "groupNameTooLong": "That name is too long",
+  "@groupNameTooLong": {
+    "description": "Under a group name longer than Tox takes"
+  },
+  "chatId": "Chat ID",
+  "@chatId": {
+    "description": "Label of the field for a public group's chat ID"
+  },
+  "chatIdInvalid": "A chat ID is 64 hexadecimal digits",
+  "@chatIdInvalid": {
+    "description": "Under a chat ID field holding something else"
+  },
+  "groupPassword": "Password",
+  "@groupPassword": {
+    "description": "Label of the field for a group's password"
+  },
+  "groupPasswordTooLong": "That password is too long",
+  "@groupPasswordTooLong": {
+    "description": "Under a group password longer than Tox takes"
+  },
+  "inviteFriends": "Invite friends",
+  "@inviteFriends": {
+    "description": "On a group's page, and the title of the list of friends to invite"
+  },
+  "noFriendsOnline": "No friends are online",
+  "@noFriendsOnline": {
+    "description": "In the list of friends to invite to a group, when none are online"
+  },
+  "invitedFriend": "Invited {name}",
+  "@invitedFriend": {
+    "description": "After inviting a friend to a group",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "leaveChat": "Leave chat",
+  "@leaveChat": {
+    "description": "The menu item and the title of the dialog for leaving a group or conference"
+  },
+  "leaveChatMessage": "Leave \"{name}\"? You won't get its messages any more.",
+  "@leaveChatMessage": {
+    "description": "The message to confirm leaving a group or conference",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Team"
+      }
+    }
+  },
+  "leave": "Leave",
+  "@leave": {
+    "description": "The text for the button that leaves a group or conference"
+  },
+  "chatLeft": "Left \"{name}\"",
+  "@chatLeft": {
+    "description": "The text when the user has left a group or conference",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Team"
+      }
+    }
+  },
+  "memberJoined": "{name} joined",
+  "@memberJoined": {
+    "description": "In a group chat, when someone joins it",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "memberLeft": "{name} left",
+  "@memberLeft": {
+    "description": "In a group chat, when someone leaves it",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "memberRenamed": "{old} is now {name}",
+  "@memberRenamed": {
+    "description": "In a group chat, when someone changes their name from old to name",
+    "placeholders": {
+      "old": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "topicSet": "{name} changed the topic to \"{topic}\"",
+  "@topicSet": {
+    "description": "In a group chat, when someone changes its topic",
+    "placeholders": {
+      "name": {"type": "String"},
+      "topic": {"type": "String"}
+    }
+  },
+  "topicSetBySomeone": "The topic is now \"{topic}\"",
+  "@topicSetBySomeone": {
+    "description": "In a group chat, when its topic changed and Tox didn't say who changed it",
+    "placeholders": {
+      "topic": {"type": "String"}
+    }
+  },
+  "titleSet": "{name} renamed the chat to \"{title}\"",
+  "@titleSet": {
+    "description": "In a group chat, when someone changes its name",
+    "placeholders": {
+      "name": {"type": "String"},
+      "title": {"type": "String"}
+    }
+  },
+  "titleSetBySomeone": "The chat is now called \"{title}\"",
+  "@titleSetBySomeone": {
+    "description": "In a group chat, when its name changed and Tox didn't say who changed it",
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "memberKicked": "{name} removed {member}",
+  "@memberKicked": {
+    "description": "In a group chat, when someone (name) removes a member from it",
+    "placeholders": {
+      "name": {"type": "String"},
+      "member": {"type": "String"}
+    }
+  },
+  "memberKickedBySomeone": "{member} was removed",
+  "@memberKickedBySomeone": {
+    "description": "In a group chat, when a member was removed and Tox didn't say by whom",
+    "placeholders": {
+      "member": {"type": "String"}
+    }
+  },
+  "memberRole": "{name} made {member} {role, select, founder{the founder} moderator{a moderator} observer{an observer} other{a member}}",
+  "@memberRole": {
+    "description": "In a group chat, when someone (name) gives a member a role: founder, moderator, observer, or other for a member who can speak",
+    "placeholders": {
+      "name": {"type": "String"},
+      "member": {"type": "String"},
+      "role": {"type": "String"}
+    }
+  },
+  "memberRoleBySomeone": "{member} is now {role, select, founder{the founder} moderator{a moderator} observer{an observer} other{a member}}",
+  "@memberRoleBySomeone": {
+    "description": "In a group chat, when a member got a role and Tox didn't say from whom: founder, moderator, observer, or other for a member who can speak",
+    "placeholders": {
+      "member": {"type": "String"},
+      "role": {"type": "String"}
+    }
+  },
+  "membersJoined": "{people, select, one{{names} joined} other{{names} joined}}",
+  "@membersJoined": {
+    "description": "In a group chat, over joins in a row: who joined (names from namesTwo and the like); people is one for one person, other for more",
+    "placeholders": {
+      "names": {"type": "String"},
+      "people": {"type": "String"}
+    }
+  },
+  "membersLeft": "{people, select, one{{names} left} other{{names} left}}",
+  "@membersLeft": {
+    "description": "In a group chat, over leaves in a row: who left (names from namesTwo and the like); people is one for one person, other for more",
+    "placeholders": {
+      "names": {"type": "String"},
+      "people": {"type": "String"}
+    }
+  },
+  "namesTwo": "{first} and {second}",
+  "@namesTwo": {
+    "description": "Two names, for membersJoined and membersLeft",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"}
+    }
+  },
+  "namesThree": "{first}, {second} and {third}",
+  "@namesThree": {
+    "description": "Three names, for membersJoined and membersLeft",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"},
+      "third": {"type": "String"}
+    }
+  },
+  "namesMore": "{first}, {second} and {count} others",
+  "@namesMore": {
+    "description": "Two names and how many more people (at least 2), for membersJoined and membersLeft",
+    "placeholders": {
+      "first": {"type": "String"},
+      "second": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "changeTopic": "Change topic",
+  "@changeTopic": {
+    "description": "In a group's details, opens a dialog to change its topic"
+  },
+  "groupTopic": "Topic",
+  "@groupTopic": {
+    "description": "The title of the dialog to change a group's topic"
+  },
+  "topicTooLong": "That topic is too long",
+  "@topicTooLong": {
+    "description": "Under a group topic longer than Tox takes"
+  },
+  "groupSettings": "Group settings",
+  "@groupSettings": {
+    "description": "In a group's details and as its page's title: what only the group's founder may change"
+  },
+  "privateGroupHint": "Only friends you invite can join",
+  "@privateGroupHint": {
+    "description": "Under the Private switch of a group's settings while it's on"
+  },
+  "publicGroupHint": "Anyone with its chat ID can join",
+  "@publicGroupHint": {
+    "description": "Under the Private switch of a group's settings while it's off"
+  },
+  "topicLock": "Lock the topic",
+  "@topicLock": {
+    "description": "Switch in a group's settings: only moderators may change its topic"
+  },
+  "topicLockHint": "Only moderators can change it",
+  "@topicLockHint": {
+    "description": "Under topicLock"
+  },
+  "whoCanSpeak": "Who can send messages",
+  "@whoCanSpeak": {
+    "description": "In a group's settings: who may send messages in it"
+  },
+  "voiceEveryone": "Everyone but observers",
+  "@voiceEveryone": {
+    "description": "Answer to whoCanSpeak: all but observers"
+  },
+  "voiceModerators": "Moderators and you",
+  "@voiceModerators": {
+    "description": "Answer to whoCanSpeak: moderators and the founder, who is the one reading this"
+  },
+  "voiceFounder": "Only you",
+  "@voiceFounder": {
+    "description": "Answer to whoCanSpeak: only the founder, who is the one reading this"
+  },
+  "peerLimit": "Member limit",
+  "@peerLimit": {
+    "description": "In a group's settings: how many may be in it"
+  },
+  "peerLimitInvalid": "Enter a number from 1 to {max}",
+  "@peerLimitInvalid": {
+    "description": "Under a member limit that isn't a number Tox takes",
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "groupPasswordOn": "Needed to join",
+  "@groupPasswordOn": {
+    "description": "Under Password in a group's settings while it has one"
+  },
+  "groupPasswordOff": "None",
+  "@groupPasswordOff": {
+    "description": "Under Password in a group's settings while it has none"
+  },
+  "groupPasswordEmptyForNone": "Leave empty for none",
+  "@groupPasswordEmptyForNone": {
+    "description": "Under the password field in a group's settings"
+  },
+  "makeModerator": "Make moderator",
+  "@makeModerator": {
+    "description": "Gives a group member the moderator role"
+  },
+  "makeUser": "Make a regular member",
+  "@makeUser": {
+    "description": "Gives a group member the ordinary role of one who may send messages"
+  },
+  "makeObserver": "Make observer (can only read)",
+  "@makeObserver": {
+    "description": "Gives a group member the observer role, who may only read"
+  },
+  "removeMember": "Remove from group",
+  "@removeMember": {
+    "description": "Removes (kicks) someone from a group"
+  },
+  "removeMemberMessage": "Remove \"{name}\" from the group?",
+  "@removeMemberMessage": {
+    "description": "The message to confirm removing someone from a group",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "The button to confirm removing someone from a group"
+  },
+  "chatIdCopied": "Chat ID copied",
+  "@chatIdCopied": {
+    "description": "The message shown after copying a group's chat ID"
+  },
+  "autoAcceptUpTo": "Up to {size}",
+  "@autoAcceptUpTo": {
+    "description": "Under autoAcceptFiles, and its choices: the largest file accepted without asking",
+    "placeholders": {
+      "size": {"type": "String"}
+    }
   }
 }

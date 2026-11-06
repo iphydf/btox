@@ -318,7 +318,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Aceitar ficheiros automaticamente até",
+    "autoAcceptFiles": "Aceitar ficheiros automaticamente",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -341,6 +341,10 @@
     "fileCancelled": "Cancelado",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Enviar novamente",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "Em pausa até o contacto voltar a estar online",
     "@filePaused": {
@@ -619,13 +623,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Ainda não disponível",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Nenhuma aplicação consegue abrir esta ligação",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Nenhuma aplicação consegue abrir este ficheiro",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} está a escrever",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Indicadores de escrita",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Vê quando os seus amigos estão a escrever, e eles veem quando escreve",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Responder",
     "@reply": {
@@ -1076,5 +1097,145 @@
     "noChatsHint": "Adicione um contacto com o botão + para começar a conversar",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Escrever em privado",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "em privado",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "Em privado para {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Escrever a todos",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} saiu do grupo, por isso nada foi enviado",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Novo grupo",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Entrar num grupo público",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Privado",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Público",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Conferência",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Nome",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "Um grupo precisa de um nome",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Esse nome é demasiado longo",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "ID da conversa",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "Um ID de conversa tem 64 dígitos hexadecimais",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Palavra-passe",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Essa palavra-passe é demasiado longa",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Convidar amigos",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Nenhum amigo está online",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} convidado",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Sair da conversa",
+    "leaveChatMessage": "Sair de \"{name}\"? Deixará de receber as suas mensagens.",
+    "leave": "Sair",
+    "chatLeft": "Saiu de \"{name}\"",
+    "memberJoined": "{name} entrou na conversa",
+    "memberLeft": "{name} saiu da conversa",
+    "memberRenamed": "{old} chama-se agora {name}",
+    "topicSet": "{name} mudou o tópico para \"{topic}\"",
+    "topicSetBySomeone": "O tópico é agora \"{topic}\"",
+    "titleSet": "{name} mudou o nome da conversa para \"{title}\"",
+    "titleSetBySomeone": "A conversa chama-se agora \"{title}\"",
+    "memberKicked": "{name} removeu {member}",
+    "memberKickedBySomeone": "{member} foi removido(a)",
+    "memberRole": "{name} deu a {member} o papel de {role, select, founder{fundador} moderator{moderador} observer{observador} other{membro}}",
+    "memberRoleBySomeone": "{member} tem agora o papel de {role, select, founder{fundador} moderator{moderador} observer{observador} other{membro}}",
+    "membersJoined": "{people, select, one{{names} entrou na conversa} other{{names} entraram na conversa}}",
+    "membersLeft": "{people, select, one{{names} saiu da conversa} other{{names} saíram da conversa}}",
+    "namesTwo": "{first} e {second}",
+    "namesThree": "{first}, {second} e {third}",
+    "namesMore": "{first}, {second} e mais {count}",
+    "changeTopic": "Mudar o tópico",
+    "groupTopic": "Tópico",
+    "topicTooLong": "Esse tópico é demasiado longo",
+    "groupSettings": "Definições do grupo",
+    "privateGroupHint": "Só os amigos que convidar podem entrar",
+    "publicGroupHint": "Qualquer pessoa com o ID da conversa pode entrar",
+    "topicLock": "Bloquear o tópico",
+    "topicLockHint": "Só os moderadores o podem mudar",
+    "whoCanSpeak": "Quem pode enviar mensagens",
+    "voiceEveryone": "Todos exceto os observadores",
+    "voiceModerators": "Os moderadores e você",
+    "voiceFounder": "Só você",
+    "peerLimit": "Limite de membros",
+    "peerLimitInvalid": "Introduza um número de 1 a {max}",
+    "groupPasswordOn": "Necessária para entrar",
+    "groupPasswordOff": "Nenhuma",
+    "groupPasswordEmptyForNone": "Deixe em branco para nenhuma",
+    "makeModerator": "Tornar moderador",
+    "makeUser": "Tornar membro normal",
+    "makeObserver": "Tornar observador (só pode ler)",
+    "removeMember": "Remover do grupo",
+    "removeMemberMessage": "Remover \"{name}\" do grupo?",
+    "remove": "Remover",
+    "chatIdCopied": "ID da conversa copiado",
+    "autoAcceptUpTo": "Até {size}"
 }

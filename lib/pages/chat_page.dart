@@ -1,8 +1,11 @@
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/attachments/attachments.dart';
 import 'package:btox/background_service.dart';
 import 'package:btox/db/database.dart';
 import 'package:btox/l10n/generated/app_localizations.dart';
 import 'package:btox/logger.dart';
+import 'package:btox/messages/chat_command.dart';
+import 'package:btox/models/chat_details.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/models/crypto.dart';
@@ -15,6 +18,7 @@ import 'package:btox/providers/chats.dart';
 import 'package:btox/providers/database.dart';
 import 'package:btox/providers/drafts.dart';
 import 'package:btox/providers/profiles.dart';
+import 'package:btox/services/chat_channel.dart';
 import 'package:btox/sync/setting.dart' show PictureEncoding;
 import 'package:btox/widgets/chat_avatar.dart';
 import 'package:btox/widgets/chat_item.dart';
@@ -141,6 +145,14 @@ final class ChatPage extends HookConsumerWidget {
       ],
     );
 
+    // Leaving the chat stops typing.
+    final typing = useMemoized(() => TypingNotice(chat), [chat]);
+    useEffect(
+      () =>
+          () => typing.typing(typing: false),
+      [typing],
+    );
+
     // Opening a chat, e.g. from a notification, switches to its account.
     useEffect(() {
       if (ref.read(currentProfileProvider)?.id != chat.profile) {
@@ -183,8 +195,9 @@ final class ChatPage extends HookConsumerWidget {
               ? AppBar(
                   leading: CloseButton(onPressed: unselect),
                   title: Text(
-                    AppLocalizations.of(context)!
-                        .messagesSelected(chosen.length),
+                    AppLocalizations.of(
+                      context,
+                    )!.messagesSelected(chosen.length),
                   ),
                   actions: [
                     IconButton(
@@ -210,8 +223,9 @@ final class ChatPage extends HookConsumerWidget {
                                     (entry.mine
                                         ? selfName
                                         : entry.sender ?? summary.name) ??
-                                    AppLocalizations.of(context)!
-                                        .defaultContactName,
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.defaultContactName,
                               );
                               unselect();
                             }
@@ -238,8 +252,9 @@ final class ChatPage extends HookConsumerWidget {
                           Expanded(
                             child: Text(
                               summary.name ??
-                                  AppLocalizations.of(context)!
-                                      .defaultContactName,
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.defaultContactName,
                             ),
                           ),
                         ],
@@ -282,6 +297,10 @@ final class ChatPage extends HookConsumerWidget {
                       controller: messages,
                       selected: selected,
                       onForward: forward,
+                      typing: summary.typing
+                          ? summary.name ??
+                                AppLocalizations.of(context)!.defaultContactName
+                          : null,
                     ),
                   ),
                   if (summary.closed)
@@ -299,6 +318,7 @@ final class ChatPage extends HookConsumerWidget {
                         files: summary.key is PublicKey,
                         draft: draft,
                         recentEmojis: recentEmojis,
+                        typing: typing,
                         // What's sent shows at the bottom.
                         onSent: () {
                           if (messages.hasClients) {
@@ -347,6 +367,7 @@ final class _Input extends ConsumerWidget {
   final bool files;
   final ChatDraft draft;
   final bool recentEmojis;
+  final TypingNotice typing;
   final void Function() onSent;
 
   const _Input({
@@ -354,32 +375,86 @@ final class _Input extends ConsumerWidget {
     required this.files,
     required this.draft,
     required this.recentEmojis,
+    required this.typing,
     required this.onSent,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final messenger = ScaffoldMessenger.of(context);
     final failed = AppLocalizations.of(context)!.sendFailed;
     // Taken now, as what's sent goes on when the chat closes meanwhile.
     final opened = ref.watch(databaseProvider.future);
-    return MessageInput(
+    // The members are only needed while writing to one of them privately.
+    return ValueListenableBuilder(
+      valueListenable: draft.privately,
+      builder: (context, privately, _) => privately == null
+          ? _input(context, ref, opened, failed)
+          : Consumer(
+              builder: (context, ref, _) => _input(
+                context,
+                ref,
+                opened,
+                failed,
+                privately: privately,
+                // Unknown while the home device isn't in session.
+                members: ref.watch(chatDetailsProvider(chat)).value?.members,
+              ),
+            ),
+    );
+  }
+
+  Widget _input(
+    BuildContext context,
+    WidgetRef ref,
+    Future<Database> opened,
+    String failed, {
+    PublicKey? privately,
+    List<ChatMember>? members,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final name =
+        members?.where((m) => m.pk == privately).firstOrNull?.name ??
+        l10n.defaultContactName;
+    // Don't send to everyone if the chosen member has left.
+    final gone =
+        privately != null &&
+        members != null &&
+        !members.any((m) => m.pk == privately);
+    final input = MessageInput(
       profile: chat.profile,
-      hintText: AppLocalizations.of(context)!.messageInput,
+      hintText: l10n.messageInput,
       draft: draft,
       recentEmojis: recentEmojis,
       files: files,
       picturesAsQoi:
           ref.watch(pictureFormatProvider(chat)) == PictureEncoding.qoi,
+      onTyping: typing.typing,
       onSend: (content) async {
+        if (gone) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.privateRecipientLeft(name))),
+          );
+          return false;
+        }
         try {
           final database = await opened;
           switch (content) {
             case final FileContent file:
               await database.addFileSend(chat.profile, chat.graph, file);
             case final content:
-              if (messageTextOf(content) case final text?) {
-                await database.addSend(chat.profile, chat.graph, text);
+              if (messageTextOf(content) case final line?) {
+                final (text, kind) = switch (ChatCommand.of(line)) {
+                  Say(:final text) => (text, MessageType.normal),
+                  Act(:final text) => (text, MessageType.action),
+                };
+                await database.addSend(
+                  chat.profile,
+                  chat.graph,
+                  text,
+                  privately: privately,
+                  kind: kind,
+                );
               }
           }
           onSent();
@@ -390,6 +465,26 @@ final class _Input extends ConsumerWidget {
           return false;
         }
       },
+    );
+    // The emoji picker takes its height from the input's position.
+    if (privately == null) {
+      return input;
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.lock_outline),
+          title: Text(l10n.privatelyTo(name)),
+          trailing: IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: l10n.messageEveryone,
+            onPressed: () => draft.privately.value = null,
+          ),
+        ),
+        input,
+      ],
     );
   }
 }
@@ -406,6 +501,7 @@ final class _Messages extends HookWidget {
   final ScrollController controller;
   final ValueNotifier<Set<EventId>> selected;
   final void Function(List<ChatEntry> entries) onForward;
+  final String? typing;
 
   const _Messages({
     required this.chat,
@@ -414,6 +510,7 @@ final class _Messages extends HookWidget {
     required this.controller,
     required this.selected,
     required this.onForward,
+    this.typing,
   });
 
   @override
@@ -436,9 +533,16 @@ final class _Messages extends HookWidget {
     final unseen = entries.skip(newest + 1).where((e) => !e.mine).length;
 
     final selecting = entries.any((e) => selected.value.contains(e.event));
+    final shown = useMemoized(() => comingRuns(entries, newest + 1), [
+      entries,
+      newest,
+    ]);
 
     Widget item(int i) {
       final entry = entries[i];
+      if (shown[i] == 0) {
+        return SizedBox.shrink(key: ValueKey(entry.event));
+      }
       final day = localDay(entry.timestamp);
       return Column(
         key: ValueKey(entry.event),
@@ -446,7 +550,9 @@ final class _Messages extends HookWidget {
         children: [
           if (i == 0 || localDay(entries[i - 1].timestamp) != day)
             ChatDay(day: day),
-          if (entry.notice)
+          if (shown[i] > 1)
+            ChatComings(run: entries.sublist(i, i + shown[i]))
+          else if (entry.notice)
             ChatNotice(entry: entry)
           else
             ChatItem(
@@ -456,7 +562,8 @@ final class _Messages extends HookWidget {
               joinsBelow:
                   i + 1 < entries.length && inRun(entry, entries[i + 1]),
               selected: selecting ? selected.value.contains(entry.event) : null,
-              onReply: () => draft.replyingTo.value = entry.content,
+              onReply: () =>
+                  draft.reply(entry.content, privately: entry.privately),
               onSelect: () =>
                   selected.value = selected.value.contains(entry.event)
                   ? ({...selected.value}..remove(entry.event))
@@ -513,8 +620,15 @@ final class _Messages extends HookWidget {
                       indexOf(key, (i) => i > newest ? i - newest - 1 : null),
                 ),
               ),
-              SliverList(
+              // Below the newest message.
+              SliverToBoxAdapter(
                 key: center,
+                child: switch (typing) {
+                  final name? => ChatTyping(name: name),
+                  null => const SizedBox.shrink(),
+                },
+              ),
+              SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, j) => item(newest - j),
                   childCount: newest + 1,
@@ -561,8 +675,9 @@ final class _Closed extends StatelessWidget {
       child: Text(
         AppLocalizations.of(context)!.chatClosed,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     ),
   );

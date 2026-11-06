@@ -298,9 +298,8 @@ void main() {
       matchesGoldenFile('goldens/chat_page/message_context_menu.png'),
     );
 
-    await tester.tap(find.text('Delete'));
-    await tester.pumpAndSettle();
-    expect(find.text('Not available yet'), findsOneWidget);
+    // Delete isn't offered until it works.
+    expect(find.text('Delete'), findsNothing);
   });
 
   testWidgets('selected messages are copied in order, and back unselects', (

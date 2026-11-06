@@ -128,6 +128,10 @@ List<GraphId> _graphsOf(Ref ref, ChatRef chat) => [
     side.graph,
 ];
 
+bool isTyping(Facts live, PublicKey pk) =>
+    live.find(Subject.friend(pk), (v) => v is TypingValue ? v.typing : null) ??
+    false;
+
 bool isOnline(Facts live, PublicKey pk) =>
     live.find(
       Subject.friend(pk),
@@ -308,6 +312,9 @@ AsyncValue<ChatSummary> chat(Ref ref, ChatRef chat) => ref
 @riverpod
 AsyncValue<ChatDetails> chatDetails(Ref ref, ChatRef chat) {
   final live = ref.watch(liveFactsProvider(chat.profile)).value;
+  final linked = ref.watch(
+    profileProvider(chat.profile).select((p) => p.value?.home != null),
+  );
   final account = ref.watch(accountProvider(chat.profile));
   final self = ref.watch(
     profilesProvider.select(
@@ -337,6 +344,11 @@ AsyncValue<ChatDetails> chatDetails(Ref ref, ChatRef chat) {
           self,
           account.value ?? AccountState.of(const []),
           live,
+          // Members are known if this device runs the profile, or while the
+          // home device is in session.
+          running:
+              !linked ||
+              (live?.of(const Subject.account()).isNotEmpty ?? false),
           relayed: relayed,
         ),
       );
@@ -480,14 +492,15 @@ List<ChatSummary> _chats(
 
   final chats = [
     for (final MapEntry(key: pk, value: friend) in account.friends.entries)
-      // This device is one of the home device's friends.
-      if (friend.wanted && pk != device)
+      // The home's friends include the account's devices, which aren't chats.
+      if (friend.wanted && pk != device && !account.devices.containsKey(pk))
         ChatSummary(
           ref: ChatRef(profile, GraphId.friend(home, pk)),
           name: friend.name,
           key: pk,
           avatar: account.facts.avatarOf(Subject.friend(pk)),
           online: isOnline(live, pk),
+          typing: isTyping(live, pk),
           unread: unread(GraphId.friend(home, pk)),
           mute: muteOf(GraphId.friend(home, pk)),
           last: latest[GraphId.friend(home, pk)],

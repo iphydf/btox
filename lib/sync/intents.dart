@@ -83,6 +83,7 @@ final class EventWriter {
           graph,
           () => switch (intent.content) {
             final Send send => send.copyWith(sender: senderIn(graph)),
+            final SendPrivately send => send.copyWith(sender: senderIn(graph)),
             final content => content,
           },
           save: (event) async => save == null

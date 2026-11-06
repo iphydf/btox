@@ -1,7 +1,6 @@
 import 'package:btox/db/database.dart';
 import 'package:btox/l10n/generated/app_localizations.dart';
 import 'package:btox/logger.dart';
-import 'package:btox/models/crypto.dart';
 import 'package:btox/models/profile_settings.dart';
 import 'package:btox/pages/link_account_page.dart';
 import 'package:btox/providers/tox.dart';
@@ -73,8 +72,8 @@ final class CreateProfilePage extends HookConsumerWidget {
                       creating.value = true;
                       _logger.d('Creating new profile');
                       final created = await ref.write(context, (db) async {
-                        final (secretKey, publicKey) = await ref.read(
-                          newKeyPairProvider.future,
+                        final (secretKey, publicKey, nospam) = await ref.read(
+                          newIdentityProvider.future,
                         );
                         await db.transaction(() async {
                           final id = await db.addProfile(
@@ -85,7 +84,7 @@ final class CreateProfilePage extends HookConsumerWidget {
                               ),
                               secretKey: secretKey,
                               publicKey: publicKey,
-                              nospam: ToxAddressNospam(0),
+                              nospam: nospam,
                             ),
                           );
                           await db.signIn(id);

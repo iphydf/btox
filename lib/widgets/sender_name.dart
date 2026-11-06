@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:btox/l10n/generated/app_localizations.dart';
+import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +22,7 @@ final class SenderName extends StatelessWidget {
     final hue = (hash[0] << 8 | hash[1]) / 0xffff * 360;
     final light = theme.brightness == Brightness.dark;
     return Text(
-      name,
+      memberName(AppLocalizations.of(context)!, name, author),
       style: theme.textTheme.labelLarge?.copyWith(
         color: HSLColor.fromAHSL(1, hue, 0.6, light ? 0.75 : 0.4).toColor(),
         fontWeight: FontWeight.w600,

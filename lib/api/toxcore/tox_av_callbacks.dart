@@ -5,6 +5,8 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:btox/api/toxcore/tox_av_events.dart';
+import 'package:btox/api/toxcore/tox_enums.dart';
+import 'package:btox/api/toxcore/tox_ids.dart';
 import 'package:btox/ffi/generated/toxcore.ffi.dart';
 
 /// Collects toxav's callbacks as [AvEvent]s, while toxav or toxcore
@@ -67,7 +69,7 @@ final class AvEventCollector {
     Pointer<Void> userData,
   ) => events.add(
     AvEvent.audioBitRate(
-      friendNumber: friendNumber,
+      friendNumber: FriendNumber(friendNumber),
       audioBitRate: audioBitRate,
     ),
   );
@@ -82,7 +84,7 @@ final class AvEventCollector {
     Pointer<Void> userData,
   ) => events.add(
     AvEvent.audioReceiveFrame(
-      friendNumber: friendNumber,
+      friendNumber: FriendNumber(friendNumber),
       pcm: Int16List.fromList(pcm.asTypedList(sampleCount * channels)),
       sampleCount: sampleCount,
       channels: channels,
@@ -98,7 +100,7 @@ final class AvEventCollector {
     Pointer<Void> userData,
   ) => events.add(
     AvEvent.call(
-      friendNumber: friendNumber,
+      friendNumber: FriendNumber(friendNumber),
       audioEnabled: audioEnabled,
       videoEnabled: videoEnabled,
     ),
@@ -109,7 +111,12 @@ final class AvEventCollector {
     int friendNumber,
     int state,
     Pointer<Void> userData,
-  ) => events.add(AvEvent.callState(friendNumber: friendNumber, state: state));
+  ) => events.add(
+    AvEvent.callState(
+      friendNumber: FriendNumber(friendNumber),
+      state: FriendCallState(state),
+    ),
+  );
 
   void _videoBitRate(
     Pointer<ToxAV> av,
@@ -118,7 +125,7 @@ final class AvEventCollector {
     Pointer<Void> userData,
   ) => events.add(
     AvEvent.videoBitRate(
-      friendNumber: friendNumber,
+      friendNumber: FriendNumber(friendNumber),
       videoBitRate: videoBitRate,
     ),
   );
@@ -137,7 +144,7 @@ final class AvEventCollector {
     Pointer<Void> userData,
   ) => events.add(
     AvEvent.videoReceiveFrame(
-      friendNumber: friendNumber,
+      friendNumber: FriendNumber(friendNumber),
       width: width,
       height: height,
       y: Uint8List.fromList(y.asTypedList(max(width, _abs(ystride)) * height)),

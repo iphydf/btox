@@ -37,15 +37,24 @@ abstract class ChatDetails with _$ChatDetails {
     List<ChatMember>? members,
     // Where it has a relay bot.
     RelayedNames? relayed,
+    // A group's settings, which only its founder may change.
+    Privacy? privacy,
+    int? peerLimit,
+    // Empty for none.
+    String? password,
+    bool? topicLock,
+    VoiceState? voiceState,
   }) = _ChatDetails;
 
-  /// From what the [account] keeps and what its Tox says now, in [live], if
-  /// it's running, and who its relay bot has [relayed].
+  const ChatDetails._();
+
+  /// [live] is only used while the account's Tox is [running].
   factory ChatDetails.of(
     ChatSummary summary,
     PublicKey selfKey,
     AccountState account,
     Facts? live, {
+    required bool running,
     RelayedNames? relayed,
   }) {
     T? fact<T>(Facts? facts, Subject subject, T? Function(FactValue) pick) =>
@@ -77,10 +86,12 @@ abstract class ChatDetails with _$ChatDetails {
         return ChatDetails(summary: summary, selfKey: selfKey);
     }
     final subject = Subject.chat(chat);
+    // Conferences have only a title, their name.
+    T? kept<T>(T? Function(FactValue) pick) =>
+        chat is GroupChat ? fact(account.facts, subject, pick) : null;
     return ChatDetails(
       summary: summary,
-      // Conferences have only a title, their name.
-      topic: chat is GroupChat ? fact(account.facts, subject, topicOf) : null,
+      topic: kept(topicOf),
       selfKey: fact(account.facts, subject, keyOf) ?? selfKey,
       selfName:
           fact(
@@ -90,8 +101,7 @@ abstract class ChatDetails with _$ChatDetails {
           ) ??
           account.name,
       selfRole: fact(account.facts, subject, roleOf),
-      // The home device says what Tox says only while it's in session.
-      members: live != null && live.of(const Subject.account()).isNotEmpty
+      members: live != null && running
           ? ([
               for (final peer in live.subjects)
                 if (peer case PeerSubject(chat: final c, :final pk)
@@ -105,13 +115,47 @@ abstract class ChatDetails with _$ChatDetails {
             ]..sort(_byRoleThenName))
           : null,
       relayed: relayed,
+      privacy: kept((v) => v is PrivacyValue ? v.privacy : null),
+      peerLimit: kept((v) => v is PeerLimitValue ? v.limit : null),
+      password: kept((v) => v is PasswordValue ? v.password : null),
+      topicLock: kept((v) => v is TopicLockValue ? v.locked : null),
+      voiceState: kept((v) => v is VoiceStateValue ? v.voiceState : null),
     );
   }
+
+  /// As Tox allows: anyone but observers, or only moderators while the topic
+  /// is locked.
+  bool get maySetTopic => switch (selfRole) {
+    Role.founder || Role.moderator => true,
+    Role.user => topicLock != true,
+    Role.observer || null => false,
+  };
+
+  /// The roles we may give [member], as Tox allows: the founder can change
+  /// anyone else, moderators only users and observers.
+  List<Role> rolesFor(ChatMember member) => [
+    if (mayRemove(member))
+      for (final role
+          in selfRole == Role.founder
+              ? const [Role.moderator, Role.user, Role.observer]
+              : const [Role.user, Role.observer])
+        if (role != (member.role ?? Role.user)) role,
+  ];
+
+  /// Whether we may remove [member] from the group, as for [rolesFor].
+  bool mayRemove(ChatMember member) =>
+      switch ((selfRole, member.role ?? Role.user)) {
+        (Role.founder, final theirs) => theirs != Role.founder,
+        (Role.moderator, Role.user || Role.observer) => true,
+        _ => false,
+      };
 }
 
+// One whose role Tox hasn't said yet shows as an ordinary member, so sorts
+// as one.
 int _byRoleThenName(ChatMember a, ChatMember b) {
-  final role = (a.role?.index ?? Role.values.length).compareTo(
-    b.role?.index ?? Role.values.length,
+  final role = (a.role ?? Role.user).index.compareTo(
+    (b.role ?? Role.user).index,
   );
   return role != 0
       ? role

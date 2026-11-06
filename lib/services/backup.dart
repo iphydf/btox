@@ -42,7 +42,6 @@ Future<Uint8List> exportBackup(Database db, Set<Id<Profiles>> profiles) {
         'schema': db.schemaVersion,
         'tables': {
           'app_settings': await rows('app_settings'),
-          'cached_bootstrap_nodes': await rows('cached_bootstrap_nodes'),
           'profiles': await rows('profiles', 'id IN ($ids)'),
           for (final table in _ownedTables(db)) table: await owned(table),
         },
@@ -184,7 +183,6 @@ Future<int> restoreBackup(Database db, Backup backup, Set<Object?> accounts) {
         keepIds: table == 'sync_events',
       );
     }
-    await insert('cached_bootstrap_nodes', keepIds: true);
     // A bTox with accounts keeps its own app settings.
     final settings = await insert(
       'app_settings',

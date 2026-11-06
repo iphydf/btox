@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart' show FileKind;
 import 'package:btox/models/crypto.dart';
 import 'package:btox/sync/codec.dart';
 import 'package:btox/sync/fact.dart';
@@ -25,7 +26,7 @@ const _callConnect = 0;
 const _callHangUp = 1;
 
 /// The Tox file kind blobs are sent as. It reuses the sync packet ID.
-const blobFileKind = syncPacketId;
+const blobFileKind = FileKind(syncPacketId);
 
 /// What a device offers, sent in [Hello]. Unknown bits are kept, so a newer
 /// device's features pass through unharmed.

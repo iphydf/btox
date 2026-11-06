@@ -103,6 +103,24 @@ final class LocationMap extends ConsumerWidget {
             ),
           ],
         ),
+        // The OSM tile licence wants this credit even on small maps.
+        if (tiles != null)
+          Align(
+            alignment: Alignment.bottomRight,
+            child: ColoredBox(
+              color: Theme.of(context).colorScheme.surface,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    '\u00a9 OpenStreetMap contributors',
+                    style: TextStyle(fontSize: 9),
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

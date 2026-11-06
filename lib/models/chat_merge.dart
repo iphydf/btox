@@ -1,4 +1,4 @@
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/messages/message_format.dart';
 import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/chat_view.dart';
@@ -117,7 +117,7 @@ RelayedNames? relayedNames(
 }
 
 /// [event] as a bot would relay it, to match it with its copy.
-(Tox_Message_Type, String)? _said(
+(MessageType, String)? _said(
   SyncEvent event,
   Set<PublicKey> bots,
   MessageFormats formats,
@@ -154,7 +154,7 @@ typedef _Said = ({
   int side,
   EventId id,
   int time,
-  (Tox_Message_Type, String) said,
+  (MessageType, String) said,
   bool copy,
 });
 
@@ -165,7 +165,7 @@ final class Echoes {
   final MessageFormats _formats;
   ChatMerge? _merge;
   final _seen = <EventId>{};
-  final _waiting = <(Tox_Message_Type, String), List<_Said>>{};
+  final _waiting = <(MessageType, String), List<_Said>>{};
   final _repeats = <EventId>{};
   // When the home device sent messages written offline, so when their copies
   // come.

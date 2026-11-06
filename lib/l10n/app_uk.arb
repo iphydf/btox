@@ -309,7 +309,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Автоматично приймати файли розміром до",
+    "autoAcceptFiles": "Автоматично приймати файли",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -332,6 +332,10 @@
     "fileCancelled": "Скасовано",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Надіслати ще раз",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "Призупинено, доки відправник не повернеться в мережу",
     "@filePaused": {
@@ -620,13 +624,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Ще недоступно",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Немає застосунку, який може відкрити це посилання",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Немає застосунку, який може відкрити цей файл",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} друкує",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Індикатори набору",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Ви бачите, коли друзі друкують, а вони бачать, коли друкуєте ви",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Відповісти",
     "@reply": {
@@ -1077,5 +1098,145 @@
     "noChatsHint": "Додайте контакт кнопкою +, щоб почати спілкування",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Написати особисто",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "особисто",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "Особисто для {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Написати всім",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} покинув(ла) групу, тому нічого не надіслано",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Нова група",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Приєднатися до публічної групи",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Приватна",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Публічна",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Конференція",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Назва",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "Група потребує назви",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Ця назва задовга",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "ID чату",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "ID чату — це 64 шістнадцяткові цифри",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Пароль",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Цей пароль задовгий",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Запросити друзів",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Немає друзів у мережі",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} запрошено",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Покинути чат",
+    "leaveChatMessage": "Покинути \"{name}\"? Ви більше не отримуватимете його повідомлень.",
+    "leave": "Покинути",
+    "chatLeft": "Ви покинули \"{name}\"",
+    "memberJoined": "{name} приєднався(лася) до чату",
+    "memberLeft": "{name} покинув(ла) чат",
+    "memberRenamed": "{old} тепер {name}",
+    "topicSet": "{name} змінив(ла) тему на \"{topic}\"",
+    "topicSetBySomeone": "Нова тема: \"{topic}\"",
+    "titleSet": "{name} перейменував(ла) чат на \"{title}\"",
+    "titleSetBySomeone": "Чат тепер називається \"{title}\"",
+    "memberKicked": "{name} видалив(ла) {member}",
+    "memberKickedBySomeone": "{member} видалено з чату",
+    "memberRole": "{name} призначив(ла) {member} {role, select, founder{засновником} moderator{модератором} observer{спостерігачем} other{учасником}}",
+    "memberRoleBySomeone": "{member} тепер {role, select, founder{засновник} moderator{модератор} observer{спостерігач} other{учасник}}",
+    "membersJoined": "{people, select, one{{names} приєднався(лася) до чату} other{{names} приєдналися до чату}}",
+    "membersLeft": "{people, select, one{{names} покинув(ла) чат} other{{names} покинули чат}}",
+    "namesTwo": "{first} і {second}",
+    "namesThree": "{first}, {second} і {third}",
+    "namesMore": "{first}, {second} та ще {count}",
+    "changeTopic": "Змінити тему",
+    "groupTopic": "Тема",
+    "topicTooLong": "Ця тема задовга",
+    "groupSettings": "Налаштування групи",
+    "privateGroupHint": "Приєднатися можуть лише запрошені вами друзі",
+    "publicGroupHint": "Приєднатися може будь-хто з ID чату",
+    "topicLock": "Заблокувати тему",
+    "topicLockHint": "Змінювати її можуть лише модератори",
+    "whoCanSpeak": "Хто може писати",
+    "voiceEveryone": "Усі, крім спостерігачів",
+    "voiceModerators": "Модератори і ви",
+    "voiceFounder": "Лише ви",
+    "peerLimit": "Ліміт учасників",
+    "peerLimitInvalid": "Введіть число від 1 до {max}",
+    "groupPasswordOn": "Потрібен для приєднання",
+    "groupPasswordOff": "Немає",
+    "groupPasswordEmptyForNone": "Залиште порожнім, щоб пароля не було",
+    "makeModerator": "Зробити модератором",
+    "makeUser": "Зробити звичайним учасником",
+    "makeObserver": "Зробити спостерігачем (лише читання)",
+    "removeMember": "Видалити з групи",
+    "removeMemberMessage": "Видалити \"{name}\" з групи?",
+    "remove": "Видалити",
+    "chatIdCopied": "ID чату скопійовано",
+    "autoAcceptUpTo": "До {size}"
 }

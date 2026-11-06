@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:btox/ffi/toxcore.dart' show Tox_Message_Type;
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/sync/codec.dart';
 import 'package:btox/sync/fact.dart';
@@ -26,6 +26,14 @@ const _tagFileEnded = 6;
 const _tagFileAnswered = 7;
 const _tagCall = 8;
 const _tagCallEnded = 9;
+const _tagReceivedPrivately = 10;
+const _tagSendPrivately = 11;
+const _tagPeerJoined = 12;
+const _tagPeerLeft = 13;
+const _tagPeerRenamed = 14;
+const _tagTopicSet = 15;
+const _tagTitleSet = 16;
+const _tagModerated = 17;
 const _tagWantFriend = 64;
 const _tagUnwantFriend = 65;
 const _tagReadUpTo = 66;
@@ -39,6 +47,12 @@ const _tagAnswerInvite = 73;
 const _tagInviteJoined = 74;
 const _tagSetting = 75;
 const _tagClearSetting = 76;
+const _tagDevice = 77;
+const _tagDeviceGone = 78;
+const _tagNewChat = 79;
+const _tagJoinChat = 80;
+const _tagInviteToChat = 81;
+const _tagChatJoined = 82;
 
 const _kindNormal = 0;
 const _kindAction = 1;
@@ -136,13 +150,64 @@ sealed class EventContent with _$EventContent {
     PublicKey? from,
     required String sender,
     required Uint8List message,
-    required Tox_Message_Type kind,
+    required MessageType kind,
   }) = Received;
   const factory EventContent.send({
     required String sender,
     required Uint8List message,
-    required Tox_Message_Type kind,
+    required MessageType kind,
   }) = Send;
+  // A private message from [from] to the account in a group.
+  const factory EventContent.receivedPrivately({
+    required PublicKey from,
+    required String sender,
+    required Uint8List message,
+    required MessageType kind,
+  }) = ReceivedPrivately;
+  // Asks the home to send a private message to [to] in a group. The home
+  // answers it as it answers [EventContent.send].
+  const factory EventContent.sendPrivately({
+    required PublicKey to,
+    required String sender,
+    required Uint8List message,
+    required MessageType kind,
+  }) = SendPrivately;
+  // What happened in a chat, for clients to word: who did it ([by], where the
+  // home knew), named [name], to whom.
+  const factory EventContent.peerJoined({
+    required PublicKey peer,
+    required String name,
+  }) = PeerJoined;
+  // [name] is what they were last called.
+  const factory EventContent.peerLeft({
+    required PublicKey peer,
+    required String name,
+  }) = PeerLeft;
+  const factory EventContent.peerRenamed({
+    required PublicKey peer,
+    required String old,
+    required String name,
+  }) = PeerRenamed;
+  // A group's topic.
+  const factory EventContent.topicSet({
+    PublicKey? by,
+    required String name,
+    required String topic,
+  }) = TopicSet;
+  // The chat's name: a conference's title or a group's name.
+  const factory EventContent.titleSet({
+    PublicKey? by,
+    required String name,
+    required String title,
+  }) = TitleSet;
+  // [peer] got [role], or was kicked where it's null.
+  const factory EventContent.moderated({
+    PublicKey? by,
+    required String name,
+    PublicKey? peer,
+    required String peerName,
+    Role? role,
+  }) = Moderated;
   const factory EventContent.sent({required EventId intent}) = Sent;
   const factory EventContent.delivered({required EventId intent}) = Delivered;
   const factory EventContent.notice({required String text}) = Notice;
@@ -189,18 +254,58 @@ sealed class EventContent with _$EventContent {
     required int kind,
   }) = ClearSetting;
 
+  // A device of the account, with its key and name.
+  const factory EventContent.device({
+    required PublicKey pk,
+    required String name,
+  }) = DeviceContent;
+  const factory EventContent.deviceGone({required PublicKey pk}) = DeviceGone;
+  // Asks the home to create a chat.
+  const factory EventContent.newChat({
+    required ChatKind kind,
+    required String name,
+    required Privacy privacy,
+  }) = NewChat;
+  // Asks the home to join a public group by its chat ID.
+  const factory EventContent.joinChat({
+    required GroupChatId chatId,
+    String? password,
+  }) = JoinChat;
+  // Asks the home to invite [friend] to [chat].
+  const factory EventContent.inviteToChat({
+    required ChatId chat,
+    required PublicKey friend,
+  }) = InviteToChat;
+  // The home's answer to the [NewChat] or [JoinChat] event [intent]: the chat,
+  // or none if Tox refused.
+  const factory EventContent.chatJoined({
+    required EventId intent,
+    ChatId? chat,
+  }) = ChatJoined;
+
   /// From a newer version: stored and passed on, but not understood.
   const factory EventContent.unknown(int tag) = UnknownContent;
 }
 
-int _kindValue(Tox_Message_Type kind) => switch (kind) {
-  Tox_Message_Type.TOX_MESSAGE_TYPE_ACTION => _kindAction,
+int _kindValue(MessageType kind) => switch (kind) {
+  MessageType.action => _kindAction,
   _ => _kindNormal,
 };
 
-Tox_Message_Type _kindOf(int value) => switch (value) {
-  _kindAction => Tox_Message_Type.TOX_MESSAGE_TYPE_ACTION,
-  _ => Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+MessageType _kindOf(int value) => switch (value) {
+  _kindAction => MessageType.action,
+  _ => MessageType.normal,
+};
+
+int _chatKindValue(ChatKind kind) => switch (kind) {
+  ChatKind.group => _chatGroup,
+  ChatKind.conference => _chatConference,
+};
+
+ChatKind? _chatKindOf(int value) => switch (value) {
+  _chatGroup => ChatKind.group,
+  _chatConference => ChatKind.conference,
+  _ => null,
 };
 
 ArrayWriter encodeChat(ChatId chat) => switch (chat) {
@@ -211,6 +316,11 @@ ArrayWriter encodeChat(ChatId chat) => switch (chat) {
 
 BlobId? _blob(Fields f) => switch (f.optBin()) {
   final blob? => BlobId(blob),
+  null => null,
+};
+
+PublicKey? _key(Fields f) => switch (f.optBin()) {
+  final key? => PublicKey(key),
   null => null,
 };
 
@@ -274,14 +384,7 @@ ArrayWriter _encodeContent(EventContent content) {
     ),
     ChatInvite(:final from, :final kind, :final name, :final invite) => of(
       _tagChatInvite,
-      f
-          .bin(from.bytes)
-          .uint(switch (kind) {
-            ChatKind.group => _chatGroup,
-            ChatKind.conference => _chatConference,
-          })
-          .string(name)
-          .bin(invite),
+      f.bin(from.bytes).uint(_chatKindValue(kind)).string(name).bin(invite),
     ),
     AnswerInvite(:final invite, :final join, :final password) => of(
       _tagAnswerInvite,
@@ -302,6 +405,56 @@ ArrayWriter _encodeContent(EventContent content) {
       _tagSend,
       f.string(sender).bin(message).uint(_kindValue(kind)),
     ),
+    ReceivedPrivately(
+      :final from,
+      :final sender,
+      :final message,
+      :final kind,
+    ) =>
+      of(
+        _tagReceivedPrivately,
+        f.bin(from.bytes).string(sender).bin(message).uint(_kindValue(kind)),
+      ),
+    SendPrivately(:final to, :final sender, :final message, :final kind) => of(
+      _tagSendPrivately,
+      f.bin(to.bytes).string(sender).bin(message).uint(_kindValue(kind)),
+    ),
+    PeerJoined(:final peer, :final name) => of(
+      _tagPeerJoined,
+      f.bin(peer.bytes).string(name),
+    ),
+    PeerLeft(:final peer, :final name) => of(
+      _tagPeerLeft,
+      f.bin(peer.bytes).string(name),
+    ),
+    PeerRenamed(:final peer, :final old, :final name) => of(
+      _tagPeerRenamed,
+      f.bin(peer.bytes).string(old).string(name),
+    ),
+    TopicSet(:final by, :final name, :final topic) => of(
+      _tagTopicSet,
+      f.optBin(by?.bytes).string(name).string(topic),
+    ),
+    TitleSet(:final by, :final name, :final title) => of(
+      _tagTitleSet,
+      f.optBin(by?.bytes).string(name).string(title),
+    ),
+    Moderated(
+      :final by,
+      :final name,
+      :final peer,
+      :final peerName,
+      :final role,
+    ) =>
+      of(
+        _tagModerated,
+        f
+            .optBin(by?.bytes)
+            .string(name)
+            .optBin(peer?.bytes)
+            .string(peerName)
+            .optUint(role?.index),
+      ),
     Sent(:final intent) => ArrayWriter().uint(_tagSent).bin(intent.bytes),
     Delivered(:final intent) =>
       ArrayWriter().uint(_tagDelivered).bin(intent.bytes),
@@ -347,6 +500,27 @@ ArrayWriter _encodeContent(EventContent content) {
     ClearSetting(:final scope, :final kind) => of(
       _tagClearSetting,
       addScope(f, scope).uint(kind),
+    ),
+    DeviceContent(:final pk, :final name) => of(
+      _tagDevice,
+      f.bin(pk.bytes).string(name),
+    ),
+    DeviceGone(:final pk) => ArrayWriter().uint(_tagDeviceGone).bin(pk.bytes),
+    NewChat(:final kind, :final name, :final privacy) => of(
+      _tagNewChat,
+      f.uint(_chatKindValue(kind)).string(name).uint(privacy.index),
+    ),
+    JoinChat(:final chatId, :final password) => of(
+      _tagJoinChat,
+      f.bin(chatId.bytes).optString(password),
+    ),
+    InviteToChat(:final chat, :final friend) => of(
+      _tagInviteToChat,
+      f.array(encodeChat(chat)).bin(friend.bytes),
+    ),
+    ChatJoined(:final intent, :final chat) => of(
+      _tagChatJoined,
+      f.bin(intent.bytes).optArray(chat == null ? null : encodeChat(chat)),
     ),
     // Never re-encoded: stores keep the bytes they received.
     UnknownContent(:final tag) => ArrayWriter().uint(tag),
@@ -402,12 +576,8 @@ EventContent _decodeContent(Fields event) => event.variant<EventContent>(
     }),
     _tagChatInvite => c.fields((f) {
       final from = PublicKey(f.bin());
-      final kind = switch (f.uint()) {
-        _chatGroup => ChatKind.group,
-        _chatConference => ChatKind.conference,
-        // A kind of chat this version doesn't know shows nothing.
-        _ => null,
-      };
+      // A kind of chat this version doesn't know is ignored.
+      final kind = _chatKindOf(f.uint());
       final name = f.string();
       final invite = f.bin();
       return kind == null
@@ -441,6 +611,58 @@ EventContent _decodeContent(Fields event) => event.variant<EventContent>(
       (f) =>
           Send(sender: f.string(), message: f.bin(), kind: _kindOf(f.uint())),
     ),
+    _tagReceivedPrivately => c.fields(
+      (f) => ReceivedPrivately(
+        from: PublicKey(f.bin()),
+        sender: f.string(),
+        message: f.bin(),
+        kind: _kindOf(f.uint()),
+      ),
+    ),
+    _tagSendPrivately => c.fields(
+      (f) => SendPrivately(
+        to: PublicKey(f.bin()),
+        sender: f.string(),
+        message: f.bin(),
+        kind: _kindOf(f.uint()),
+      ),
+    ),
+    _tagPeerJoined => c.fields(
+      (f) => PeerJoined(peer: PublicKey(f.bin()), name: f.string()),
+    ),
+    _tagPeerLeft => c.fields(
+      (f) => PeerLeft(peer: PublicKey(f.bin()), name: f.string()),
+    ),
+    _tagPeerRenamed => c.fields(
+      (f) => PeerRenamed(
+        peer: PublicKey(f.bin()),
+        old: f.string(),
+        name: f.string(),
+      ),
+    ),
+    _tagTopicSet => c.fields(
+      (f) => TopicSet(by: _key(f), name: f.string(), topic: f.string()),
+    ),
+    _tagTitleSet => c.fields(
+      (f) => TitleSet(by: _key(f), name: f.string(), title: f.string()),
+    ),
+    // A role this version doesn't know shows nothing.
+    _tagModerated => c.fields((f) {
+      final by = _key(f);
+      final name = f.string();
+      final peer = _key(f);
+      final peerName = f.string();
+      final role = f.opt((v) => (known: knownEnum(Role.values, v)));
+      return role != null && role.known == null
+          ? null
+          : Moderated(
+              by: by,
+              name: name,
+              peer: peer,
+              peerName: peerName,
+              role: role?.known,
+            );
+    }),
     _tagSent => Sent(intent: EventId(c.bin())),
     _tagDelivered => Delivered(intent: EventId(c.bin())),
     _tagNotice => Notice(text: c.string()),
@@ -480,6 +702,31 @@ EventContent _decodeContent(Fields event) => event.variant<EventContent>(
     ),
     _tagClearSetting => c.fields(
       (f) => ClearSetting(scope: readScope(f), kind: f.uint()),
+    ),
+    _tagDevice => c.fields(
+      (f) => DeviceContent(pk: PublicKey(f.bin()), name: f.string()),
+    ),
+    _tagDeviceGone => DeviceGone(pk: PublicKey(c.bin())),
+    // A chat of a kind or privacy this version doesn't know isn't created.
+    _tagNewChat => c.fields((f) {
+      final kind = _chatKindOf(f.uint());
+      final name = f.string();
+      final privacy = switch (f.uint()) {
+        final p when p < Privacy.values.length => Privacy.values[p],
+        _ => null,
+      };
+      return kind == null || privacy == null
+          ? null
+          : NewChat(kind: kind, name: name, privacy: privacy);
+    }),
+    _tagJoinChat => c.fields(
+      (f) => JoinChat(chatId: GroupChatId(f.bin()), password: f.optString()),
+    ),
+    _tagInviteToChat => c.fields(
+      (f) => InviteToChat(chat: decodeChat(f), friend: PublicKey(f.bin())),
+    ),
+    _tagChatJoined => c.fields(
+      (f) => ChatJoined(intent: EventId(f.bin()), chat: f.opt(decodeChat)),
     ),
     _ => null,
   },

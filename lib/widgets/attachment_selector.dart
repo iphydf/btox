@@ -90,9 +90,11 @@ final class AttachmentSelector extends HookConsumerWidget {
           return;
         }
         final directory = await ref.read(attachmentsDirectoryProvider.future);
-        final copy = pictures && picturesAsQoi
-            ? savePictureAsQoi
-            : saveAttachment;
+        final copy = switch ((pictures, picturesAsQoi)) {
+          (true, true) => savePictureAsQoi,
+          (true, false) => savePicture,
+          (false, _) => saveAttachment,
+        };
         final copied = <FileContent>[];
         try {
           for (final file in picked) {

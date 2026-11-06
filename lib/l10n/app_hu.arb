@@ -318,7 +318,7 @@
             }
         }
     },
-    "autoAcceptFiles": "Fájlok automatikus fogadása eddig a méretig",
+    "autoAcceptFiles": "Fájlok automatikus fogadása",
     "@autoAcceptFiles": {
         "description": "The setting for the largest incoming file accepted without asking"
     },
@@ -341,6 +341,10 @@
     "fileCancelled": "Megszakítva",
     "@fileCancelled": {
         "description": "A file transfer that was declined or stopped"
+    },
+    "sendAgain": "Újraküldés",
+    "@sendAgain": {
+        "description": "Button by a file of ours that was cancelled, to send it from the start"
     },
     "filePaused": "Szüneteltetve, amíg újra elérhető nem lesz",
     "@filePaused": {
@@ -619,13 +623,30 @@
     "@callsNotAvailable": {
         "description": "Shown on the Calls tab of a linked account while its home device is offline, or doesn't connect calls to its devices"
     },
-    "notImplemented": "Még nem érhető el",
-    "@notImplemented": {
-        "description": "Shown for a menu item that doesn't work yet"
-    },
     "openLinkFailed": "Egyik alkalmazás sem tudja megnyitni ezt a linket",
     "@openLinkFailed": {
         "description": "Shown when tapping a link in a message opens nothing"
+    },
+    "openFileFailed": "Egyik alkalmazás sem tudja megnyitni ezt a fájlt",
+    "@openFileFailed": {
+        "description": "Shown when tapping a file in a chat opens nothing"
+    },
+    "isTyping": "{name} ír",
+    "@isTyping": {
+        "description": "Read out for the dots that show while a friend is typing",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "typingIndicators": "Gépelésjelzők",
+    "@typingIndicators": {
+        "description": "Setting that shows friends typing, and shows them when you type"
+    },
+    "typingIndicatorsHint": "Látja, amikor a barátai írnak, és ők is látják, amikor Ön ír",
+    "@typingIndicatorsHint": {
+        "description": "Under the typing indicators setting"
     },
     "reply": "Válasz",
     "@reply": {
@@ -1076,5 +1097,145 @@
     "noChatsHint": "Adjon hozzá egy partnert a + gombbal a csevegés indításához",
     "@noChatsHint": {
         "description": "How to start a first chat, under noChats"
-    }
+    },
+    "messagePrivately": "Privát üzenet",
+    "@messagePrivately": {
+        "description": "Tooltip of the button by a group member that writes to them alone"
+    },
+    "privately": "privátban",
+    "@privately": {
+        "description": "After a group member's name, over a message they sent to you alone"
+    },
+    "privatelyTo": "Privátban neki: {name}",
+    "@privatelyTo": {
+        "description": "Over a message of yours to one group member alone, and over the input while writing one",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "messageEveryone": "Üzenet mindenkinek",
+    "@messageEveryone": {
+        "description": "Tooltip of the button that ends writing to one group member alone"
+    },
+    "privateRecipientLeft": "{name} kilépett a csoportból, ezért semmi sem lett elküldve",
+    "@privateRecipientLeft": {
+        "description": "When a message to one group member alone can't go, as they left",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "newGroup": "Új csoport",
+    "@newGroup": {
+        "description": "Title of the page that founds a group or conference, and its entry under the + button"
+    },
+    "joinGroup": "Csatlakozás nyilvános csoporthoz",
+    "@joinGroup": {
+        "description": "Title of the page that joins a public group by its chat ID, and its entry under the + button"
+    },
+    "privateGroup": "Privát",
+    "@privateGroup": {
+        "description": "A group only those invited can join"
+    },
+    "publicGroup": "Nyilvános",
+    "@publicGroup": {
+        "description": "A group anyone with its chat ID can join"
+    },
+    "conference": "Konferencia",
+    "@conference": {
+        "description": "The older kind of Tox group chat"
+    },
+    "groupName": "Név",
+    "@groupName": {
+        "description": "Label of a new group's name field"
+    },
+    "groupNameEmpty": "A csoportnak név kell",
+    "@groupNameEmpty": {
+        "description": "Under an empty group name field"
+    },
+    "groupNameTooLong": "Ez a név túl hosszú",
+    "@groupNameTooLong": {
+        "description": "Under a group name longer than Tox takes"
+    },
+    "chatId": "Csevegés-azonosító",
+    "@chatId": {
+        "description": "Label of the field for a public group's chat ID"
+    },
+    "chatIdInvalid": "A csevegés-azonosító 64 hexadecimális számjegy",
+    "@chatIdInvalid": {
+        "description": "Under a chat ID field holding something else"
+    },
+    "groupPassword": "Jelszó",
+    "@groupPassword": {
+        "description": "Label of the field for a group's password"
+    },
+    "groupPasswordTooLong": "Ez a jelszó túl hosszú",
+    "@groupPasswordTooLong": {
+        "description": "Under a group password longer than Tox takes"
+    },
+    "inviteFriends": "Barátok meghívása",
+    "@inviteFriends": {
+        "description": "On a group's page, and the title of the list of friends to invite"
+    },
+    "noFriendsOnline": "Nincs elérhető barát",
+    "@noFriendsOnline": {
+        "description": "In the list of friends to invite to a group, when none are online"
+    },
+    "invitedFriend": "{name} meghívva",
+    "@invitedFriend": {
+        "description": "After inviting a friend to a group",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "leaveChat": "Kilépés a csevegésből",
+    "leaveChatMessage": "Kilép a(z) \"{name}\" csevegésből? Többé nem kapja meg az üzeneteit.",
+    "leave": "Kilépés",
+    "chatLeft": "Kilépett innen: \"{name}\"",
+    "memberJoined": "{name} csatlakozott a csevegéshez",
+    "memberLeft": "{name} kilépett a csevegésből",
+    "memberRenamed": "{old} új neve: {name}",
+    "topicSet": "{name} megváltoztatta a témát erre: \"{topic}\"",
+    "topicSetBySomeone": "Az új téma: \"{topic}\"",
+    "titleSet": "{name} átnevezte a csevegést erre: \"{title}\"",
+    "titleSetBySomeone": "A csevegés új neve: \"{title}\"",
+    "memberKicked": "{name} eltávolította: {member}",
+    "memberKickedBySomeone": "{member} el lett távolítva",
+    "memberRole": "{name} beállította {member} szerepét: {role, select, founder{alapító} moderator{moderátor} observer{megfigyelő} other{tag}}",
+    "memberRoleBySomeone": "{member} szerepe mostantól: {role, select, founder{alapító} moderator{moderátor} observer{megfigyelő} other{tag}}",
+    "membersJoined": "{people, select, one{{names} csatlakozott a csevegéshez} other{{names} csatlakozott a csevegéshez}}",
+    "membersLeft": "{people, select, one{{names} kilépett a csevegésből} other{{names} kilépett a csevegésből}}",
+    "namesTwo": "{first} és {second}",
+    "namesThree": "{first}, {second} és {third}",
+    "namesMore": "{first}, {second} és még {count} fő",
+    "changeTopic": "Téma módosítása",
+    "groupTopic": "Téma",
+    "topicTooLong": "Ez a téma túl hosszú",
+    "groupSettings": "Csoportbeállítások",
+    "privateGroupHint": "Csak az Ön által meghívott barátok csatlakozhatnak",
+    "publicGroupHint": "Bárki csatlakozhat, akinek megvan a csevegés-azonosító",
+    "topicLock": "Téma zárolása",
+    "topicLockHint": "Csak a moderátorok módosíthatják",
+    "whoCanSpeak": "Ki küldhet üzenetet",
+    "voiceEveryone": "Mindenki, kivéve a megfigyelőket",
+    "voiceModerators": "A moderátorok és Ön",
+    "voiceFounder": "Csak Ön",
+    "peerLimit": "Tagok maximális száma",
+    "peerLimitInvalid": "Adjon meg egy számot 1 és {max} között",
+    "groupPasswordOn": "Csatlakozáshoz szükséges",
+    "groupPasswordOff": "Nincs",
+    "groupPasswordEmptyForNone": "Hagyja üresen, ha nem kell jelszó",
+    "makeModerator": "Legyen moderátor",
+    "makeUser": "Legyen egyszerű tag",
+    "makeObserver": "Legyen megfigyelő (csak olvashat)",
+    "removeMember": "Eltávolítás a csoportból",
+    "removeMemberMessage": "Eltávolítja a csoportból: \"{name}\"?",
+    "remove": "Eltávolítás",
+    "chatIdCopied": "Csevegés-azonosító másolva",
+    "autoAcceptUpTo": "Legfeljebb {size}"
 }

@@ -74,6 +74,11 @@ abstract class AccountState with _$AccountState {
     // Per scope, its settings by kind.
     @Default({}) Map<Scope, Map<int, Kept<Setting>>> settings,
     @Default({}) Map<EventId, AccountInvite> invites,
+    // The account's devices, with their names.
+    @Default({}) Map<PublicKey, String> devices,
+    // The chats the home created or joined for each [NewChat] and [JoinChat]
+    // event, or none if Tox refused.
+    @Default({}) Map<EventId, ChatId?> chatsJoined,
     // The kept facts, of which the fields above show some.
     required Facts facts,
   }) = _AccountState;
@@ -101,6 +106,8 @@ final class AccountFold {
   final _settings = <Scope, Map<int, Kept<Setting>>>{};
   final _read = <GraphId, (int, EventId)>{};
   final _invites = <EventId, AccountInvite>{};
+  final _devices = <PublicKey, String>{};
+  final _chatsJoined = <EventId, ChatId?>{};
   // The last event added, in rank order.
   (int, EventId)? _last;
   var _events = const <(EventId, SyncEvent)>[];
@@ -120,6 +127,8 @@ final class AccountFold {
         _settings,
         _read,
         _invites,
+        _devices,
+        _chatsJoined,
       ]) {
         map.clear();
       }
@@ -208,6 +217,12 @@ final class AccountFold {
             needsPassword: needsPassword,
           );
         }
+      case DeviceContent(:final pk, :final name):
+        _devices[pk] = name;
+      case DeviceGone(:final pk):
+        _devices.remove(pk);
+      case ChatJoined(:final intent, :final chat):
+        _chatsJoined[intent] = chat;
       default:
         break;
     }
@@ -254,6 +269,8 @@ final class AccountFold {
         for (final MapEntry(:key, :value) in _settings.entries) key: {...value},
       },
       invites: {..._invites},
+      devices: {..._devices},
+      chatsJoined: {..._chatsJoined},
       facts: facts,
     );
   }

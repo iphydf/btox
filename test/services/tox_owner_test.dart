@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/db/database.dart';
-import 'package:btox/ffi/toxcore.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
@@ -30,9 +30,11 @@ Future<void> _until(bool Function() condition) async {
 void main() {
   late Database db;
   late FakeToxcore tox;
-  GraphId chat() =>
-      GraphId.friend(PublicKey(Uint8List(32)), tox.friendGetPublicKey(0));
-  late List<Tox_Connection?> statuses;
+  GraphId chat() => GraphId.friend(
+    PublicKey(Uint8List(32)),
+    tox.friendGetPublicKey(FriendNumber(0)),
+  );
+  late List<Connection?> statuses;
   late Id<Profiles> profileId;
 
   setUp(() async {
@@ -62,7 +64,10 @@ void main() {
         nospam: ToxAddressNospam(0),
       ),
     );
-    await db.addIntent(profileId, WantFriend(pk: tox.friendGetPublicKey(0)));
+    await db.addIntent(
+      profileId,
+      WantFriend(pk: tox.friendGetPublicKey(FriendNumber(0))),
+    );
 
     container.listen(
       toxSessionsProvider,
@@ -72,14 +77,12 @@ void main() {
   });
 
   test('runs Tox for the signed-in profile and reports its status', () async {
-    await _until(() => statuses.contains(Tox_Connection.TOX_CONNECTION_NONE));
+    await _until(() => statuses.contains(Connection.none));
 
     tox.pushEvent(
-      ToxEventSelfConnectionStatus(
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
-      ),
+      ToxEventSelfConnectionStatus(connectionStatus: Connection.udp),
     );
-    await _until(() => statuses.last == Tox_Connection.TOX_CONNECTION_UDP);
+    await _until(() => statuses.last == Connection.udp);
   });
 
   test('sends our messages until they are delivered', () async {
@@ -88,8 +91,8 @@ void main() {
 
     tox.pushEvent(
       ToxEventFriendConnectionStatus(
-        friendNumber: 0,
-        connectionStatus: Tox_Connection.TOX_CONNECTION_UDP,
+        friendNumber: FriendNumber(0),
+        connectionStatus: Connection.udp,
       ),
     );
     await _until(() => tox.sentMessages.isNotEmpty);
@@ -97,8 +100,8 @@ void main() {
 
     tox.pushEvent(
       ToxEventFriendReadReceipt(
-        friendNumber: 0,
-        messageId: tox.sentMessages.single.$2,
+        friendNumber: FriendNumber(0),
+        messageId: FriendMessageId(tox.sentMessages.single.$2),
       ),
     );
     await db
@@ -107,7 +110,7 @@ void main() {
   });
 
   test('stops Tox when the profile signs out', () async {
-    await _until(() => statuses.contains(Tox_Connection.TOX_CONNECTION_NONE));
+    await _until(() => statuses.contains(Connection.none));
 
     await db.signOut(profileId);
     await _until(() => statuses.last == null);
@@ -120,8 +123,8 @@ void main() {
     for (var i = 0; i < 2; i++) {
       tox.pushEvent(
         ToxEventFriendMessage(
-          friendNumber: 0,
-          type: Tox_Message_Type.TOX_MESSAGE_TYPE_NORMAL,
+          friendNumber: FriendNumber(0),
+          type: MessageType.normal,
           message: utf8.encode('hi'),
         ),
       );

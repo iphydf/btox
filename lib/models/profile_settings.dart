@@ -37,6 +37,8 @@ abstract class ProfileSettings with _$ProfileSettings {
     required String statusMessage,
     @Default(NetworkSettings()) NetworkSettings network,
     @Default([]) List<String> messageFormatsOff,
+    // Sends ours and shows theirs.
+    @Default(true) bool typingIndicators,
     // The image is in `avatars`.
     BlobId? avatar,
   }) = _ProfileSettings;

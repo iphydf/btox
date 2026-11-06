@@ -1,16 +1,12 @@
-import 'package:btox/ffi/toxcore.dart';
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/models/connection_status.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const online = ConnectionStatus(
-    connection: Tox_Connection.TOX_CONNECTION_UDP,
-  );
-  const connecting = ConnectionStatus(
-    connection: Tox_Connection.TOX_CONNECTION_NONE,
-  );
+  const online = ConnectionStatus(connection: Connection.udp);
+  const connecting = ConnectionStatus(connection: Connection.none);
 
   test('the summary counts accounts online', () {
     expect(connectionSummaryText([online]), 'Online');

@@ -1,9 +1,11 @@
 import 'package:btox/l10n/generated/app_localizations.dart';
+import 'package:btox/models/chat_log.dart';
 import 'package:btox/models/chat_view.dart';
 import 'package:btox/models/content.dart';
 import 'package:btox/widgets/call_entry.dart';
 import 'package:btox/widgets/chat_avatar.dart';
 import 'package:btox/widgets/dates.dart';
+import 'package:btox/widgets/typing_dots.dart';
 import 'package:flutter/material.dart';
 
 final class ChatListItem extends StatelessWidget {
@@ -21,6 +23,8 @@ final class ChatListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final name = chat.name ?? l10n.defaultContactName;
     final last = chat.last;
     final draft = chat.draft;
     final unread = chat.unread > 0;
@@ -33,7 +37,7 @@ final class ChatListItem extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              chat.name ?? AppLocalizations.of(context)!.defaultContactName,
+              name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: unread
@@ -56,23 +60,35 @@ final class ChatListItem extends StatelessWidget {
             ),
         ],
       ),
-      subtitle: draft == null && last == null
+      subtitle: !chat.typing && draft == null && last == null
           ? null
           : Row(
               spacing: 8,
               children: [
                 Expanded(
-                  child: draft != null
+                  child: chat.typing
+                      // In a Text, so the row keeps its height.
+                      ? Text.rich(
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: TypingDots(
+                              label: l10n.isTyping(name),
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                      : draft != null
                       ? _Preview(
                           draft,
                           label: TextSpan(
-                            text:
-                                '${AppLocalizations.of(context)!.draftLabel} ',
+                            text: '${l10n.draftLabel} ',
                             style: TextStyle(color: theme.colorScheme.error),
                           ),
                         )
                       : _Preview(
-                          last!.content,
+                          last!.happened == null
+                              ? last.content
+                              : TextContent(text: noticeText(l10n, last)),
                           label: switch (last.sender) {
                             final sender? => TextSpan(text: '$sender: '),
                             null => null,
@@ -134,7 +150,7 @@ final class _Preview extends StatelessWidget {
           TextSpan(text: text),
         ],
       ),
-      maxLines: 2,
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: notice ? const TextStyle(fontStyle: FontStyle.italic) : null,
     );

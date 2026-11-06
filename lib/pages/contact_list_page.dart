@@ -7,6 +7,7 @@ import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/models/persistence.dart';
 import 'package:btox/pages/add_contact_page.dart';
+import 'package:btox/pages/group_pages.dart';
 import 'package:btox/pages/call_page.dart';
 import 'package:btox/pages/chat_page.dart';
 import 'package:btox/pages/merge_chat_page.dart';
@@ -20,7 +21,6 @@ import 'package:btox/widgets/call_entry.dart';
 import 'package:btox/widgets/chat_avatar.dart';
 import 'package:btox/widgets/chat_invite_list_item.dart';
 import 'package:btox/widgets/chat_list_item.dart';
-import 'package:btox/widgets/confirm_dialog.dart';
 import 'package:btox/widgets/connection_status_icon.dart';
 import 'package:btox/widgets/database_write.dart';
 import 'package:btox/widgets/dates.dart';
@@ -29,6 +29,7 @@ import 'package:btox/widgets/load_failed.dart';
 import 'package:btox/widgets/main_menu.dart';
 import 'package:btox/widgets/mute_chat.dart';
 import 'package:btox/widgets/passphrase_dialog.dart';
+import 'package:btox/widgets/remove_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -50,11 +51,10 @@ final class ContactListPage extends HookConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // A linked account's friend requests go to its home device.
-    final local = profile.home == null;
-    final requests = local
-        ? ref.watch(friendRequestsProvider(profile.id)).entries.toList()
-        : const <MapEntry<PublicKey, String>>[];
+    final requests = ref
+        .watch(friendRequestsProvider(profile.id))
+        .entries
+        .toList();
     final invites = ref.watch(chatInvitesProvider(profile.id));
     final friends = ref.watch(accountProvider(profile.id)).value?.friends;
     Future<void> answer(
@@ -149,7 +149,7 @@ final class ContactListPage extends HookConsumerWidget {
               return _Empty(
                 icon: Icons.chat_bubble_outline,
                 title: AppLocalizations.of(context)!.noChats,
-                hint: local ? AppLocalizations.of(context)!.noChatsHint : null,
+                hint: AppLocalizations.of(context)!.noChatsHint,
               );
             }
             final above = requests.length + invites.length;
@@ -180,19 +180,7 @@ final class ContactListPage extends HookConsumerWidget {
                     _logger.d('Opening chat ${chat.ref}');
                     Navigator.push(context, ChatPage.route(chat.ref));
                   },
-                  onLongPress: (chat) => _chatActions(
-                    context,
-                    ref,
-                    chat,
-                    delete: switch (chat.key) {
-                      final PublicKey pk when local => (deleteChat) => want(
-                        pk,
-                        wanted: false,
-                        deleteChat: deleteChat,
-                      ),
-                      _ => null,
-                    },
-                  ),
+                  onLongPress: (chat) => _chatActions(context, ref, chat),
                 );
               },
             );
@@ -225,31 +213,76 @@ final class ContactListPage extends HookConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: !local || tab.value != _Tab.chats
+      floatingActionButton: tab.value != _Tab.chats
           ? null
           : FloatingActionButton(
               key: const Key('addContactButton'),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddContactPage(
-                    own: {profile.publicKey},
-                    onAddContact: (address, message) async {
-                      final db = await ref.read(databaseProvider.future);
-                      await db.addIntent(
-                        profile.id,
-                        WantFriend(
-                          pk: address.publicKey,
-                          requestMessage: message,
-                          nospam: address.nospam,
-                        ),
-                      );
-                      _logger.d('Added contact: ${address.publicKey}');
-                    },
-                    selfName: profile.settings.nickname,
+              onPressed: () {
+                void addContact() => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddContactPage(
+                      // A linked device's home has the account's Tox ID.
+                      own: {profile.publicKey, ?profile.home?.publicKey},
+                      onAddContact: (address, message) async {
+                        final db = await ref.read(databaseProvider.future);
+                        await db.addIntent(
+                          profile.id,
+                          WantFriend(
+                            pk: address.publicKey,
+                            requestMessage: message,
+                            nospam: address.nospam,
+                          ),
+                        );
+                        _logger.d('Added contact: ${address.publicKey}');
+                      },
+                      selfName: profile.settings.nickname,
+                    ),
                   ),
-                ),
-              ),
+                );
+                final l10n = AppLocalizations.of(context)!;
+                showModalBottomSheet<void>(
+                  context: context,
+                  builder: (sheet) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final (icon, label, open) in [
+                          (
+                            Icons.person_add_outlined,
+                            l10n.addContact,
+                            addContact,
+                          ),
+                          (
+                            Icons.group_add_outlined,
+                            l10n.newGroup,
+                            () => Navigator.push(
+                              context,
+                              NewGroupPage.route(profile.id),
+                            ),
+                          ),
+                          (
+                            Icons.tag,
+                            l10n.joinGroup,
+                            () => Navigator.push(
+                              context,
+                              JoinGroupPage.route(profile.id),
+                            ),
+                          ),
+                        ])
+                          ListTile(
+                            leading: Icon(icon),
+                            title: Text(label),
+                            onTap: () {
+                              Navigator.pop(sheet);
+                              open();
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
               tooltip: AppLocalizations.of(context)!.addContact,
               child: const Icon(Icons.add),
             ),
@@ -259,9 +292,8 @@ final class ContactListPage extends HookConsumerWidget {
   Future<void> _chatActions(
     BuildContext context,
     WidgetRef ref,
-    ChatSummary chat, {
-    Future<void> Function(bool deleteChat)? delete,
-  }) async {
+    ChatSummary chat,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final account = ref.read(accountProvider(chat.ref.profile)).value;
     final merged =
@@ -288,11 +320,18 @@ final class ContactListPage extends HookConsumerWidget {
                 chat.mute == null ? _ChatAction.mute : _ChatAction.unmute,
               ),
             ),
-            if (delete != null)
+            if (chat.key is PublicKey)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
                 title: Text(l10n.deleteContact),
                 onTap: () => Navigator.pop(context, _ChatAction.delete),
+              ),
+            // Leaving a merged chat would leave only one of its chats.
+            if (chat.chatId != null && !merged)
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: Text(l10n.leaveChat),
+                onTap: () => Navigator.pop(context, _ChatAction.leave),
               ),
             if (chat.key is! PublicKey)
               ListTile(
@@ -337,7 +376,10 @@ final class ContactListPage extends HookConsumerWidget {
         await unmuteChat(context, ref, chat.ref);
         return;
       case _ChatAction.delete:
-        await _confirmDelete(context, delete!, chat.name);
+        await deleteContact(context, ref, chat, chat.key as PublicKey);
+        return;
+      case _ChatAction.leave:
+        await leaveChat(context, ref, chat);
         return;
       case _ChatAction.merge:
         await Navigator.push(
@@ -372,34 +414,18 @@ final class ContactListPage extends HookConsumerWidget {
         );
     }
   }
-
-  Future<void> _confirmDelete(
-    BuildContext context,
-    Future<void> Function(bool deleteChat) delete,
-    String? contactName,
-  ) async {
-    final l10n = AppLocalizations.of(context)!;
-    final name = contactName ?? l10n.defaultContactName;
-    final deleteChat = await confirmWithOption(
-      context,
-      title: l10n.deleteContact,
-      message: l10n.deleteContactMessage(name),
-      action: l10n.delete,
-      option: l10n.deleteChatToo,
-    );
-    if (deleteChat == null) {
-      return;
-    }
-    _logger.i('Deleting contact $name');
-    await delete(deleteChat);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.contactDeleted(name))));
-    }
-  }
 }
 
-enum _ChatAction { mute, unmute, delete, merge, unmerge, relayBot, noRelayBot }
+enum _ChatAction {
+  mute,
+  unmute,
+  delete,
+  leave,
+  merge,
+  unmerge,
+  relayBot,
+  noRelayBot,
+}
 
 /// What a tab shows with nothing in it.
 final class _Empty extends StatelessWidget {

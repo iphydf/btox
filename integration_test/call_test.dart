@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/api/toxcore/tox_events.dart';
 import 'package:btox/api/toxcore/tox_options.dart';
 import 'package:btox/calls/call_audio.dart';
@@ -59,7 +60,7 @@ final class _CountedAudio implements CallAudio {
 
 final class _Peer {
   final Toxcore tox;
-  int? online;
+  FriendNumber? online;
   late final Timer _loop;
 
   _Peer(ToxLibrary lib)
@@ -70,9 +71,7 @@ final class _Peer {
           :final friendNumber,
           :final connectionStatus,
         )) {
-          online = connectionStatus == Tox_Connection.TOX_CONNECTION_NONE
-              ? null
-              : friendNumber;
+          online = connectionStatus == Connection.none ? null : friendNumber;
         }
       }
     });

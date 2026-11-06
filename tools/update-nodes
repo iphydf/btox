@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Writes lib/models/built_in_nodes.dart from nodes.tox.chat's list, for a
+release to start from. bTox never fetches the list itself."""
+
+import json
+import pathlib
+import subprocess
+import sys
+import urllib.request
+
+URL = "https://nodes.tox.chat/json"
+OUT = pathlib.Path(__file__).parent.parent / "lib/models/built_in_nodes.dart"
+
+# What the list says for an address a node doesn't have.
+NO_ADDRESS = {"", "-", "NONE"}
+
+
+def main() -> None:
+    with urllib.request.urlopen(URL, timeout=60) as response:
+        nodes = [
+            node for node in json.load(response)["nodes"]
+            if node["ipv4"] not in NO_ADDRESS
+        ]
+    # The list has no nodes when its scan finds none, and that mustn't
+    # replace the last one.
+    if not any(node["status_tcp"] and node["tcp_ports"] for node in nodes):
+        sys.exit(f"{URL} has no TCP relays now: try again later")
+    entries = "".join(
+        f"    ('{node['ipv4']}', {node['port']}, "
+        f"{json.dumps(node['tcp_ports'])}, '{node['public_key']}', "
+        f"{'true' if node['status_tcp'] else 'false'}),\n"
+        for node in nodes)
+    OUT.write_text(f"""\
+// Written by tools/update-nodes from {URL}.
+// Run it again before each release.
+
+import 'package:btox/models/bootstrap_nodes.dart';
+import 'package:btox/models/crypto.dart';
+
+/// The nodes bTox starts from.
+final builtInBootstrapNodes = BootstrapNodeList(
+  nodes: [
+    for (final (ipv4, port, tcpPorts, key, statusTcp)
+        in const <(String, int, List<int>, String, bool)>[
+{entries}    ])
+      BootstrapNode(
+        ipv4: ipv4,
+        port: port,
+        tcpPorts: tcpPorts,
+        publicKey: PublicKey.fromJson(key),
+        statusTcp: statusTcp,
+      ),
+  ],
+);
+""")
+    subprocess.run(["dart", "format", str(OUT)], check=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,17 +1,15 @@
-// The analyzer resolves ToxLibrary's conditional export to the stub.
-// ignore_for_file: argument_type_not_assignable
-
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:btox/api/toxcore/tox.dart';
 import 'package:btox/api/toxcore/tox_options.dart';
 import 'package:btox/db/database.dart';
 import 'package:btox/ffi/generated/toxcore.ffi.dart' as gen;
 import 'package:btox/ffi/tox_library.ffi.dart' as tox_lib;
-import 'package:btox/ffi/toxcore.dart' show Tox_Savedata_Type, Toxcore;
+import 'package:btox/ffi/toxcore.dart' show Toxcore;
 import 'package:btox/models/bootstrap_nodes.dart';
 import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
@@ -48,7 +46,7 @@ _friends() async {
       tox_lib.toxFfiProvider.overrideWith((ref) => lib),
       attachmentsDirectoryProvider.overrideWith((ref) => dir.path),
       bootstrapNodesProvider.overrideWith(
-        (ref, network) => Stream.value(const BootstrapNodeList(nodes: [])),
+        (ref) => const BootstrapNodeList(nodes: []),
       ),
     ],
   );
@@ -69,7 +67,7 @@ _friends() async {
         udpEnabled: false,
         localDiscoveryEnabled: false,
         savedata: secretKey.bytes,
-        savedataType: Tox_Savedata_Type.TOX_SAVEDATA_TYPE_SECRET_KEY,
+        savedataType: SavedataType.secretKey,
       ),
     );
     final address = ToxAddress.of(keys.selfGetPublicKey(), nospam);

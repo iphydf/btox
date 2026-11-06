@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:btox/models/content.dart';
+import 'package:btox/models/crypto.dart';
 import 'package:btox/models/id.dart';
 import 'package:btox/providers/drafts.dart';
 import 'package:btox/providers/map_tile.dart';
@@ -91,6 +94,32 @@ void main() {
       const TextContent(text: '> Are we on\n> for Saturday?\nYes!'),
     ]);
   });
+
+  test(
+    'an answer to a private message goes to its member alone or not at all',
+    () {
+      final bob = PublicKey(Uint8List(32)..fillRange(0, 32, 2));
+      final carol = PublicKey(Uint8List(32)..fillRange(0, 32, 3));
+      const psst = TextContent(text: 'psst');
+      final draft = ChatDraft()..reply(psst, privately: bob);
+      expect(draft.privately.value, bob);
+      // Writing to someone else, or to everyone, drops the quote.
+      draft.privately.value = carol;
+      expect(draft.replyingTo.value, isNull);
+      draft
+        ..reply(psst, privately: bob)
+        ..privately.value = null;
+      expect(draft.replyingTo.value, isNull);
+      // What everyone saw may be answered privately.
+      draft
+        ..privately.value = carol
+        ..reply(const TextContent(text: 'hi'));
+      expect(
+        (draft.privately.value, draft.replyingTo.value),
+        (carol, const TextContent(text: 'hi')),
+      );
+    },
+  );
 
   testWidgets('what fails to send comes back to be sent again', (tester) async {
     await pumpInput(tester);
